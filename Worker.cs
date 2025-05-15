@@ -29,11 +29,12 @@ public class Worker(ILogger<Worker> logger) : BackgroundService
 
                 try
                 {
-                    await httpClient.PostAsJsonAsync("http://localhost:5043", info, stoppingToken);
+                    await httpClient.PostAsJsonAsync("http://localhost:5043/report", info, stoppingToken);
                 }
                 catch
                 {
                     logger.LogCritical("Couldn't post info");
+                    throw;
                 }
 
                 if (logger.IsEnabled(LogLevel.Information))
