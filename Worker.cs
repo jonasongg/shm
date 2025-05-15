@@ -10,7 +10,11 @@ public class Worker(ILogger<Worker> logger) : BackgroundService
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            if (!OperatingSystem.IsWindows()) return;
+            if (!OperatingSystem.IsWindows())
+            {
+                logger.LogCritical("This service only works on Windows");
+                throw new PlatformNotSupportedException("This service only works on Windows");
+            }
 
             using (var searcher = new ManagementObjectSearcher("select * from Win32_OperatingSystem"))
             {
