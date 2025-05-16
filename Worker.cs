@@ -2,7 +2,6 @@ using System.Diagnostics;
 using System.Management;
 using System.Net.Http.Json;
 using System.Runtime.Versioning;
-using System.Threading.Tasks;
 
 namespace MonitoringService;
 
@@ -39,7 +38,7 @@ public class Worker(ILogger<Worker> logger) : BackgroundService
     }
 
     [SupportedOSPlatform("windows")]
-    private Report GetWindowsInfo()
+    private static Report GetWindowsInfo()
     {
         using ManagementObjectSearcher memSearcher = new("select * from Win32_OperatingSystem");
         var memObj = memSearcher.Get().OfType<ManagementObject>().First(); // there's only one
@@ -82,7 +81,7 @@ public class Worker(ILogger<Worker> logger) : BackgroundService
         return new Report(Convert.ToDouble(totalMemory), Convert.ToDouble(freeMemory), currentCpuUsage, totalSpace, freeSpace);
     }
 
-    private string ReadProcFile(string path)
+    private static string ReadProcFile(string path)
     {
         var info = new ProcessStartInfo
         {
@@ -95,11 +94,12 @@ public class Worker(ILogger<Worker> logger) : BackgroundService
         return process?.StandardOutput.ReadToEnd() ?? throw new Exception($"Couldn't read {path}.");
     }
 
-    private (double totalSpace, double freeSpace) DiskInfo()
+    private static (double totalSpace, double freeSpace) DiskInfo()
     {
         DriveInfo[] allDrives = DriveInfo.GetDrives();
-        var totalSpace = allDrives.Select(drive => drive.TotalSize).Sum() / 1024d;
-        var freeSpace = allDrives.Select(drive => drive.TotalFreeSpace).Sum() / 1024d;
+
+        var totalSpace = allDrives.Where(d => d.DriveType is DriveType.Fixed).Select(d => d.TotalSize).Sum() / 1024d;
+        var freeSpace = allDrives.Where(d => d.DriveType is DriveType.Fixed).Select(d => d.TotalFreeSpace).Sum() / 1024d;
 
         return (totalSpace, freeSpace);
     }
