@@ -39,10 +39,7 @@ public class Worker(ILogger<Worker> logger) : BackgroundService
                     logger.LogCritical("Couldn't post info");
                 }
 
-                if (logger.IsEnabled(LogLevel.Information))
-                {
-                    logger.LogInformation("Status: {info}", info);
-                }
+                logger.LogInformation("Status: {info}", info);
             }
             await Task.Delay(5000, stoppingToken);
         }
