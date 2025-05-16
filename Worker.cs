@@ -33,27 +33,26 @@ public class Worker(ILogger<Worker> logger) : BackgroundService
                 logger.LogCritical("Couldn't post info");
             }
 
-            logger.LogInformation("Status: {info}", info);
+            await Task.Delay(5000, stoppingToken);
         }
-        await Task.Delay(5000, stoppingToken);
+
     }
 
     [SupportedOSPlatform("windows")]
     private Report GetWindowsInfo()
     {
         using ManagementObjectSearcher memSearcher = new("select * from Win32_OperatingSystem");
-        using ManagementObjectSearcher cpuSearcher = new("select * from Win32_Processor");
-
-        // there's only one
-        var memObj = memSearcher.Get().OfType<ManagementObject>().First();
-        var cpuObj = cpuSearcher.Get().OfType<ManagementObject>().First();
-
+        var memObj = memSearcher.Get().OfType<ManagementObject>().First(); // there's only one
         var totalMemory = Convert.ToDouble(memObj["TotalVisibleMemorySize"]);
         var freeMemory = Convert.ToDouble(memObj["FreePhysicalMemory"]);
-        var memoryUsagePercent = (totalMemory - freeMemory) / totalMemory * 100;
+
+        using ManagementObjectSearcher cpuSearcher = new("select * from Win32_Processor");
+        var cpuObj = cpuSearcher.Get().OfType<ManagementObject>().First();
         var cpuUsagePercent = Convert.ToDouble(cpuObj["LoadPercentage"]);
 
-        return new Report(totalMemory, memoryUsagePercent, cpuUsagePercent);
+        var (totalSpace, freeSpace) = DiskInfo();
+
+        return new Report(totalMemory, freeMemory, cpuUsagePercent, totalSpace, freeSpace);
     }
 
     [SupportedOSPlatform("linux")]
@@ -78,7 +77,9 @@ public class Worker(ILogger<Worker> logger) : BackgroundService
         lastCpuIdleTime = idleTime;
         lastCpuTotalTime = totalTime;
 
-        return new Report(Convert.ToDouble(totalMemory), Convert.ToDouble(freeMemory), currentCpuUsage);
+        var (totalSpace, freeSpace) = DiskInfo();
+
+        return new Report(Convert.ToDouble(totalMemory), Convert.ToDouble(freeMemory), currentCpuUsage, totalSpace, freeSpace);
     }
 
     private string ReadProcFile(string path)
@@ -93,6 +94,15 @@ public class Worker(ILogger<Worker> logger) : BackgroundService
         using var process = Process.Start(info);
         return process?.StandardOutput.ReadToEnd() ?? throw new Exception($"Couldn't read {path}.");
     }
+
+    private (double totalSpace, double freeSpace) DiskInfo()
+    {
+        DriveInfo[] allDrives = DriveInfo.GetDrives();
+        var totalSpace = allDrives.Select(drive => drive.TotalSize).Sum() / 1024d;
+        var freeSpace = allDrives.Select(drive => drive.TotalFreeSpace).Sum() / 1024d;
+
+        return (totalSpace, freeSpace);
+    }
 }
 
-record Report(double TotalMemory, double MemoryUsagePercent, double CpuUsagePercent);
+record Report(double TotalMemory, double FreeMemory, double CpuUsagePercent, double TotalSpace, double FreeSpace);
