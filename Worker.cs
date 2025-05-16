@@ -18,7 +18,10 @@ public class Worker(ILogger<Worker> logger) : BackgroundService
         {
             var info = OperatingSystem.IsWindows()
                 ? GetWindowsInfo()
-                : GetUnixInfo();
+                : OperatingSystem.IsLinux()
+                ? GetLinuxInfo()
+                : throw new PlatformNotSupportedException();
+
             logger.LogInformation("Status: {info}", info);
 
             try
@@ -33,7 +36,6 @@ public class Worker(ILogger<Worker> logger) : BackgroundService
             logger.LogInformation("Status: {info}", info);
         }
         await Task.Delay(5000, stoppingToken);
-    }
     }
 
     [SupportedOSPlatform("windows")]
@@ -54,7 +56,8 @@ public class Worker(ILogger<Worker> logger) : BackgroundService
         return new Report(totalMemory, memoryUsagePercent, cpuUsagePercent);
     }
 
-    private Report GetUnixInfo()
+    [SupportedOSPlatform("linux")]
+    private Report GetLinuxInfo()
     {
         var memoryInfo = ReadProcFile("/proc/meminfo");
 
