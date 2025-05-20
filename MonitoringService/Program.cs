@@ -8,10 +8,12 @@ builder.Services.AddWindowsService(options =>
 {
     options.ServiceName = "MonitoringService";
 });
-LoggerProviderOptions.RegisterProviderOptions<EventLogSettings, EventLogLoggerProvider>(builder.Services);
+
+if (OperatingSystem.IsWindows())
+{
+    LoggerProviderOptions.RegisterProviderOptions<EventLogSettings, EventLogLoggerProvider>(builder.Services);
+}
 
 builder.Services.AddHostedService<Worker>();
-
 var host = builder.Build();
-
 host.Run();
