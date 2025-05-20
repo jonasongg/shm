@@ -6,7 +6,7 @@ using Shared;
 
 namespace MonitoringService;
 
-public class Worker(ILogger<Worker> logger) : BackgroundService
+public class Worker(IConfiguration configuration, ILogger<Worker> logger) : BackgroundService
 {
     private long lastCpuIdleTime = 0;
     private long lastCpuTotalTime = 0;
@@ -15,12 +15,14 @@ public class Worker(ILogger<Worker> logger) : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        var name = configuration["VM_Name"] ?? "";
+
         while (!stoppingToken.IsCancellationRequested)
         {
             var info = OperatingSystem.IsWindows()
-                ? GetWindowsInfo()
+                ? GetWindowsInfo(name)
                 : OperatingSystem.IsLinux()
-                ? GetLinuxInfo()
+                ? GetLinuxInfo(name)
                 : throw new PlatformNotSupportedException();
 
             logger.LogInformation("Status: {info}", info);
@@ -40,7 +42,7 @@ public class Worker(ILogger<Worker> logger) : BackgroundService
     }
 
     [SupportedOSPlatform("windows")]
-    private static Report GetWindowsInfo()
+    private static Report GetWindowsInfo(string name)
     {
         using ManagementObjectSearcher memSearcher = new("select * from Win32_OperatingSystem");
         var memObj = memSearcher.Get().OfType<ManagementObject>().First(); // there's only one
@@ -53,11 +55,11 @@ public class Worker(ILogger<Worker> logger) : BackgroundService
 
         var (totalSpace, freeSpace) = DiskInfo();
 
-        return new Report(totalMemory, freeMemory, cpuUsagePercent, totalSpace, freeSpace);
+        return new Report(name, totalMemory, freeMemory, cpuUsagePercent, totalSpace, freeSpace);
     }
 
     [SupportedOSPlatform("linux")]
-    private Report GetLinuxInfo()
+    private Report GetLinuxInfo(string name)
     {
         var memoryInfo = ReadProcFile("/proc/meminfo");
 
@@ -80,7 +82,7 @@ public class Worker(ILogger<Worker> logger) : BackgroundService
 
         var (totalSpace, freeSpace) = DiskInfo();
 
-        return new Report(Convert.ToDouble(totalMemory), Convert.ToDouble(freeMemory), currentCpuUsage, totalSpace, freeSpace);
+        return new Report(name, Convert.ToDouble(totalMemory), Convert.ToDouble(freeMemory), currentCpuUsage, totalSpace, freeSpace);
     }
 
     private static string ReadProcFile(string path)

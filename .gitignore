@@ -53,6 +53,7 @@ CodeCoverage/
 TestResult.xml
 nunit-*.xml
 
+output/
 # ----- Node -----
 
 # Logs

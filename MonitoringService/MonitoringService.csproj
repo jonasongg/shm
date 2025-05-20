@@ -27,16 +27,9 @@
     <ProjectReference Include="../Shared/Shared.csproj" />
   </ItemGroup>
 
-  <!-- <ItemGroup>
-    <Content Update="appsettings.Development.json">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-    </Content>
-  </ItemGroup> -->
-
   <Target Name="RemoveAppsettingsDevelopmentFromPublish" AfterTargets="Publish">
     <ItemGroup>
-      <_RemoveFiles Include="$(PublishDir)appsettings.json" />
+      <_RemoveFiles Include="$(PublishDir)appsettings.Development.json" />
     </ItemGroup>
     <Delete Files="@(_RemoveFiles)" />
   </Target>
