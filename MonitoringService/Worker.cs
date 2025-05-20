@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Management;
 using System.Net.Http.Json;
 using System.Runtime.Versioning;
+using SHM_MS.Models;
 
 namespace MonitoringService;
 
@@ -104,5 +105,3 @@ public class Worker(ILogger<Worker> logger) : BackgroundService
         return (totalSpace, freeSpace);
     }
 }
-
-record Report(double TotalMemory, double FreeMemory, double CpuUsagePercent, double TotalSpace, double FreeSpace);
