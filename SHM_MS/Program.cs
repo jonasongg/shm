@@ -1,9 +1,9 @@
-using SHM_MS.Models;
+using Shared;
 
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
 
-Report report = new(0, 0, 0, 0, 0);
+Report? report = null;
 
 app.MapPost("/report", (Report _report) =>
 {

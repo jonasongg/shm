@@ -2,7 +2,7 @@ using System.Diagnostics;
 using System.Management;
 using System.Net.Http.Json;
 using System.Runtime.Versioning;
-using SHM_MS.Models;
+using Shared;
 
 namespace MonitoringService;
 
@@ -12,6 +12,7 @@ public class Worker(ILogger<Worker> logger) : BackgroundService
     private long lastCpuTotalTime = 0;
 
     private static readonly HttpClient httpClient = new();
+
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         while (!stoppingToken.IsCancellationRequested)
