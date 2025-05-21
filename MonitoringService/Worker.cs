@@ -19,17 +19,20 @@ public class Worker(IConfiguration configuration, ILogger<Worker> logger) : Back
 
         while (!stoppingToken.IsCancellationRequested)
         {
-            var info = OperatingSystem.IsWindows()
-                ? GetWindowsInfo(name)
-                : OperatingSystem.IsLinux()
-                ? GetLinuxInfo(name)
+            var info =
+                OperatingSystem.IsWindows() ? GetWindowsInfo(name)
+                : OperatingSystem.IsLinux() ? GetLinuxInfo(name)
                 : throw new PlatformNotSupportedException();
 
             logger.LogInformation("Status: {info}", info);
 
             try
             {
-                await httpClient.PostAsJsonAsync("http://localhost:5043/report", info, stoppingToken);
+                await httpClient.PostAsJsonAsync(
+                    "http://localhost:5043/report",
+                    info,
+                    stoppingToken
+                );
             }
             catch
             {
@@ -38,7 +41,6 @@ public class Worker(IConfiguration configuration, ILogger<Worker> logger) : Back
 
             await Task.Delay(5000, stoppingToken);
         }
-
     }
 
     [SupportedOSPlatform("windows")]
@@ -83,7 +85,8 @@ public class Worker(IConfiguration configuration, ILogger<Worker> logger) : Back
         var idleTime = cpuNumbers[3];
         var totalTime = cpuNumbers.Sum();
 
-        var cpuUsagePercent = (1 - (float)(idleTime - lastCpuIdleTime) / (totalTime - lastCpuTotalTime)) * 100;
+        var cpuUsagePercent =
+            (1 - (float)(idleTime - lastCpuIdleTime) / (totalTime - lastCpuTotalTime)) * 100;
 
         lastCpuIdleTime = idleTime;
         lastCpuTotalTime = totalTime;
@@ -107,7 +110,7 @@ public class Worker(IConfiguration configuration, ILogger<Worker> logger) : Back
         {
             FileName = "/bin/bash",
             Arguments = $"-c \"cat {path}\"",
-            RedirectStandardOutput = true
+            RedirectStandardOutput = true,
         };
 
         using var process = Process.Start(info);
@@ -118,8 +121,12 @@ public class Worker(IConfiguration configuration, ILogger<Worker> logger) : Back
     {
         DriveInfo[] allDrives = DriveInfo.GetDrives();
 
-        var totalSpace = allDrives.Where(d => d.DriveType is DriveType.Fixed).Select(d => d.TotalSize).Sum() / 1024d;
-        var freeSpace = allDrives.Where(d => d.DriveType is DriveType.Fixed).Select(d => d.TotalFreeSpace).Sum() / 1024d;
+        var totalSpace =
+            allDrives.Where(d => d.DriveType is DriveType.Fixed).Select(d => d.TotalSize).Sum()
+            / 1024d;
+        var freeSpace =
+            allDrives.Where(d => d.DriveType is DriveType.Fixed).Select(d => d.TotalFreeSpace).Sum()
+            / 1024d;
 
         return (totalSpace, freeSpace);
     }

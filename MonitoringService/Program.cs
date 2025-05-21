@@ -1,6 +1,6 @@
-using MonitoringService;
 using Microsoft.Extensions.Logging.Configuration;
 using Microsoft.Extensions.Logging.EventLog;
+using MonitoringService;
 
 var builder = Host.CreateApplicationBuilder(args);
 
@@ -11,7 +11,9 @@ builder.Services.AddWindowsService(options =>
 
 if (OperatingSystem.IsWindows())
 {
-    LoggerProviderOptions.RegisterProviderOptions<EventLogSettings, EventLogLoggerProvider>(builder.Services);
+    LoggerProviderOptions.RegisterProviderOptions<EventLogSettings, EventLogLoggerProvider>(
+        builder.Services
+    );
 }
 
 builder.Services.AddHostedService<Worker>();

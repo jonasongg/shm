@@ -6,18 +6,17 @@ builder.Services.AddDbContext<ReportDb>(options => options.UseInMemoryDatabase("
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 var app = builder.Build();
 
-app.MapPost("/report", async (Report report, ReportDb db) =>
-{
-    db.Reports.Add(report);
-    await db.SaveChangesAsync();
+app.MapPost(
+    "/report",
+    async (Report report, ReportDb db) =>
+    {
+        db.Reports.Add(report);
+        await db.SaveChangesAsync();
 
-    return Results.Created($"/report/{report.Name}", report);
-});
-
-app.MapGet("/reports", async (ReportDb db) =>
-    await db.Reports
-        .Take(10)
-        .ToListAsync()
+        return Results.Created($"/report/{report.Name}", report);
+    }
 );
+
+app.MapGet("/reports", async (ReportDb db) => await db.Reports.Take(10).ToListAsync());
 
 app.Run();

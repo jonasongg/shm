@@ -1,5 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk.Worker">
-
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
@@ -11,27 +10,21 @@
     <SelfContained>true</SelfContained>
     <DebugType>None</DebugType>
     <DebugSymbols>False</DebugSymbols>
-    
     <ValidateExecutableReferencesMatchSelfContained>false</ValidateExecutableReferencesMatchSelfContained>
     <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
-
   </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.5" />
     <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="9.0.5" />
     <PackageReference Include="System.Management" Version="9.0.5" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="../Shared/Shared.csproj" />
   </ItemGroup>
-
   <Target Name="RemoveAppsettingsDevelopmentFromPublish" AfterTargets="Publish">
     <ItemGroup>
       <_RemoveFiles Include="$(PublishDir)appsettings.Development.json" />
     </ItemGroup>
     <Delete Files="@(_RemoveFiles)" />
   </Target>
-
 </Project>
