@@ -39,7 +39,7 @@ public class Worker(IConfiguration configuration, ILogger<Worker> logger) : Back
                 logger.LogCritical("Couldn't post info");
             }
 
-            await Task.Delay(5000, stoppingToken);
+            await Task.Delay(1000, stoppingToken);
         }
     }
 
@@ -60,6 +60,7 @@ public class Worker(IConfiguration configuration, ILogger<Worker> logger) : Back
         return new Report
         {
             Name = name,
+            Timestamp = DateTime.Now,
             TotalMemory = totalMemory,
             FreeMemory = freeMemory,
             CpuUsagePercent = cpuUsagePercent,
@@ -96,6 +97,7 @@ public class Worker(IConfiguration configuration, ILogger<Worker> logger) : Back
         return new Report
         {
             Name = name,
+            Timestamp = DateTime.Now,
             TotalMemory = Convert.ToDouble(totalMemory),
             FreeMemory = Convert.ToDouble(freeMemory),
             CpuUsagePercent = cpuUsagePercent,

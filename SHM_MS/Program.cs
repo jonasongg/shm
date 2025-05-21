@@ -17,6 +17,10 @@ app.MapPost(
     }
 );
 
-app.MapGet("/reports", async (ReportDb db) => await db.Reports.Take(10).ToListAsync());
+app.MapGet(
+    "/reports",
+    async (ReportDb db) =>
+        await db.Reports.OrderByDescending(r => r.Timestamp).Take(10).ToListAsync()
+);
 
 app.Run();
