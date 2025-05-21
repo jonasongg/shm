@@ -2,7 +2,7 @@ using System.Diagnostics;
 using System.Management;
 using System.Net.Http.Json;
 using System.Runtime.Versioning;
-using Shared;
+using Shared.Models;
 
 namespace MonitoringService;
 
@@ -55,7 +55,15 @@ public class Worker(IConfiguration configuration, ILogger<Worker> logger) : Back
 
         var (totalSpace, freeSpace) = DiskInfo();
 
-        return new Report(name, totalMemory, freeMemory, cpuUsagePercent, totalSpace, freeSpace);
+        return new Report
+        {
+            Name = name,
+            TotalMemory = totalMemory,
+            FreeMemory = freeMemory,
+            CpuUsagePercent = cpuUsagePercent,
+            TotalSpace = totalSpace,
+            FreeSpace = freeSpace,
+        };
     }
 
     [SupportedOSPlatform("linux")]
@@ -75,14 +83,22 @@ public class Worker(IConfiguration configuration, ILogger<Worker> logger) : Back
         var idleTime = cpuNumbers[3];
         var totalTime = cpuNumbers.Sum();
 
-        var currentCpuUsage = (1 - (float)(idleTime - lastCpuIdleTime) / (totalTime - lastCpuTotalTime)) * 100;
+        var cpuUsagePercent = (1 - (float)(idleTime - lastCpuIdleTime) / (totalTime - lastCpuTotalTime)) * 100;
 
         lastCpuIdleTime = idleTime;
         lastCpuTotalTime = totalTime;
 
         var (totalSpace, freeSpace) = DiskInfo();
 
-        return new Report(name, Convert.ToDouble(totalMemory), Convert.ToDouble(freeMemory), currentCpuUsage, totalSpace, freeSpace);
+        return new Report
+        {
+            Name = name,
+            TotalMemory = Convert.ToDouble(totalMemory),
+            FreeMemory = Convert.ToDouble(freeMemory),
+            CpuUsagePercent = cpuUsagePercent,
+            TotalSpace = totalSpace,
+            FreeSpace = freeSpace,
+        };
     }
 
     private static string ReadProcFile(string path)
