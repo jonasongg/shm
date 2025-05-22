@@ -1,10 +1,24 @@
 using Microsoft.EntityFrameworkCore;
 using Shared.Models;
 
+var AllowedSpecificOrigins = "_allowedSpecificOrigins";
+
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<ReportContext>(options => options.UseInMemoryDatabase("ReportDb"));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(
+        AllowedSpecificOrigins,
+        policy =>
+        {
+            policy.WithOrigins("http://localhost:3000");
+        }
+    );
+});
 var app = builder.Build();
+
+app.UseCors(AllowedSpecificOrigins);
 
 app.MapPost(
     "/report",

@@ -1,18 +1,42 @@
+"use client";
+
+import CpuChart from "@/components/cpuChart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useEffect, useState } from "react";
 
 export default function Home() {
+  const [data, setData] =
+    useState<Record<string, DataReportForVm[] | undefined>>();
+
+  useEffect(() => {
+    (async () => {
+      const response = await fetch("http://localhost:5043/reports");
+      const json: DataReport[] = await response.json();
+      const transformedData = json.map((data) => ({
+        ...data,
+        timestamp: new Date(data.timestamp),
+      }));
+
+      setData(Object.groupBy(transformedData, ({ name }) => name));
+    })();
+  }, []);
   return (
     <>
       <header className="font-(family-name:--font-geist-sans) text-2xl font-extrabold bg-white p-6 border-b-1 centred-shadow">
         Dashboard
       </header>
       <main className="p-8 gap-8 grid grid-cols-2 grid-rows-2 flex-1">
-        <Card>
-          <CardHeader className="text-xl">
-            <CardTitle>VM 1</CardTitle>
-          </CardHeader>
-          <CardContent></CardContent>
-        </Card>
+        {data &&
+          Object.entries(data).map(([name, data], i) => (
+            <Card key={i}>
+              <CardHeader className="text-xl">
+                <CardTitle>{name}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CpuChart data={data} />
+              </CardContent>
+            </Card>
+          ))}
       </main>
     </>
   );
