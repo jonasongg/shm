@@ -2,16 +2,16 @@ using Microsoft.EntityFrameworkCore;
 using Shared.Models;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddDbContext<ReportDb>(options => options.UseInMemoryDatabase("ReportDb"));
+builder.Services.AddDbContext<ReportContext>(options => options.UseInMemoryDatabase("ReportDb"));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 var app = builder.Build();
 
 app.MapPost(
     "/report",
-    async (Report report, ReportDb db) =>
+    async (Report report, ReportContext context) =>
     {
-        db.Reports.Add(report);
-        await db.SaveChangesAsync();
+        context.Reports.Add(report);
+        await context.SaveChangesAsync();
 
         return Results.Created($"/report/{report.Name}", report);
     }
@@ -19,8 +19,8 @@ app.MapPost(
 
 app.MapGet(
     "/reports",
-    async (ReportDb db) =>
-        await db.Reports.OrderByDescending(r => r.Timestamp).Take(10).ToListAsync()
+    async (ReportContext context) =>
+        await context.Reports.OrderByDescending(r => r.Timestamp).Take(10).ToListAsync()
 );
 
 app.Run();
