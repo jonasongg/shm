@@ -32,7 +32,7 @@ export default function Home() {
               <CardHeader className="text-xl">
                 <CardTitle>{name}</CardTitle>
               </CardHeader>
-              <CardContent>
+                <CardContent className="h-full">
                 <CpuChart data={reportForVm} />
               </CardContent>
             </Card>

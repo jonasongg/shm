@@ -15,7 +15,7 @@ export default function CpuChart({
           color: "var(--chart-1)",
         },
       }}
-      className="min-h-[200px] w-full"
+      className="h-full"
     >
       <AreaChart
         accessibilityLayer
