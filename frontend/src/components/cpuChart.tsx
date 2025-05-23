@@ -1,12 +1,7 @@
 import { AreaChart, CartesianGrid, XAxis, YAxis, Area, Label } from "recharts";
 import { ChartContainer } from "./ui/chart";
 
-export default function CpuChart({
-  data,
-}: {
-  data: DataReportForVm[] | undefined;
-}) {
-  console.log(data?.map(({ cpuUsagePercent: x }) => x));
+export default function CpuChart({ data }: { data: DataReportForVm[] }) {
   return (
     <ChartContainer
       config={{
@@ -15,7 +10,7 @@ export default function CpuChart({
           color: "var(--chart-1)",
         },
       }}
-      className="h-full"
+      className="flex-2/3"
     >
       <AreaChart
         accessibilityLayer

@@ -1,6 +1,7 @@
 "use client";
 
 import CpuChart from "@/components/cpuChart";
+import MemChart from "@/components/memChart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useEffect, useState } from "react";
 
@@ -27,16 +28,27 @@ export default function Home() {
       </header>
       <main className="p-8 gap-8 grid grid-cols-2 grid-rows-2 flex-1">
         {data &&
-          Object.entries(data).map(([name, reportForVm], i) => (
-            <Card key={i} className="font-(family-name:--font-geist-sans)">
-              <CardHeader className="text-xl">
-                <CardTitle>{name}</CardTitle>
-              </CardHeader>
-                <CardContent className="h-full">
-                <CpuChart data={reportForVm} />
-              </CardContent>
-            </Card>
-          ))}
+          [...Object.entries(data), ...Object.entries(data)].map(
+            ([name, reportForVm], i) => (
+              <Card key={i} className="font-(family-name:--font-geist-sans)">
+                <CardHeader className="text-xl">
+                  <CardTitle>{name}</CardTitle>
+                </CardHeader>
+                <CardContent className="flex flex-col h-full">
+                  {reportForVm ? (
+                    <CpuChart data={reportForVm} />
+                  ) : (
+                    "No CPU data found."
+                  )}
+                  {reportForVm ? (
+                    <MemChart data={reportForVm} />
+                  ) : (
+                    "No memory data found."
+                  )}
+                </CardContent>
+              </Card>
+            ),
+          )}
       </main>
     </>
   );
