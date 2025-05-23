@@ -34,7 +34,23 @@ app.MapPost(
 app.MapGet(
     "/reports",
     async (ReportContext context) =>
-        await context.Reports.OrderByDescending(r => r.Timestamp).Take(10).ToListAsync()
+    {
+        // await context
+        //     .Reports.FromSqlRaw(
+        //         @"
+        //         SELECT *
+        //         FROM (
+        //             SELECT *, ROW_NUMBER() OVER (PARTITION BY Name ORDER BY Timestamp DESC) AS rn
+        //             FROM Reports
+        //         ) AS ranked
+        //         WHERE rn <= 10"
+        //     )
+        //     .ToListAsync()
+        return (await context.Reports.ToListAsync())
+            .OrderByDescending(r => r.Timestamp)
+            .GroupBy(r => r.Name)
+            .SelectMany(rs => rs.Take(10));
+    }
 );
 
 app.Run();
