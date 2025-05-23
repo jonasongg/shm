@@ -27,13 +27,13 @@ export default function Home() {
       </header>
       <main className="p-8 gap-8 grid grid-cols-2 grid-rows-2 flex-1">
         {data &&
-          Object.entries(data).map(([name, data], i) => (
-            <Card key={i}>
+          Object.entries(data).map(([name, reportForVm], i) => (
+            <Card key={i} className="font-(family-name:--font-geist-sans)">
               <CardHeader className="text-xl">
                 <CardTitle>{name}</CardTitle>
               </CardHeader>
               <CardContent>
-                <CpuChart data={data} />
+                <CpuChart data={reportForVm} />
               </CardContent>
             </Card>
           ))}

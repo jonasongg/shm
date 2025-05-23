@@ -1,4 +1,4 @@
-import { AreaChart, CartesianGrid, XAxis, YAxis, Area } from "recharts";
+import { AreaChart, CartesianGrid, XAxis, YAxis, Area, Label } from "recharts";
 import { ChartContainer } from "./ui/chart";
 
 export default function CpuChart({
@@ -20,7 +20,7 @@ export default function CpuChart({
       <AreaChart
         accessibilityLayer
         data={data}
-        margin={{ left: -20, right: 12 }}
+        margin={{ left: 0, right: 12, bottom: 20 }}
       >
         <defs>
           <linearGradient id="cpuUsagePercent" x1="0" y1="0" x2="0" y2="1">
@@ -35,13 +35,31 @@ export default function CpuChart({
           axisLine={false}
           tickMargin={8}
           tickFormatter={(value) =>
-            Math.floor(
-              (new Date().valueOf() - value.valueOf()) / 1000,
-            ).toString()
+            `${Math.floor((new Date().valueOf() - value.valueOf()) / 1000)}s`
           }
           reversed
-        />
-        <YAxis tickLine={false} axisLine={false} tickMargin={8} />
+        >
+          <Label className="font-bold" offset={8} position="bottom">
+            Seconds Ago
+          </Label>
+        </XAxis>
+        <YAxis
+          tickLine={false}
+          axisLine={false}
+          tickMargin={8}
+          tickFormatter={(value) => `${value}%`}
+          padding={{}}
+        >
+          <Label
+            className="font-bold"
+            angle={-90}
+            position="left"
+            style={{ textAnchor: "middle" }}
+            offset={-10}
+          >
+            CPU Usage
+          </Label>
+        </YAxis>
         <Area
           dataKey="cpuUsagePercent"
           type="bump"
