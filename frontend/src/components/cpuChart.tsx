@@ -1,7 +1,13 @@
 import { AreaChart, CartesianGrid, XAxis, YAxis, Area, Label } from "recharts";
 import { ChartContainer } from "./ui/chart";
 
-export default function CpuChart({ data }: { data: DataReportForVm[] }) {
+export default function CpuChart({
+  data,
+  className,
+}: {
+  data: DataReportForVm[];
+  className?: string;
+}) {
   return (
     <ChartContainer
       config={{
@@ -10,7 +16,7 @@ export default function CpuChart({ data }: { data: DataReportForVm[] }) {
           color: "var(--chart-1)",
         },
       }}
-      className="flex-2/3"
+      className={className}
     >
       <AreaChart
         accessibilityLayer

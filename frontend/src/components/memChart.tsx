@@ -7,10 +7,23 @@ import {
   Label,
   BarChart,
   Bar,
+  LabelList,
 } from "recharts";
 import { ChartContainer } from "./ui/chart";
 
-export default function MemChart({ data }: { data: DataReportForVm[] }) {
+export default function MemChart({
+  data,
+  className,
+}: {
+  data: DataReportForVm[];
+  className?: string;
+}) {
+  const latestReport = data.reduce((acc, d) =>
+    acc.timestamp > d.timestamp ? acc : d,
+  );
+  const usagePercentage =
+    (latestReport.freeMemory / latestReport.totalMemory) * 100;
+
   return (
     <ChartContainer
       config={{
@@ -23,13 +36,11 @@ export default function MemChart({ data }: { data: DataReportForVm[] }) {
           color: "var(--chart-2)",
         },
       }}
-      className="flex-1/3"
+      className={className}
     >
       <BarChart
         accessibilityLayer
-        data={[
-          data.reduce((acc, d) => (acc.timestamp > d.timestamp ? acc : d)),
-        ]}
+        data={[latestReport]}
         layout="vertical"
         margin={{ bottom: -10, left: 8, right: 8 }}
       >
@@ -45,12 +56,19 @@ export default function MemChart({ data }: { data: DataReportForVm[] }) {
           </Label>
         </XAxis>
         <YAxis dataKey="timestamp" type="category" hide />
-        <Bar dataKey="freeMemory" stackId="a" fill="var(--color-freeMemory)" />
-        <Bar
-          dataKey="totalMemory"
-          stackId="a"
-          fill="var(--color-totalMemory)"
-        />
+        <Bar dataKey="freeMemory" stackId="a" fill="var(--color-freeMemory)">
+          <LabelList
+            className="fill-white"
+            formatter={(value: number) => `${usagePercentage.toFixed(1)}%`}
+          />
+        </Bar>
+        <Bar dataKey="totalMemory" stackId="a" fill="var(--color-totalMemory)">
+          <LabelList
+            formatter={(value: number) =>
+              `Total: ${(value / 1024 / 1024).toFixed(1)} GB`
+            }
+          />
+        </Bar>
       </BarChart>
     </ChartContainer>
   );

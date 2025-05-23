@@ -36,12 +36,13 @@ export default function Home() {
                 </CardHeader>
                 <CardContent className="flex flex-col h-full">
                   {reportForVm ? (
-                    <CpuChart data={reportForVm} />
+                    <CpuChart data={reportForVm} className="flex-3/4" />
                   ) : (
                     "No CPU data found."
                   )}
+                  <hr className="border-b-1 my-3" />
                   {reportForVm ? (
-                    <MemChart data={reportForVm} />
+                    <MemChart data={reportForVm} className="flex-1/4" />
                   ) : (
                     "No memory data found."
                   )}
