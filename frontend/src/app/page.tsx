@@ -1,7 +1,7 @@
 "use client";
 
 import CpuChart from "@/components/cpuChart";
-import MemChart from "@/components/memChart";
+import DiskChart from "@/components/memChart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useEffect, useState } from "react";
 
@@ -50,7 +50,7 @@ export default function Home() {
                 )}
                 <hr className="border-b-1 my-3" />
                 {reportForVm ? (
-                  <MemChart data={reportForVm} className="flex-1/4" />
+                  <DiskChart data={reportForVm} className="flex-1/4" />
                 ) : (
                   "No memory data found."
                 )}

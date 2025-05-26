@@ -1,75 +1,71 @@
-import {
-  AreaChart,
-  CartesianGrid,
-  XAxis,
-  YAxis,
-  Area,
-  Label,
-  BarChart,
-  Bar,
-  LabelList,
-} from "recharts";
+import { XAxis, YAxis, Label, BarChart, Bar, LabelList } from "recharts";
 import { ChartContainer } from "./ui/chart";
+import { cn } from "@/lib/utils";
 
-export default function MemChart({
+export default function DiskChart({
   data,
   className,
 }: {
   data: DataReportForVm[];
   className?: string;
 }) {
-  const latestReport = data.reduce((acc, d) =>
+  const { freeSpace, totalSpace } = data.reduce((acc, d) =>
     acc.timestamp > d.timestamp ? acc : d,
   );
-  const usagePercentage =
-    (latestReport.freeMemory / latestReport.totalMemory) * 100;
+  const usagePercentage = (freeSpace / totalSpace) * 100;
+
+  const spaceFormatter = (value: number) => (value / 1024 / 1024).toFixed(1);
 
   return (
-    <ChartContainer
-      config={{
-        totalMemory: {
-          label: "Total Memory",
-          color: "#e9e9e9",
-        },
-        freeMemory: {
-          label: "Free Memory",
-          color: "var(--chart-2)",
-        },
-      }}
-      className={className}
-    >
-      <BarChart
-        accessibilityLayer
-        data={[latestReport]}
-        layout="vertical"
-        margin={{ bottom: -10, left: 8, right: 8 }}
+    <div className={cn(className, "flex")}>
+      <ChartContainer
+        config={{
+          totalSpace: {
+            label: "Total Disk Space",
+            color: "#e9e9e9",
+          },
+          freeSpace: {
+            label: "Free Disk Space",
+            color: "var(--chart-2)",
+          },
+        }}
+        className="w-full"
       >
-        <XAxis
-          dataKey="totalMemory"
-          type="number"
-          tickLine={false}
-          axisLine={false}
-          tickFormatter={() => ""}
+        <BarChart
+          accessibilityLayer
+          data={[{ totalSpace, freeSpace }]}
+          layout="vertical"
+          margin={{ bottom: -10, left: 8, right: 8 }}
         >
-          <Label className="font-bold" position="bottom" offset={-24}>
-            Memory Usage
-          </Label>
-        </XAxis>
-        <YAxis dataKey="timestamp" type="category" hide />
-        <Bar dataKey="freeMemory" stackId="a" fill="var(--color-freeMemory)">
-          <LabelList
-            className="fill-white"
-            formatter={(value: number) => `${usagePercentage.toFixed(1)}%`}
-          />
-        </Bar>
-        <Bar dataKey="totalMemory" stackId="a" fill="var(--color-totalMemory)">
-          <LabelList
-            formatter={(value: number) =>
-              `Total: ${(value / 1024 / 1024).toFixed(1)} GB`
-            }
-          />
-        </Bar>
-      </BarChart>
-    </ChartContainer>
+          <XAxis
+            dataKey="totalSpace"
+            type="number"
+            tickLine={false}
+            axisLine={false}
+            tickFormatter={() => ""}
+          >
+            <Label className="font-bold" position="bottom" offset={-24}>
+              Disk Space Usage
+            </Label>
+          </XAxis>
+          <YAxis dataKey="timestamp" type="category" hide></YAxis>
+          <Bar dataKey="freeSpace" stackId="a" fill="var(--color-freeSpace)">
+            <LabelList
+              className="fill-white"
+              formatter={() => `${usagePercentage.toFixed(1)}%`}
+            />
+          </Bar>
+          <Bar
+            dataKey="totalSpace"
+            stackId="a"
+            fill="var(--color-totalSpace)"
+          ></Bar>
+        </BarChart>
+      </ChartContainer>
+
+      <span className="text-xs text-gray-500 whitespace-nowrap mb-5 self-center">
+        {`${spaceFormatter(freeSpace)} / ${spaceFormatter(totalSpace)} GB used`}
+      </span>
+    </div>
   );
 }
