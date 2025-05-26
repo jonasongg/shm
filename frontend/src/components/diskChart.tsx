@@ -35,7 +35,7 @@ export default function DiskChart({
           accessibilityLayer
           data={[{ totalSpace, freeSpace }]}
           layout="vertical"
-          margin={{ bottom: -10, left: 8, right: 8 }}
+          margin={{ bottom: -10, left: 8, right: 10 }}
         >
           <XAxis
             dataKey="totalSpace"

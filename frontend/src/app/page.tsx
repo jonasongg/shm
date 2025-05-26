@@ -1,7 +1,7 @@
 "use client";
 
 import CpuChart from "@/components/cpuChart";
-import DiskChart from "@/components/memChart";
+import DiskChart from "@/components/diskChart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useEffect, useState } from "react";
 
