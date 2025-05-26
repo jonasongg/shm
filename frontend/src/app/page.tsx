@@ -3,6 +3,7 @@
 import CpuChart from "@/components/cpuChart";
 import DiskChart from "@/components/diskChart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import { useEffect, useState } from "react";
 
 export default function Home() {
@@ -48,7 +49,7 @@ export default function Home() {
                 ) : (
                   "No CPU data found."
                 )}
-                <hr className="border-b-1 my-3" />
+                <Separator className="my-3" />
                 {reportForVm ? (
                   <DiskChart data={reportForVm} className="flex-1/4" />
                 ) : (
