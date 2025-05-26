@@ -1,6 +1,6 @@
-import { XAxis, YAxis, Label, BarChart, Bar, LabelList } from "recharts";
-import { ChartContainer } from "./ui/chart";
 import { cn } from "@/lib/utils";
+import { Bar, BarChart, Label, LabelList, XAxis, YAxis } from "recharts";
+import { ChartContainer } from "./ui/chart";
 
 export default function DiskChart({
   data,
@@ -9,7 +9,7 @@ export default function DiskChart({
   data: DataReportForVm[];
   className?: string;
 }) {
-  const { freeSpace, totalSpace } = data.reduce((acc, d) =>
+  const { totalSpace, freeSpace } = data.reduce((acc, d) =>
     acc.timestamp > d.timestamp ? acc : d,
   );
   const usagePercentage = (freeSpace / totalSpace) * 100;
@@ -22,7 +22,7 @@ export default function DiskChart({
         config={{
           totalSpace: {
             label: "Total Disk Space",
-            color: "#e9e9e9",
+            color: "var(--muted)",
           },
           freeSpace: {
             label: "Free Disk Space",
@@ -38,11 +38,11 @@ export default function DiskChart({
           margin={{ bottom: -10, left: 8, right: 10 }}
         >
           <XAxis
+            tick={false}
             dataKey="totalSpace"
             type="number"
             tickLine={false}
             axisLine={false}
-            tickFormatter={() => ""}
           >
             <Label className="font-bold" position="bottom" offset={-24}>
               Disk Space Usage

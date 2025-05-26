@@ -1,4 +1,4 @@
-import { AreaChart, CartesianGrid, XAxis, YAxis, Area, Label } from "recharts";
+import { Area, AreaChart, CartesianGrid, Label, XAxis, YAxis } from "recharts";
 import { ChartContainer } from "./ui/chart";
 
 export default function CpuChart({

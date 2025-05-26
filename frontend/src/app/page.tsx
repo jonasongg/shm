@@ -2,6 +2,7 @@
 
 import CpuChart from "@/components/cpuChart";
 import DiskChart from "@/components/diskChart";
+import MemChart from "@/components/memChart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useEffect, useState } from "react";
@@ -27,6 +28,8 @@ export default function Home() {
       setData(Object.groupBy(transformedData, ({ name }) => name));
     })();
   }, []);
+
+  console.log(Object.entries(data));
   return (
     <>
       <header className="font-(family-name:--font-geist-sans) text-2xl font-extrabold bg-white p-6 border-b-1 centred-shadow">
@@ -43,19 +46,21 @@ export default function Home() {
               <CardHeader className="text-xl">
                 <CardTitle>{name}</CardTitle>
               </CardHeader>
-              <CardContent className="flex flex-col h-full">
-                {reportForVm ? (
-                  <CpuChart data={reportForVm} className="flex-3/4" />
-                ) : (
-                  "No CPU data found."
-                )}
-                <Separator className="my-3" />
-                {reportForVm ? (
+              {reportForVm ? (
+                <CardContent className="flex flex-col h-full">
+                  <div className="flex flex-3/4">
+                    <CpuChart data={reportForVm} className="w-full" />
+                    <Separator className="mx-3" orientation="vertical" />
+                    <MemChart data={reportForVm} className="w-full" />
+                  </div>
+                  <Separator className="my-3" />
                   <DiskChart data={reportForVm} className="flex-1/4" />
-                ) : (
-                  "No memory data found."
-                )}
-              </CardContent>
+                </CardContent>
+              ) : (
+                <div className="h-full flex items-center justify-center text-gray-500">
+                  No data available for this VM
+                </div>
+              )}
             </Card>
           ))}
         </main>
