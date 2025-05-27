@@ -49,7 +49,7 @@ export default function MemChart({
           type="number"
           dataKey="totalMemory"
         >
-          <Label className="" position="center" dy={-32}>
+          <Label position="center" dy={-28}>
             {`${(freeMemory / 1024 / 1024).toFixed(1)} / ${(totalMemory / 1024 / 1024).toFixed(1)} GB used`}
           </Label>
           <Label className="font-bold" position="center" dy={16}>

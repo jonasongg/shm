@@ -63,7 +63,7 @@ export default function DiskChart({
         </BarChart>
       </ChartContainer>
 
-      <span className="text-xs text-gray-500 whitespace-nowrap mb-5 self-center">
+      <span className="text-xs text-gray-500 whitespace-nowrap mb-5 self-center cursor-default">
         {`${spaceFormatter(freeSpace)} / ${spaceFormatter(totalSpace)} GB used`}
       </span>
     </div>
