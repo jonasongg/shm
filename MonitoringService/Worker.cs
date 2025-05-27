@@ -6,12 +6,14 @@ using Shared.Models;
 
 namespace MonitoringService;
 
-public class Worker(IConfiguration configuration, ILogger<Worker> logger) : BackgroundService
+public class Worker(
+    IConfiguration configuration,
+    ILogger<Worker> logger,
+    IHttpClientFactory httpClientFactory
+) : BackgroundService
 {
     private long lastCpuIdleTime = 0;
     private long lastCpuTotalTime = 0;
-
-    private static readonly HttpClient httpClient = new();
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -26,17 +28,20 @@ public class Worker(IConfiguration configuration, ILogger<Worker> logger) : Back
 
             logger.LogInformation("Status: {info}", info);
 
-            try
+            using (var httpClient = httpClientFactory.CreateClient())
             {
-                await httpClient.PostAsJsonAsync(
-                    "http://localhost:5043/report",
-                    info,
-                    stoppingToken
-                );
-            }
-            catch
-            {
-                logger.LogCritical("Couldn't post info");
+                try
+                {
+                    await httpClient.PostAsJsonAsync(
+                        "http://localhost:5043/report",
+                        info,
+                        stoppingToken
+                    );
+                }
+                catch
+                {
+                    logger.LogCritical("Couldn't post info");
+                }
             }
 
             await Task.Delay(1000, stoppingToken);

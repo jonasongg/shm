@@ -8,6 +8,7 @@ builder.Services.AddWindowsService(options =>
 {
     options.ServiceName = "MonitoringService";
 });
+builder.Services.AddHttpClient();
 
 if (OperatingSystem.IsWindows())
 {
