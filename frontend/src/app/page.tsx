@@ -7,6 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useEffect, useState } from "react";
 
+const bytesFormatter = (x: number) => (x / 1024 / 1024).toFixed(1);
+
 export default function Home() {
   const [data, setData] = useState<Partial<Record<string, DataReportForVm[]>>>(
     {},
@@ -18,10 +20,7 @@ export default function Home() {
       if (!response.ok) {
         throw new Error("Failed to fetch data");
       }
-
       const json: DataReport[] = await response.json();
-
-      const bytesFormatter = (x: number) => (x / 1024 / 1024).toFixed(1);
 
       const transformedData = json.map((data) => ({
         ...data,
