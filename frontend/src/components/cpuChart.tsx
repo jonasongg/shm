@@ -21,7 +21,7 @@ export default function CpuChart({
       <AreaChart
         accessibilityLayer
         data={data}
-        margin={{ left: 4, right: 12, bottom: 20 }}
+        margin={{ left: 8, right: 12, bottom: 20 }}
       >
         <defs>
           <linearGradient id="cpuUsagePercent" x1="0" y1="0" x2="0" y2="1">
@@ -57,7 +57,7 @@ export default function CpuChart({
           tickLine={false}
           axisLine={false}
           tickMargin={8}
-          tickFormatter={(value) => `${value}%`}
+          tickFormatter={(value: number) => `${value.toFixed(1)}%`}
           padding={{}}
         >
           <Label
@@ -65,7 +65,7 @@ export default function CpuChart({
             angle={-90}
             position="left"
             style={{ textAnchor: "middle" }}
-            offset={-8}
+            offset={-4}
           >
             CPU Usage
           </Label>

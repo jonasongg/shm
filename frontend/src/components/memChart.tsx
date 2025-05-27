@@ -34,12 +34,12 @@ export default function MemChart({
     >
       <RadialBarChart
         data={[{ totalMemory, freeMemory }]}
-        innerRadius="90%"
-        outerRadius="170%"
+        innerRadius="70%"
+        outerRadius="150%"
         cy="75%"
         startAngle={180}
         endAngle={0}
-        // margin={{ left: -200, right: -200, top: -200, bottom: -200 }}
+        // margin={{ left: -40, right: -40, top: -40, bottom: -40 }}
       >
         <PolarRadiusAxis
           tick={false}
@@ -48,7 +48,7 @@ export default function MemChart({
           type="number"
           dataKey="totalMemory"
         >
-          <Label position="center" dy={-28}>
+          <Label position="center" dy={-20}>
             {`${freeMemory} / ${totalMemory} GB used`}
           </Label>
           <Label className="font-bold" position="center" dy={16}>
@@ -70,6 +70,7 @@ export default function MemChart({
           dataKey="freeMemory"
           fill="var(--color-freeMemory)"
           stackId="a"
+          cornerRadius={4}
         >
           <LabelList
             className="fill-white"
@@ -81,6 +82,7 @@ export default function MemChart({
           dataKey="totalMemory"
           fill="var(--color-totalMemory)"
           stackId="a"
+          cornerRadius={4}
         />
       </RadialBarChart>
     </ChartContainer>

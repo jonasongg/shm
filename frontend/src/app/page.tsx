@@ -58,9 +58,9 @@ export default function Home() {
               {reportForVm ? (
                 <CardContent className="flex flex-col h-full">
                   <div className="flex flex-3/4">
-                    <CpuChart data={reportForVm} className="w-full" />
+                    <CpuChart data={reportForVm} className="w-full flex-2/3" />
                     <Separator className="mx-3" orientation="vertical" />
-                    <MemChart data={reportForVm} className="w-full" />
+                    <MemChart data={reportForVm} className="w-full flex-1/3" />
                   </div>
                   <Separator className="my-3" />
                   <DiskChart data={reportForVm} className="flex-1/4" />

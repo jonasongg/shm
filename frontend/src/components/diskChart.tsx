@@ -57,7 +57,12 @@ export default function DiskChart({
             }
           />
 
-          <Bar dataKey="freeSpace" stackId="a" fill="var(--color-freeSpace)">
+          <Bar
+            dataKey="freeSpace"
+            stackId="a"
+            fill="var(--color-freeSpace)"
+            radius={[4, 0, 0, 4]}
+          >
             <LabelList
               className="fill-white"
               formatter={() => `${spaceUsagePercent.toFixed(1)}%`}
@@ -67,7 +72,8 @@ export default function DiskChart({
             dataKey="totalSpace"
             stackId="a"
             fill="var(--color-totalSpace)"
-          ></Bar>
+            radius={[0, 4, 4, 0]}
+          />
         </BarChart>
       </ChartContainer>
 
