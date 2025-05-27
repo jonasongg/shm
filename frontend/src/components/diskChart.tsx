@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import { Bar, BarChart, Label, LabelList, XAxis, YAxis } from "recharts";
-import { ChartContainer } from "./ui/chart";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "./ui/chart";
 
 export default function DiskChart({
   data,
@@ -9,12 +9,9 @@ export default function DiskChart({
   data: DataReportForVm[];
   className?: string;
 }) {
-  const { totalSpace, freeSpace } = data.reduce((acc, d) =>
+  const { totalSpace, freeSpace, spaceUsagePercent } = data.reduce((acc, d) =>
     acc.timestamp > d.timestamp ? acc : d,
   );
-  const usagePercentage = (freeSpace / totalSpace) * 100;
-
-  const spaceFormatter = (value: number) => (value / 1024 / 1024).toFixed(1);
 
   return (
     <div className={cn(className, "flex")}>
@@ -48,11 +45,22 @@ export default function DiskChart({
               Disk Space Usage
             </Label>
           </XAxis>
-          <YAxis dataKey="timestamp" type="category" hide></YAxis>
+          <YAxis dataKey="timestamp" type="category" hide />
+
+          <ChartTooltip
+            cursor={false}
+            content={
+              <ChartTooltipContent
+                valueFormatter={(value) => `${value} GB`}
+                hideLabel
+              />
+            }
+          />
+
           <Bar dataKey="freeSpace" stackId="a" fill="var(--color-freeSpace)">
             <LabelList
               className="fill-white"
-              formatter={() => `${usagePercentage.toFixed(1)}%`}
+              formatter={() => `${spaceUsagePercent.toFixed(1)}%`}
             />
           </Bar>
           <Bar
@@ -64,7 +72,7 @@ export default function DiskChart({
       </ChartContainer>
 
       <span className="text-xs text-gray-500 whitespace-nowrap mb-5 self-center cursor-default">
-        {`${spaceFormatter(freeSpace)} / ${spaceFormatter(totalSpace)} GB used`}
+        {`${freeSpace} / ${totalSpace} GB used`}
       </span>
     </div>
   );

@@ -5,7 +5,7 @@ import {
   RadialBar,
   RadialBarChart,
 } from "recharts";
-import { ChartContainer } from "./ui/chart";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "./ui/chart";
 
 export default function MemChart({
   data,
@@ -14,10 +14,9 @@ export default function MemChart({
   data: DataReportForVm[];
   className?: string;
 }) {
-  const { totalMemory, freeMemory } = data.reduce((acc, d) =>
-    acc.timestamp > d.timestamp ? acc : d,
+  const { totalMemory, freeMemory, memoryUsagePercent } = data.reduce(
+    (acc, d) => (acc.timestamp > d.timestamp ? acc : d),
   );
-  const usagePercentage = (freeMemory / totalMemory) * 100;
 
   return (
     <ChartContainer
@@ -50,12 +49,23 @@ export default function MemChart({
           dataKey="totalMemory"
         >
           <Label position="center" dy={-28}>
-            {`${(freeMemory / 1024 / 1024).toFixed(1)} / ${(totalMemory / 1024 / 1024).toFixed(1)} GB used`}
+            {`${freeMemory} / ${totalMemory} GB used`}
           </Label>
           <Label className="font-bold" position="center" dy={16}>
             Memory Usage
           </Label>
         </PolarRadiusAxis>
+
+        <ChartTooltip
+          cursor={false}
+          content={
+            <ChartTooltipContent
+              valueFormatter={(value) => `${value} GB`}
+              hideLabel
+            />
+          }
+        />
+
         <RadialBar
           dataKey="freeMemory"
           fill="var(--color-freeMemory)"
@@ -63,7 +73,7 @@ export default function MemChart({
         >
           <LabelList
             className="fill-white"
-            formatter={() => `${usagePercentage.toFixed(1)}%`}
+            formatter={() => `${memoryUsagePercent.toFixed(1)}%`}
             position="insideStart"
           />
         </RadialBar>

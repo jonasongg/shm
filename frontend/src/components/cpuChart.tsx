@@ -1,5 +1,5 @@
 import { Area, AreaChart, CartesianGrid, Label, XAxis, YAxis } from "recharts";
-import { ChartContainer } from "./ui/chart";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "./ui/chart";
 
 export default function CpuChart({
   data,
@@ -11,8 +11,8 @@ export default function CpuChart({
   return (
     <ChartContainer
       config={{
-        cpu: {
-          label: "CPU",
+        cpuUsagePercent: {
+          label: "CPU Usage",
           color: "var(--chart-1)",
         },
       }}
@@ -25,11 +25,20 @@ export default function CpuChart({
       >
         <defs>
           <linearGradient id="cpuUsagePercent" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="var(--color-cpu)" stopOpacity={0.7} />
-            <stop offset="95%" stopColor="var(--color-cpu)" stopOpacity={0.2} />
+            <stop
+              offset="5%"
+              stopColor="var(--color-cpuUsagePercent)"
+              stopOpacity={0.7}
+            />
+            <stop
+              offset="95%"
+              stopColor="var(--color-cpuUsagePercent)"
+              stopOpacity={0.2}
+            />
           </linearGradient>
         </defs>
         <CartesianGrid vertical={false} />
+
         <XAxis
           dataKey="timestamp"
           tickLine={false}
@@ -61,11 +70,22 @@ export default function CpuChart({
             CPU Usage
           </Label>
         </YAxis>
+
+        <ChartTooltip
+          cursor={false}
+          content={
+            <ChartTooltipContent
+              valueFormatter={(value) => `${(+value).toFixed(1)}%`}
+              hideLabel
+            />
+          }
+        />
+
         <Area
           dataKey="cpuUsagePercent"
           type="bump"
           fill="url(#cpuUsagePercent)"
-          stroke="var(--color-cpu)"
+          stroke="var(--color-cpuUsagePercent)"
         />
       </AreaChart>
     </ChartContainer>

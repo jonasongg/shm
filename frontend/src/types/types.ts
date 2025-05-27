@@ -9,6 +9,12 @@ type DataReport = {
   freeSpace: number;
 };
 
-type DataReportForVm = Omit<DataReport, "name" | "timestamp"> & {
+type DataReportForVm = Pick<DataReport, "cpuUsagePercent"> & {
   timestamp: Date;
+  totalMemory: string;
+  freeMemory: string;
+  memoryUsagePercent: number;
+  totalSpace: string;
+  freeSpace: string;
+  spaceUsagePercent: number;
 };

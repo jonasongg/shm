@@ -20,9 +20,18 @@ export default function Home() {
       }
 
       const json: DataReport[] = await response.json();
+
+      const bytesFormatter = (x: number) => (x / 1024 / 1024).toFixed(1);
+
       const transformedData = json.map((data) => ({
         ...data,
         timestamp: new Date(data.timestamp),
+        totalMemory: bytesFormatter(data.totalMemory),
+        freeMemory: bytesFormatter(data.freeMemory),
+        memoryUsagePercent: (data.freeMemory / data.totalMemory) * 100,
+        totalSpace: bytesFormatter(data.totalSpace),
+        freeSpace: bytesFormatter(data.freeSpace),
+        spaceUsagePercent: (data.freeSpace / data.totalSpace) * 100,
       }));
 
       setData(Object.groupBy(transformedData, ({ name }) => name));
