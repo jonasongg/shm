@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Management;
 using System.Net.Http.Json;
 using System.Runtime.Versioning;
+using MonitoringService.Services;
 using Shared.Models;
 
 namespace MonitoringService;
@@ -9,7 +10,8 @@ namespace MonitoringService;
 public class Worker(
     IConfiguration configuration,
     ILogger<Worker> logger,
-    IHttpClientFactory httpClientFactory
+    IHttpClientFactory httpClientFactory,
+    ProducerService producerService
 ) : BackgroundService
 {
     private long lastCpuIdleTime = 0;
@@ -32,11 +34,12 @@ public class Worker(
             {
                 try
                 {
-                    await httpClient.PostAsJsonAsync(
-                        "http://localhost:5043/report",
-                        info,
-                        stoppingToken
-                    );
+                    // await httpClient.PostAsJsonAsync(
+                    //     "http://localhost:5043/report",
+                    //     info,
+                    //     stoppingToken
+                    // );
+                    await producerService.ProduceAsync(info);
                 }
                 catch
                 {

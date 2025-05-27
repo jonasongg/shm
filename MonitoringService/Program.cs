@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging.Configuration;
 using Microsoft.Extensions.Logging.EventLog;
 using MonitoringService;
+using MonitoringService.Services;
 
 var builder = Host.CreateApplicationBuilder(args);
 
@@ -8,7 +9,9 @@ builder.Services.AddWindowsService(options =>
 {
     options.ServiceName = "MonitoringService";
 });
+
 builder.Services.AddHttpClient();
+builder.Services.AddSingleton<ProducerService>();
 
 if (OperatingSystem.IsWindows())
 {
