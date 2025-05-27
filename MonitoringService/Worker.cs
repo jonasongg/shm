@@ -39,7 +39,7 @@ public class Worker(
                     //     info,
                     //     stoppingToken
                     // );
-                    await producerService.ProduceAsync(info);
+                    await producerService.ProduceAsync(info, stoppingToken);
                 }
                 catch
                 {

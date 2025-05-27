@@ -1,6 +1,6 @@
-using System.Formats.Asn1;
 using Confluent.Kafka;
 using Shared.Models;
+using Shared.Serializers;
 
 namespace MonitoringService.Services
 {
@@ -13,13 +13,15 @@ namespace MonitoringService.Services
             var bootstrapServers = configuration["Kafka_BootstrapServers"];
             var config = new ProducerConfig { BootstrapServers = bootstrapServers };
 
-            producer = new ProducerBuilder<string, Report>(config).Build();
+            producer = new ProducerBuilder<string, Report>(config)
+                .SetValueSerializer(new JsonSerializer<Report>())
+                .Build();
         }
 
-        public async Task ProduceAsync(Report message)
+        public async Task ProduceAsync(Report message, CancellationToken cancellationToken)
         {
             var kafkaMessage = new Message<string, Report> { Value = message };
-            await producer.ProduceAsync("reports", kafkaMessage);
+            await producer.ProduceAsync("reports", kafkaMessage, cancellationToken);
         }
 
         public void Dispose()

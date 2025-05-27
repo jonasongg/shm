@@ -6,4 +6,8 @@
     <DebugType>None</DebugType>
     <DebugSymbols>False</DebugSymbols>
   </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Confluent.Kafka" Version="2.10.0" />
+    <PackageReference Include="System.Text.Json" Version="9.0.5" />
+  </ItemGroup>
 </Project>
