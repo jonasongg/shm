@@ -29,7 +29,7 @@ public class Worker(
 
             try
             {
-                var result = await producerService.ProduceAsync(info, stoppingToken);
+                var result = await producerService.ProduceAsync(name, info, stoppingToken);
                 logger.LogInformation("Producer Result: {result}", result.ToString());
             }
             catch

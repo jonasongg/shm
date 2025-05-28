@@ -20,17 +20,6 @@ var app = builder.Build();
 
 app.UseCors(AllowedSpecificOrigins);
 
-app.MapPost(
-    "/report",
-    async (Report report, ReportContext context) =>
-    {
-        context.Reports.Add(report);
-        await context.SaveChangesAsync();
-
-        return Results.Created($"/report/{report.Name}", report);
-    }
-);
-
 app.MapGet(
     "/reports",
     async (ReportContext context) =>
