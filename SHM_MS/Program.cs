@@ -12,7 +12,7 @@ builder.Services.AddDbContextFactory<ReportContext>(options =>
     options.UseInMemoryDatabase("ReportDb")
 );
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
-builder.Services.AddSingleton<ConsumerService>();
+builder.Services.AddSingleton<ReportChannelService>();
 builder.Services.AddHostedService<ConsumerService>();
 builder.Services.AddCors(options =>
 {
@@ -56,25 +56,23 @@ app.MapGet(
     "/reports/stream",
     async (
         HttpContext httpContext,
-        [FromServices] ConsumerService consumerService,
-        CancellationToken cancel
+        [FromServices] ReportChannelService reportChannelService,
+        CancellationToken cancellationToken
     ) =>
     {
         httpContext.Response.Headers.Append(HeaderNames.ContentType, "text/event-stream");
-        while (!cancel.IsCancellationRequested)
+        while (!cancellationToken.IsCancellationRequested)
         {
-            var report = await consumerService.WaitForReportAsync(cancel);
+            var report = await reportChannelService.ReadAsync(cancellationToken);
 
-            await httpContext.Response.WriteAsync("data: ", cancel);
+            await httpContext.Response.WriteAsync("data: ", cancellationToken);
             await JsonSerializer.SerializeAsync(
                 httpContext.Response.Body,
                 report,
-                cancellationToken: cancel
+                cancellationToken: cancellationToken
             );
-            await httpContext.Response.WriteAsync("\n\n", cancel);
-            await httpContext.Response.Body.FlushAsync(cancel);
-
-            consumerService.ResetTcs();
+            await httpContext.Response.WriteAsync("\n\n", cancellationToken);
+            await httpContext.Response.Body.FlushAsync(cancellationToken);
         }
     }
 );

@@ -11,11 +11,12 @@ namespace SHM_MS.Services
         private readonly IConsumer<string, Report> consumer;
 
         private readonly IDbContextFactory<ReportContext> contextFactory;
-        private TaskCompletionSource<Report> taskCompletionSource = new();
+        private readonly ReportChannelService reportChannelService;
 
         public ConsumerService(
             IConfiguration configuration,
-            IDbContextFactory<ReportContext> contextFactory
+            IDbContextFactory<ReportContext> contextFactory,
+            ReportChannelService reportChannelService
         )
         {
             var bootstrapServers = configuration
@@ -36,11 +37,12 @@ namespace SHM_MS.Services
             consumer.Subscribe(topic);
 
             this.contextFactory = contextFactory;
+            this.reportChannelService = reportChannelService;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            await Task.Yield();
+            // await Task.Yield();
 
             stoppingToken.Register(() =>
             {
@@ -50,7 +52,7 @@ namespace SHM_MS.Services
 
             while (!stoppingToken.IsCancellationRequested)
             {
-                var result = consumer.Consume(stoppingToken);
+                var result = await Task.Run(() => consumer.Consume(stoppingToken), stoppingToken);
                 var report = result.Message.Value;
 
                 using (var reportContext = contextFactory.CreateDbContext())
@@ -59,19 +61,8 @@ namespace SHM_MS.Services
                     await reportContext.SaveChangesAsync(stoppingToken);
                 }
 
-                taskCompletionSource.TrySetResult(report);
+                await reportChannelService.WriteAsync(report, stoppingToken);
             }
-        }
-
-        public void ResetTcs()
-        {
-            taskCompletionSource = new();
-        }
-
-        public Task<Report> WaitForReportAsync(CancellationToken cancellationToken)
-        {
-            cancellationToken.Register(() => taskCompletionSource.TrySetCanceled());
-            return taskCompletionSource.Task;
         }
     }
 }
