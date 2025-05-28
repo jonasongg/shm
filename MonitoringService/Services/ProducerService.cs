@@ -6,11 +6,17 @@ namespace MonitoringService.Services
 {
     public class ProducerService : IDisposable
     {
+        private readonly IConfiguration configuration;
         private readonly IProducer<string, Report> producer;
 
         public ProducerService(IConfiguration configuration)
         {
-            var bootstrapServers = configuration["Kafka_BootstrapServers"];
+            this.configuration = configuration;
+
+            var bootstrapServers = configuration
+                .GetSection("Kafka")
+                .GetSection("BootstrapServers")
+                .Value;
             var config = new ProducerConfig { BootstrapServers = bootstrapServers };
 
             producer = new ProducerBuilder<string, Report>(config)
@@ -20,8 +26,10 @@ namespace MonitoringService.Services
 
         public async Task ProduceAsync(Report message, CancellationToken cancellationToken)
         {
+            var topic = configuration.GetSection("Kafka").GetSection("Topic").Value;
+
             var kafkaMessage = new Message<string, Report> { Value = message };
-            await producer.ProduceAsync("reports", kafkaMessage, cancellationToken);
+            await producer.ProduceAsync(topic, kafkaMessage, cancellationToken);
         }
 
         public void Dispose()
