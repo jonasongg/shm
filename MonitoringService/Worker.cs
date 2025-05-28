@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using System.Management;
-using System.Net.Http.Json;
 using System.Runtime.Versioning;
+using Confluent.Kafka;
 using MonitoringService.Services;
 using Shared.Models;
 
@@ -30,11 +30,15 @@ public class Worker(
             try
             {
                 var result = await producerService.ProduceAsync(name, info, stoppingToken);
-                logger.LogInformation("Producer Result: {result}", result.ToString());
+                logger.LogInformation(
+                    "Produced successfully: {info} at {time}",
+                    info,
+                    result.Timestamp.UtcDateTime
+                );
             }
-            catch
+            catch (ProduceException<string, Report> e)
             {
-                logger.LogCritical("Couldn't produce info!");
+                logger.LogCritical("Couldn't produce info! {e}", e);
             }
 
             await Task.Delay(1000, stoppingToken);

@@ -1,7 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using Shared.Models;
 
-class ReportContext(DbContextOptions<ReportContext> options) : DbContext(options)
+namespace SHM_MS.DbContexts
 {
-    public DbSet<Report> Reports => Set<Report>();
+    public class ReportContext(DbContextOptions<ReportContext> options) : DbContext(options)
+    {
+        public DbSet<Report> Reports => Set<Report>();
+    }
 }
