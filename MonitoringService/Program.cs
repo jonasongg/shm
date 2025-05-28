@@ -10,7 +10,6 @@ builder.Services.AddWindowsService(options =>
     options.ServiceName = "MonitoringService";
 });
 
-builder.Services.AddHttpClient();
 builder.Services.AddSingleton<ProducerService>();
 
 if (OperatingSystem.IsWindows())

@@ -24,12 +24,15 @@ namespace MonitoringService.Services
                 .Build();
         }
 
-        public async Task ProduceAsync(Report message, CancellationToken cancellationToken)
+        public async Task<DeliveryResult<string, Report>> ProduceAsync(
+            Report message,
+            CancellationToken cancellationToken
+        )
         {
             var topic = configuration.GetSection("Kafka").GetSection("Topic").Value;
 
             var kafkaMessage = new Message<string, Report> { Value = message };
-            await producer.ProduceAsync(topic, kafkaMessage, cancellationToken);
+            return await producer.ProduceAsync(topic, kafkaMessage, cancellationToken);
         }
 
         public void Dispose()

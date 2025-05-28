@@ -10,7 +10,6 @@ namespace MonitoringService;
 public class Worker(
     IConfiguration configuration,
     ILogger<Worker> logger,
-    IHttpClientFactory httpClientFactory,
     ProducerService producerService
 ) : BackgroundService
 {
@@ -28,23 +27,14 @@ public class Worker(
                 : OperatingSystem.IsLinux() ? GetLinuxInfo(name)
                 : throw new PlatformNotSupportedException();
 
-            logger.LogInformation("Status: {info}", info);
-
-            using (var httpClient = httpClientFactory.CreateClient())
+            try
             {
-                try
-                {
-                    // await httpClient.PostAsJsonAsync(
-                    //     "http://localhost:5043/report",
-                    //     info,
-                    //     stoppingToken
-                    // );
-                    await producerService.ProduceAsync(info, stoppingToken);
-                }
-                catch
-                {
-                    logger.LogCritical("Couldn't post info");
-                }
+                var result = await producerService.ProduceAsync(info, stoppingToken);
+                logger.LogInformation("Producer Result: {result}", result.ToString());
+            }
+            catch
+            {
+                logger.LogCritical("Couldn't produce info!");
             }
 
             await Task.Delay(1000, stoppingToken);
