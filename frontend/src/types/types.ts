@@ -1,4 +1,4 @@
-type DataReport = {
+type RawDataReport = {
   id: number;
   timestamp: string;
   cpuUsagePercent: number;
@@ -9,12 +9,13 @@ type DataReport = {
   freeSpace: number;
 };
 
-type DataReportForVm = Pick<DataReport, "cpuUsagePercent"> & {
+type DataReport = Pick<RawDataReport, "cpuUsagePercent"> & {
+  name: string;
   timestamp: Date;
   totalMemory: string;
-  freeMemory: string;
+  usedMemory: string;
   memoryUsagePercent: number;
   totalSpace: string;
-  freeSpace: string;
+  usedSpace: string;
   spaceUsagePercent: number;
 };

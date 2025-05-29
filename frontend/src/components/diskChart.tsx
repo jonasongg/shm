@@ -6,10 +6,10 @@ export default function DiskChart({
   data,
   className,
 }: {
-  data: DataReportForVm[];
+  data: DataReport[];
   className?: string;
 }) {
-  const { totalSpace, freeSpace, spaceUsagePercent } = data.reduce((acc, d) =>
+  const { totalSpace, usedSpace, spaceUsagePercent } = data.reduce((acc, d) =>
     acc.timestamp > d.timestamp ? acc : d,
   );
 
@@ -21,8 +21,8 @@ export default function DiskChart({
             label: "Total Disk Space",
             color: "var(--muted)",
           },
-          freeSpace: {
-            label: "Free Disk Space",
+          usedSpace: {
+            label: "Used Disk Space",
             color: "var(--chart-2)",
           },
         }}
@@ -30,7 +30,7 @@ export default function DiskChart({
       >
         <BarChart
           accessibilityLayer
-          data={[{ totalSpace, freeSpace }]}
+          data={[{ totalSpace, usedSpace }]}
           layout="vertical"
           margin={{ bottom: -10, left: 8, right: 10 }}
         >
@@ -59,9 +59,9 @@ export default function DiskChart({
           />
 
           <Bar
-            dataKey="freeSpace"
+            dataKey="usedSpace"
             stackId="a"
-            fill="var(--color-freeSpace)"
+            fill="var(--color-usedSpace)"
             radius={[4, 0, 0, 4]}
           >
             {spaceUsagePercent > 50 && (
@@ -90,7 +90,7 @@ export default function DiskChart({
       </ChartContainer>
 
       <span className="text-xs text-gray-500 whitespace-nowrap mb-5 self-center cursor-default">
-        {`${freeSpace} / ${totalSpace} GB used`}
+        {`${usedSpace} / ${totalSpace} GB used`}
       </span>
     </div>
   );

@@ -13,13 +13,13 @@ export default function Home() {
   // const [data, setData] = useState<Partial<Record<string, DataReportForVm[]>>>(
   //   {},
   // );
-  const [data, setData] = useState<DataReport[]>([]);
+  const [data, setData] = useState<RawDataReport[]>([]);
 
   useEffect(() => {
     // initiate stream
     const eventSource = new EventSource("http://localhost:5043/reports/stream");
     eventSource.onmessage = (event) => {
-      const dataReport: DataReport = JSON.parse(event.data);
+      const dataReport: RawDataReport = JSON.parse(event.data);
       setData((data) => [dataReport, ...data.slice(0, -1)]);
     };
 
@@ -29,22 +29,22 @@ export default function Home() {
       if (!response.ok) {
         throw new Error("Failed to fetch data");
       }
-      const json: DataReport[] = await response.json();
+      const json: RawDataReport[] = await response.json();
       setData(json);
     })();
 
     return () => eventSource.close();
   }, []);
 
-  const transformedData = data.map((d) => ({
+  const transformedData: DataReport[] = data.map((d) => ({
     ...d,
     timestamp: new Date(d.timestamp),
     totalMemory: bytesFormatter(d.totalMemory),
-    freeMemory: bytesFormatter(d.freeMemory),
-    memoryUsagePercent: (d.freeMemory / d.totalMemory) * 100,
+    usedMemory: bytesFormatter(d.totalMemory - d.freeMemory),
+    memoryUsagePercent: ((d.totalMemory - d.freeMemory) / d.totalMemory) * 100,
     totalSpace: bytesFormatter(d.totalSpace),
-    freeSpace: bytesFormatter(d.freeSpace),
-    spaceUsagePercent: (d.freeSpace / d.totalSpace) * 100,
+    usedSpace: bytesFormatter(d.totalSpace - d.freeSpace),
+    spaceUsagePercent: ((d.totalSpace - d.freeSpace) / d.totalSpace) * 100,
   }));
   const groupedData = Object.groupBy(transformedData, ({ name }) => name);
 

@@ -11,29 +11,30 @@ export default function MemChart({
   data,
   className,
 }: {
-  data: DataReportForVm[];
+  data: DataReport[];
   className?: string;
 }) {
-  const { totalMemory, freeMemory, memoryUsagePercent } = data.reduce(
+  const { totalMemory, usedMemory, memoryUsagePercent } = data.reduce(
     (acc, d) => (acc.timestamp > d.timestamp ? acc : d),
   );
+  const chartConfig = {
+    totalMemory: {
+      label: "Total Memory",
+      color: "var(--muted)",
+    },
+    usedMemory: {
+      label: "Used Memory",
+      color: "var(--chart-3)",
+    },
+  };
+  type configKeys = keyof typeof chartConfig;
 
   return (
-    <ChartContainer
-      config={{
-        totalMemory: {
-          label: "Total Memory",
-          color: "var(--muted)",
-        },
-        freeMemory: {
-          label: "Free Memory",
-          color: "var(--chart-3)",
-        },
-      }}
-      className={className}
-    >
+    <ChartContainer config={chartConfig} className={className}>
       <RadialBarChart
-        data={[{ totalMemory, freeMemory }]}
+        data={[
+          { totalMemory: (+totalMemory - +usedMemory).toFixed(1), usedMemory },
+        ]}
         innerRadius="70%"
         outerRadius="150%"
         cy="75%"
@@ -46,11 +47,11 @@ export default function MemChart({
           tickLine={false}
           axisLine={false}
           type="number"
-          dataKey="totalMemory"
+          dataKey="usedMemory"
           domain={[0, "dataMax"]}
         >
           <Label position="center" dy={-20}>
-            {`${freeMemory} / ${totalMemory} GB used`}
+            {`${usedMemory} / ${totalMemory} GB used`}
           </Label>
           <Label className="font-bold" position="center" dy={16}>
             Memory Usage
@@ -61,15 +62,17 @@ export default function MemChart({
           cursor={false}
           content={
             <ChartTooltipContent
-              valueFormatter={(value) => `${value} GB`}
               hideLabel
+              valueFormatter={(value, name) =>
+                `${name === "totalMemory" ? totalMemory : value} GB`
+              }
             />
           }
         />
 
         <RadialBar
-          dataKey="freeMemory"
-          fill="var(--color-freeMemory)"
+          dataKey="usedMemory"
+          fill="var(--color-usedMemory)"
           stackId="a"
           cornerRadius={4}
         >

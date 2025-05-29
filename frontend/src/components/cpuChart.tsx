@@ -5,7 +5,7 @@ export default function CpuChart({
   data,
   className,
 }: {
-  data: DataReportForVm[];
+  data: DataReport[];
   className?: string;
 }) {
   return (
