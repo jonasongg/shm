@@ -20,7 +20,7 @@ export default function Home() {
     const eventSource = new EventSource("http://localhost:5043/reports/stream");
     eventSource.onmessage = (event) => {
       const dataReport: DataReport = JSON.parse(event.data);
-      setData((data) => [...data, dataReport]);
+      setData((data) => [dataReport, ...data.slice(0, -1)]);
     };
 
     (async () => {

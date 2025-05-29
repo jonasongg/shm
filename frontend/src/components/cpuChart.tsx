@@ -58,7 +58,6 @@ export default function CpuChart({
           axisLine={false}
           tickMargin={8}
           tickFormatter={(value: number) => `${value.toFixed(1)}%`}
-          padding={{}}
         >
           <Label
             className="font-bold"
@@ -86,6 +85,7 @@ export default function CpuChart({
           type="bump"
           fill="url(#cpuUsagePercent)"
           stroke="var(--color-cpuUsagePercent)"
+          isAnimationActive={false}
         />
       </AreaChart>
     </ChartContainer>
