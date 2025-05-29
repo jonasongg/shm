@@ -36,10 +36,11 @@ export default function DiskChart({
         >
           <XAxis
             tick={false}
-            dataKey="totalSpace"
-            type="number"
             tickLine={false}
             axisLine={false}
+            type="number"
+            dataKey="totalSpace"
+            domain={[0, "dataMax"]}
           >
             <Label className="font-bold" position="bottom" offset={-24}>
               Disk Space Usage
@@ -63,17 +64,28 @@ export default function DiskChart({
             fill="var(--color-freeSpace)"
             radius={[4, 0, 0, 4]}
           >
-            <LabelList
-              className="fill-white"
-              formatter={() => `${spaceUsagePercent.toFixed(1)}%`}
-            />
+            {spaceUsagePercent > 50 && (
+              <LabelList
+                className="fill-white"
+                formatter={() => `${spaceUsagePercent.toFixed(1)}% used`}
+              />
+            )}
           </Bar>
           <Bar
             dataKey="totalSpace"
             stackId="a"
             fill="var(--color-totalSpace)"
             radius={[0, 4, 4, 0]}
-          />
+          >
+            {spaceUsagePercent <= 50 && (
+              <LabelList
+                className="fill-gray-500"
+                formatter={() =>
+                  `${(100 - spaceUsagePercent).toFixed(1)}% free`
+                }
+              />
+            )}
+          </Bar>
         </BarChart>
       </ChartContainer>
 

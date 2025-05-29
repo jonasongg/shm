@@ -47,6 +47,7 @@ export default function MemChart({
           axisLine={false}
           type="number"
           dataKey="totalMemory"
+          domain={[0, "dataMax"]}
         >
           <Label position="center" dy={-20}>
             {`${freeMemory} / ${totalMemory} GB used`}
@@ -72,18 +73,28 @@ export default function MemChart({
           stackId="a"
           cornerRadius={4}
         >
-          <LabelList
-            className="fill-white"
-            formatter={() => `${memoryUsagePercent.toFixed(1)}%`}
-            position="insideStart"
-          />
+          {memoryUsagePercent > 50 && (
+            <LabelList
+              className="fill-white"
+              formatter={() => `${memoryUsagePercent.toFixed(1)}% used`}
+              position="insideStart"
+            />
+          )}
         </RadialBar>
         <RadialBar
           dataKey="totalMemory"
           fill="var(--color-totalMemory)"
           stackId="a"
           cornerRadius={4}
-        />
+        >
+          {memoryUsagePercent <= 50 && (
+            <LabelList
+              className="fill-gray-500"
+              formatter={() => `${(100 - memoryUsagePercent).toFixed(1)}% free`}
+              position="insideStart"
+            />
+          )}
+        </RadialBar>
       </RadialBarChart>
     </ChartContainer>
   );
