@@ -74,6 +74,7 @@ export default function MemChart({
           fill="var(--color-usedMemory)"
           stackId="a"
           cornerRadius={4}
+          isAnimationActive={false}
         >
           {memoryUsagePercent > 50 && (
             <LabelList
