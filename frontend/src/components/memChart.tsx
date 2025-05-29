@@ -37,10 +37,9 @@ export default function MemChart({
         ]}
         innerRadius="70%"
         outerRadius="150%"
-        cy="75%"
+        cy="70%"
         startAngle={180}
         endAngle={0}
-        // margin={{ left: -40, right: -40, top: -40, bottom: -40 }}
       >
         <PolarRadiusAxis
           tick={false}

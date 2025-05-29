@@ -7,6 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useEffect, useState } from "react";
 
+export const numberFormatter = (x: number) =>
+  x.toLocaleString(undefined, { maximumFractionDigits: 1 });
 const bytesFormatter = (x: number) => (x / 1024 / 1024).toFixed(1);
 
 export default function Home() {
@@ -68,10 +70,10 @@ export default function Home() {
                 <CardContent className="flex flex-col h-full">
                   <div className="flex flex-3/4">
                     <CpuChart data={reportForVm} className="w-full flex-2/3" />
-                    <Separator className="mx-3" orientation="vertical" />
+                    <Separator className="mx-2" orientation="vertical" />
                     <MemChart data={reportForVm} className="w-full flex-1/3" />
                   </div>
-                  <Separator className="my-3" />
+                  <Separator className="my-2" />
                   <DiskChart data={reportForVm} className="flex-1/4" />
                 </CardContent>
               ) : (

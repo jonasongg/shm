@@ -1,3 +1,4 @@
+import { numberFormatter } from "@/app/page";
 import { cn } from "@/lib/utils";
 import { Bar, BarChart, Label, LabelList, XAxis, YAxis } from "recharts";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "./ui/chart";
@@ -52,7 +53,7 @@ export default function DiskChart({
             cursor={false}
             content={
               <ChartTooltipContent
-                valueFormatter={(value) => `${value} GB`}
+                valueFormatter={(value) => `${numberFormatter(+value)} GB`}
                 hideLabel
               />
             }
@@ -90,7 +91,7 @@ export default function DiskChart({
       </ChartContainer>
 
       <span className="text-xs text-gray-500 whitespace-nowrap mb-5 self-center cursor-default">
-        {`${usedSpace} / ${totalSpace} GB used`}
+        {`${numberFormatter(+usedSpace)} / ${numberFormatter(+totalSpace)} GB used`}
       </span>
     </div>
   );
