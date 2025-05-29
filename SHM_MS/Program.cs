@@ -6,6 +6,10 @@ using SHM_MS.DbContexts;
 using SHM_MS.Services;
 
 var AllowedSpecificOrigins = "_allowedSpecificOrigins";
+var JsonSerializerOptions = new JsonSerializerOptions
+{
+    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+};
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContextFactory<ReportContext>(options =>
@@ -45,6 +49,7 @@ app.MapGet(
         //     )
         //     .ToListAsync()
         // using var context = contextFactory.CreateDbContext();
+
         return (await context.Reports.ToListAsync())
             .OrderByDescending(r => r.Timestamp)
             .GroupBy(r => r.Name)
@@ -69,6 +74,7 @@ app.MapGet(
             await JsonSerializer.SerializeAsync(
                 httpContext.Response.Body,
                 report,
+                options: JsonSerializerOptions,
                 cancellationToken: cancellationToken
             );
             await httpContext.Response.WriteAsync("\n\n", cancellationToken);
