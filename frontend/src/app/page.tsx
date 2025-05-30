@@ -76,7 +76,7 @@ export default function Home() {
                       className="flex-1/2 md:flex-2/3"
                     />
                     <Separator
-                      className="my-2"
+                      className="my-2 md:my-0 md:mx-2"
                       orientation={isMdOrLarger ? "vertical" : "horizontal"}
                     />
                     <MemChart
