@@ -17,20 +17,21 @@ export default function MemChart({
   const { totalMemory, usedMemory, memoryUsagePercent } = data.reduce(
     (acc, d) => (acc.timestamp > d.timestamp ? acc : d),
   );
-  const chartConfig = {
-    totalMemory: {
-      label: "Total Memory",
-      color: "var(--muted)",
-    },
-    usedMemory: {
-      label: "Used Memory",
-      color: "var(--chart-3)",
-    },
-  };
-  type configKeys = keyof typeof chartConfig;
 
   return (
-    <ChartContainer config={chartConfig} className={className}>
+    <ChartContainer
+      config={{
+        totalMemory: {
+          label: "Total Memory",
+          color: "var(--muted)",
+        },
+        usedMemory: {
+          label: "Used Memory",
+          color: "var(--chart-3)",
+        },
+      }}
+      className={className}
+    >
       <RadialBarChart
         data={[
           { totalMemory: (+totalMemory - +usedMemory).toFixed(1), usedMemory },
