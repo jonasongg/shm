@@ -3,18 +3,20 @@ using Microsoft.EntityFrameworkCore;
 using Shared.DTOs;
 using Shared.Serializers;
 using SHM_MS.DbContexts;
+using SHM_MS.Models;
 
 namespace SHM_MS.Services
 {
     public class ConsumerService : BackgroundService
     {
         private readonly IConsumer<string, ReportDTO> consumer;
-        private readonly IDbContextFactory<ReportContext> contextFactory;
+
+        private readonly IDbContextFactory<SHMContext> contextFactory;
         private readonly ReportChannelService reportChannelService;
 
         public ConsumerService(
             IConfiguration configuration,
-            IDbContextFactory<ReportContext> contextFactory,
+            IDbContextFactory<SHMContext> contextFactory,
             ReportChannelService reportChannelService
         )
         {
@@ -54,10 +56,30 @@ namespace SHM_MS.Services
                 var result = await Task.Run(() => consumer.Consume(stoppingToken), stoppingToken);
                 var report = result.Message.Value;
 
-                using (var reportContext = contextFactory.CreateDbContext())
+                using (var context = contextFactory.CreateDbContext())
                 {
-                    reportContext.Reports.Add(report);
-                    await reportContext.SaveChangesAsync(stoppingToken);
+                    var vm =
+                        await context.VMs.FirstOrDefaultAsync(
+                            v => v.Name == report.Name,
+                            stoppingToken
+                        )
+                        ?? throw new InvalidOperationException(
+                            $"VM with name {report.Name} not found in the database."
+                        );
+
+                    context.Reports.Add(
+                        new Report
+                        {
+                            VM = vm,
+                            Timestamp = report.Timestamp,
+                            TotalMemory = report.TotalMemory,
+                            FreeMemory = report.FreeMemory,
+                            CpuUsagePercent = report.CpuUsagePercent,
+                            TotalSpace = report.TotalSpace,
+                            FreeSpace = report.FreeSpace,
+                        }
+                    );
+                    await context.SaveChangesAsync(stoppingToken);
                 }
 
                 await reportChannelService.WriteAsync(report, stoppingToken);

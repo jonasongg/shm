@@ -12,8 +12,11 @@ var JsonSerializerOptions = new JsonSerializerOptions
 };
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddDbContextFactory<ReportContext>(options =>
-    options.UseInMemoryDatabase("ReportDb")
+
+builder.Services.AddDbContext<SHMContext>(options =>
+    options.UseNpgsql(
+        connectionString: "Server=localhost;User Id=postgres;Password=password;Database=postgres;"
+    )
 );
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddSingleton<ReportChannelService>();
@@ -34,8 +37,7 @@ app.UseCors(AllowedSpecificOrigins);
 
 app.MapGet(
     "/reports",
-    // async (IDbContextFactory<ReportContext> contextFactory) =>
-    async (ReportContext context) =>
+    async (SHMContext context) =>
     {
         // await context
         //     .Reports.FromSqlRaw(
@@ -52,7 +54,7 @@ app.MapGet(
 
         return (await context.Reports.ToListAsync())
             .OrderByDescending(r => r.Timestamp)
-            .GroupBy(r => r.Name)
+            .GroupBy(r => r.VM)
             .SelectMany(rs => rs.Take(10));
     }
 );
