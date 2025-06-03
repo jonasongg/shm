@@ -9,7 +9,10 @@ import { useEffect, useState } from "react";
 import { useMediaQuery } from "react-responsive";
 
 export const numberFormatter = (x: number) =>
-  x.toLocaleString(undefined, { maximumFractionDigits: 1 });
+  x.toLocaleString(undefined, {
+    maximumFractionDigits: 1,
+    minimumFractionDigits: 1,
+  });
 const bytesFormatter = (x: number) => (x / 1024 / 1024).toFixed(1);
 
 export default function Home() {
