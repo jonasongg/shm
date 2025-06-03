@@ -1,10 +1,10 @@
 using Microsoft.EntityFrameworkCore;
-using Shared.Models;
+using Shared.DTOs;
 
 namespace SHM_MS.DbContexts
 {
     public class ReportContext(DbContextOptions<ReportContext> options) : DbContext(options)
     {
-        public DbSet<Report> Reports => Set<Report>();
+        public DbSet<ReportDTO> Reports => Set<ReportDTO>();
     }
 }

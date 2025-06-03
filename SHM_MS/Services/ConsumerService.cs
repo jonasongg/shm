@@ -1,6 +1,6 @@
 using Confluent.Kafka;
 using Microsoft.EntityFrameworkCore;
-using Shared.Models;
+using Shared.DTOs;
 using Shared.Serializers;
 using SHM_MS.DbContexts;
 
@@ -8,8 +8,7 @@ namespace SHM_MS.Services
 {
     public class ConsumerService : BackgroundService
     {
-        private readonly IConsumer<string, Report> consumer;
-
+        private readonly IConsumer<string, ReportDTO> consumer;
         private readonly IDbContextFactory<ReportContext> contextFactory;
         private readonly ReportChannelService reportChannelService;
 
@@ -31,8 +30,8 @@ namespace SHM_MS.Services
                 GroupId = Guid.NewGuid().ToString(),
             };
 
-            consumer = new ConsumerBuilder<string, Report>(config)
-                .SetValueDeserializer(new JsonSerializer<Report>())
+            consumer = new ConsumerBuilder<string, ReportDTO>(config)
+                .SetValueDeserializer(new JsonSerializer<ReportDTO>())
                 .Build();
             consumer.Subscribe(topic);
 
