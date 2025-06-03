@@ -17,8 +17,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${geistSans.className} antialiased`}>{children}</body>
+    <html lang="en" className="h-screen">
+      <body
+        className={`${geistSans.className} antialiased flex flex-col h-full`}
+      >
+        {children}
+      </body>
     </html>
   );
 }
