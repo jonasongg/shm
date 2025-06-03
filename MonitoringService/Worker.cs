@@ -3,7 +3,7 @@ using System.Management;
 using System.Runtime.Versioning;
 using Confluent.Kafka;
 using MonitoringService.Services;
-using Shared.Models;
+using Shared.DTOs;
 
 namespace MonitoringService;
 
@@ -36,7 +36,7 @@ public class Worker(
                     result.Timestamp.UtcDateTime
                 );
             }
-            catch (ProduceException<string, Report> e)
+            catch (ProduceException<string, ReportDTO> e)
             {
                 logger.LogCritical("Couldn't produce info! {e}", e);
             }
@@ -46,7 +46,7 @@ public class Worker(
     }
 
     [SupportedOSPlatform("windows")]
-    private static Report GetWindowsInfo(string name)
+    private static ReportDTO GetWindowsInfo(string name)
     {
         using ManagementObjectSearcher memSearcher = new("select * from Win32_OperatingSystem");
         var memObj = memSearcher.Get().OfType<ManagementObject>().First(); // there's only one
@@ -59,7 +59,7 @@ public class Worker(
 
         var (totalSpace, freeSpace) = DiskInfo();
 
-        return new Report
+        return new ReportDTO
         {
             Name = name,
             Timestamp = DateTime.Now,
@@ -72,7 +72,7 @@ public class Worker(
     }
 
     [SupportedOSPlatform("linux")]
-    private Report GetLinuxInfo(string name)
+    private ReportDTO GetLinuxInfo(string name)
     {
         var memoryInfo = ReadProcFile("/proc/meminfo");
 
@@ -96,7 +96,7 @@ public class Worker(
 
         var (totalSpace, freeSpace) = DiskInfo();
 
-        return new Report
+        return new ReportDTO
         {
             Name = name,
             Timestamp = DateTime.Now,
