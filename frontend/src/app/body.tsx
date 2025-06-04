@@ -5,7 +5,7 @@ import DiskChart from "@/components/diskChart";
 import MemChart from "@/components/memChart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { bytesFormatter } from "@/lib/utils";
+import { bytesFormatter, toAbsoluteUrl } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import { useMediaQuery } from "react-responsive";
 
@@ -15,9 +15,7 @@ export default function Body({ data: _data }: { data: RawDataReport[] }) {
 
   useEffect(() => {
     // initiate stream
-    const eventSource = new EventSource(
-      "http://localhost:5043/api/report/stream",
-    );
+    const eventSource = new EventSource(toAbsoluteUrl("/report/stream"));
     eventSource.onmessage = (event) => {
       const dataReport: RawDataReport = JSON.parse(event.data);
       setData((d) => [

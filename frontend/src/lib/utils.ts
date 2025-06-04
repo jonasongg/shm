@@ -12,3 +12,5 @@ export const numberFormatter = (x: number) =>
   });
 
 export const bytesFormatter = (x: number) => (x / 1024 / 1024).toFixed(1);
+
+export const toAbsoluteUrl = (url: string) => "http://localhost:5043/api" + url;

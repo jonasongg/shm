@@ -1,8 +1,10 @@
+import { toAbsoluteUrl } from "@/lib/utils";
 import Body from "./body";
+import VmDialog from "./vmDialog";
 
 export default async function Page() {
   // initial fetch
-  const response = await fetch("http://localhost:5043/api/report");
+  const response = await fetch(toAbsoluteUrl("/report"));
   if (!response.ok) {
     throw new Error("Failed to fetch data");
   }
@@ -14,6 +16,7 @@ export default async function Page() {
         Dashboard
       </header>
       {<Body data={data} />}
+      <VmDialog />
     </>
   );
 }
