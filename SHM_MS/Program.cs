@@ -13,10 +13,10 @@ var JsonSerializerOptions = new JsonSerializerOptions
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDbContext<SHMContext>(options =>
-    options.UseNpgsql(
-        connectionString: "Server=localhost;User Id=postgres;Password=password;Database=postgres;"
-    )
+builder.Services.AddDbContextFactory<SHMContext>(options =>
+    options
+        .UseNpgsql(builder.Configuration.GetConnectionString("Postgres"))
+        .UseSnakeCaseNamingConvention()
 );
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddSingleton<ReportChannelService>();
@@ -54,7 +54,7 @@ app.MapGet(
 
         return (await context.Reports.ToListAsync())
             .OrderByDescending(r => r.Timestamp)
-            .GroupBy(r => r.VM)
+            .GroupBy(r => r.Vm)
             .SelectMany(rs => rs.Take(10));
     }
 );

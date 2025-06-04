@@ -10,16 +10,21 @@ namespace SHM_MS.Services
     public class ConsumerService : BackgroundService
     {
         private readonly IConsumer<string, ReportDTO> consumer;
-
         private readonly IDbContextFactory<SHMContext> contextFactory;
         private readonly ReportChannelService reportChannelService;
+        private readonly ILogger<ConsumerService> logger;
 
         public ConsumerService(
             IConfiguration configuration,
             IDbContextFactory<SHMContext> contextFactory,
-            ReportChannelService reportChannelService
+            ReportChannelService reportChannelService,
+            ILogger<ConsumerService> logger
         )
         {
+            this.contextFactory = contextFactory;
+            this.reportChannelService = reportChannelService;
+            this.logger = logger;
+
             var bootstrapServers = configuration
                 .GetSection("Kafka")
                 .GetSection("BootstrapServers")
@@ -36,9 +41,6 @@ namespace SHM_MS.Services
                 .SetValueDeserializer(new JsonSerializer<ReportDTO>())
                 .Build();
             consumer.Subscribe(topic);
-
-            this.contextFactory = contextFactory;
-            this.reportChannelService = reportChannelService;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -58,27 +60,33 @@ namespace SHM_MS.Services
 
                 using (var context = contextFactory.CreateDbContext())
                 {
-                    var vm =
-                        await context.VMs.FirstOrDefaultAsync(
-                            v => v.Name == report.Name,
-                            stoppingToken
-                        )
-                        ?? throw new InvalidOperationException(
-                            $"VM with name {report.Name} not found in the database."
-                        );
-
-                    context.Reports.Add(
-                        new Report
-                        {
-                            VM = vm,
-                            Timestamp = report.Timestamp,
-                            TotalMemory = report.TotalMemory,
-                            FreeMemory = report.FreeMemory,
-                            CpuUsagePercent = report.CpuUsagePercent,
-                            TotalSpace = report.TotalSpace,
-                            FreeSpace = report.FreeSpace,
-                        }
+                    var vm = await context.Vms.FirstOrDefaultAsync(
+                        v => v.Name == report.Name,
+                        stoppingToken
                     );
+
+                    if (vm is null)
+                    {
+                        logger.LogError(
+                            "VM with name {report} not found in the database.",
+                            report.Name
+                        );
+                    }
+                    else
+                    {
+                        context.Reports.Add(
+                            new Report
+                            {
+                                Vm = vm,
+                                Timestamp = report.Timestamp,
+                                TotalMemory = report.TotalMemory,
+                                FreeMemory = report.FreeMemory,
+                                CpuUsagePercent = report.CpuUsagePercent,
+                                TotalSpace = report.TotalSpace,
+                                FreeSpace = report.FreeSpace,
+                            }
+                        );
+                    }
                     await context.SaveChangesAsync(stoppingToken);
                 }
 

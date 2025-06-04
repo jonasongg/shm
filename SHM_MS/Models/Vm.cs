@@ -1,6 +1,6 @@
 namespace SHM_MS.Models
 {
-    public class VM
+    public class Vm
     {
         public int Id { get; set; }
         public required string Name { get; set; }

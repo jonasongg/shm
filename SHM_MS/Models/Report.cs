@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace SHM_MS.Models;
 
-[PrimaryKey(nameof(Timestamp), nameof(VMId))]
+[PrimaryKey(nameof(Timestamp), nameof(VmId))]
 public class Report
 {
     public required DateTimeOffset Timestamp { get; set; }
@@ -12,6 +12,6 @@ public class Report
     public required double CpuUsagePercent { get; set; }
     public required double TotalSpace { get; set; }
     public required double FreeSpace { get; set; }
-    public int VMId { get; set; }
-    public required VM VM { get; set; } = null!;
+    public int VmId { get; set; }
+    public required Vm Vm { get; set; } = null!;
 }
