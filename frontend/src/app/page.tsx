@@ -21,7 +21,9 @@ export default function Home() {
 
   useEffect(() => {
     // initiate stream
-    const eventSource = new EventSource("http://localhost:5043/reports/stream");
+    const eventSource = new EventSource(
+      "http://localhost:5043/api/report/stream",
+    );
     eventSource.onmessage = (event) => {
       const dataReport: RawDataReport = JSON.parse(event.data);
       setData((data) => [
@@ -32,7 +34,7 @@ export default function Home() {
 
     (async () => {
       // initial fetch
-      const response = await fetch("http://localhost:5043/reports");
+      const response = await fetch("http://localhost:5043/api/report");
       if (!response.ok) {
         throw new Error("Failed to fetch data");
       }
