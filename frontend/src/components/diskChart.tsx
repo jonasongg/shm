@@ -1,5 +1,4 @@
-import { numberFormatter } from "@/app/page";
-import { cn } from "@/lib/utils";
+import { cn, numberFormatter } from "@/lib/utils";
 import { Bar, BarChart, Label, LabelList, XAxis, YAxis } from "recharts";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "./ui/chart";
 

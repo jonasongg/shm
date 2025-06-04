@@ -1,4 +1,4 @@
-import { numberFormatter } from "@/app/page";
+import { numberFormatter } from "@/lib/utils";
 import { Area, AreaChart, CartesianGrid, Label, XAxis, YAxis } from "recharts";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "./ui/chart";
 
