@@ -35,6 +35,15 @@ namespace SHM_MS.Controllers
         [HttpPost]
         public async Task<ActionResult<Vm>> PostVm(Vm vm)
         {
+            if (await context.Vms.AnyAsync(v => v.Name == vm.Name))
+            {
+                return Conflict("A VM with this name already exists.");
+            }
+            if (vm.Name == null || vm.Name.Trim() == "")
+            {
+                return BadRequest("VM name cannot be empty.");
+            }
+
             context.Vms.Add(vm);
             await context.SaveChangesAsync();
 

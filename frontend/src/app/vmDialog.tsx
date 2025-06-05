@@ -22,7 +22,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { toAbsoluteUrl } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Plus } from "lucide-react";
+import { Loader2Icon, Plus } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -53,10 +53,10 @@ export default function VmDialog() {
       body: JSON.stringify(values),
     });
     if (!response.ok) {
-      return {
-        message: "Failed to send message. Please try again later.",
-        success: false,
-      };
+      form.setError("name", {
+        message:
+          (await response.json()) || "Failed to add VM. Please try again.",
+      });
     }
   };
 
@@ -101,16 +101,13 @@ export default function VmDialog() {
               <DialogClose asChild>
                 <Button variant="outline">Cancel</Button>
               </DialogClose>
-              <Button type="submit">
-                {/* {isPending ? (
-                <>
+              {form.formState.isSubmitting ? (
+                <Button type="submit" disabled>
                   <Loader2Icon className="animate-spin" /> Adding...
-                </>
+                </Button>
               ) : (
-                "Add"
-              )} */}
-                Add
-              </Button>
+                <Button type="submit">Add</Button>
+              )}
             </DialogFooter>
           </form>
         </Form>
