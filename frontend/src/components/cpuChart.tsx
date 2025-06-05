@@ -1,4 +1,5 @@
 import { numberFormatter } from "@/lib/utils";
+import { DataReport } from "@/types/types";
 import { Area, AreaChart, CartesianGrid, Label, XAxis, YAxis } from "recharts";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "./ui/chart";
 

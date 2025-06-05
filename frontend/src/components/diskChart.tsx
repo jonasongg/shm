@@ -1,4 +1,5 @@
 import { cn, numberFormatter } from "@/lib/utils";
+import { DataReport } from "@/types/types";
 import { Bar, BarChart, Label, LabelList, XAxis, YAxis } from "recharts";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "./ui/chart";
 

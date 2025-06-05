@@ -1,4 +1,4 @@
-type RawDataReport = {
+export type RawDataReport = {
   id: number;
   timestamp: string;
   cpuUsagePercent: number;
@@ -9,7 +9,12 @@ type RawDataReport = {
   freeSpace: number;
 };
 
-type DataReport = Pick<RawDataReport, "cpuUsagePercent"> & {
+export type RawVm = {
+  id: number;
+  name: string;
+};
+
+export type DataReport = Pick<RawDataReport, "cpuUsagePercent"> & {
   name: string;
   timestamp: Date;
   totalMemory: string;

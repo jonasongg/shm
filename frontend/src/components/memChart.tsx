@@ -1,3 +1,4 @@
+import { DataReport } from "@/types/types";
 import {
   Label,
   LabelList,

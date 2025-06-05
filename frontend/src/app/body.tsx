@@ -6,6 +6,7 @@ import MemChart from "@/components/memChart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { bytesFormatter, toAbsoluteUrl } from "@/lib/utils";
+import { DataReport, RawDataReport } from "@/types/types";
 import { useEffect, useState } from "react";
 import { useMediaQuery } from "react-responsive";
 

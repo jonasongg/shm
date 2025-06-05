@@ -23,14 +23,15 @@ import { Input } from "@/components/ui/input";
 import { toAbsoluteUrl } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2Icon, Plus } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { z } from "zod";
 
 export default function VmDialog() {
-  // const [state, formAction, isPending] = useActionState(submitForm, {
-  //   message: "",
-  //   success: false,
-  // });
+  const [open, setOpen] = useState(false);
+  const router = useRouter();
 
   const formSchema = z.object({
     name: z.string().nonempty("VM Name cannot be empty."),
@@ -52,7 +53,15 @@ export default function VmDialog() {
       },
       body: JSON.stringify(values),
     });
-    if (!response.ok) {
+    if (response.ok) {
+      setOpen(false);
+      toast(`VM ${values.name} created successfully!`, {
+        position: "bottom-center",
+      });
+
+      // update vm list
+      router.refresh();
+    } else {
       form.setError("name", {
         message:
           (await response.json()) || "Failed to add VM. Please try again.",
@@ -61,7 +70,7 @@ export default function VmDialog() {
   };
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button className="absolute bottom-8 right-8 cursor-pointer" size="lg">
           <Plus /> Add VM
