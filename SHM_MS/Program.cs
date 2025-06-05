@@ -1,12 +1,16 @@
 using Microsoft.EntityFrameworkCore;
-using NodaTime;
+using NodaTime.Serialization.SystemTextJson;
 using SHM_MS.DbContexts;
 using SHM_MS.Services;
 
 var AllowedSpecificOrigins = "_allowedSpecificOrigins";
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddControllers();
+builder
+    .Services.AddControllers()
+    .AddJsonOptions(options =>
+        options.JsonSerializerOptions.Converters.Add(NodaConverters.LocalDateTimeConverter)
+    );
 builder.Services.AddDbContextFactory<SHMContext>(options =>
     options
         .UseNpgsql(
