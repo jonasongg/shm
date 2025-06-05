@@ -7,11 +7,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { bytesFormatter, toAbsoluteUrl } from "@/lib/utils";
 import { DataReport, RawDataReport } from "@/types/types";
+import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
-import { useMediaQuery } from "react-responsive";
+const MediaQuery = dynamic(() => import("react-responsive"), {
+  ssr: false,
+});
 
 export default function Body({ data: _data }: { data: RawDataReport[] }) {
-  const isMdOrLarger = useMediaQuery({ minWidth: 768 });
   const [data, setData] = useState(_data);
 
   useEffect(() => {
@@ -55,10 +57,18 @@ export default function Body({ data: _data }: { data: RawDataReport[] }) {
             <CardContent className="flex flex-col h-full">
               <div className="flex flex-col flex-7/8 md:flex-row md:flex-3/4">
                 <CpuChart data={reportForVm} className="flex-1/2 md:flex-2/3" />
-                <Separator
-                  className="my-2 md:my-0 md:mx-2"
-                  orientation={isMdOrLarger ? "vertical" : "horizontal"}
-                />
+                <MediaQuery minWidth={768}>
+                  <Separator
+                    className="my-2 md:my-0 md:mx-2"
+                    orientation="vertical"
+                  />
+                </MediaQuery>
+                <MediaQuery maxWidth={768}>
+                  <Separator
+                    className="my-2 md:my-0 md:mx-2"
+                    orientation="horizontal"
+                  />
+                </MediaQuery>
                 <MemChart data={reportForVm} className="flex-1/2 md:flex-1/3" />
               </div>
               <Separator className="my-2" />
