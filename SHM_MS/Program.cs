@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using NodaTime;
 using SHM_MS.DbContexts;
 using SHM_MS.Services;
 
@@ -8,7 +9,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddDbContextFactory<SHMContext>(options =>
     options
-        .UseNpgsql(builder.Configuration.GetConnectionString("Postgres"))
+        .UseNpgsql(
+            builder.Configuration.GetConnectionString("Postgres"),
+            options => options.UseNodaTime()
+        )
         .UseSnakeCaseNamingConvention()
 );
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();

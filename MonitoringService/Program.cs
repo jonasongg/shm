@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging.Configuration;
 using Microsoft.Extensions.Logging.EventLog;
 using MonitoringService;
 using MonitoringService.Services;
+using NodaTime;
 
 var builder = Host.CreateApplicationBuilder(args);
 
@@ -11,6 +12,7 @@ builder.Services.AddWindowsService(options =>
 });
 
 builder.Services.AddSingleton<ProducerService>();
+builder.Services.AddSingleton<IClock>(SystemClock.Instance);
 
 if (OperatingSystem.IsWindows())
 {

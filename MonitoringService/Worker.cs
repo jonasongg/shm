@@ -3,6 +3,7 @@ using System.Management;
 using System.Runtime.Versioning;
 using Confluent.Kafka;
 using MonitoringService.Services;
+using NodaTime;
 using Shared.DTOs;
 
 namespace MonitoringService;
@@ -10,7 +11,8 @@ namespace MonitoringService;
 public class Worker(
     IConfiguration configuration,
     ILogger<Worker> logger,
-    ProducerService producerService
+    ProducerService producerService,
+    IClock clock
 ) : BackgroundService
 {
     private long lastCpuIdleTime = 0;
@@ -46,7 +48,7 @@ public class Worker(
     }
 
     [SupportedOSPlatform("windows")]
-    private static ReportDTO GetWindowsInfo(string name)
+    private ReportDTO GetWindowsInfo(string name)
     {
         using ManagementObjectSearcher memSearcher = new("select * from Win32_OperatingSystem");
         var memObj = memSearcher.Get().OfType<ManagementObject>().First(); // there's only one
@@ -62,7 +64,7 @@ public class Worker(
         return new ReportDTO
         {
             Name = name,
-            Timestamp = DateTime.Now,
+            Timestamp = GetLocalDateTime(),
             TotalMemory = totalMemory,
             FreeMemory = freeMemory,
             CpuUsagePercent = cpuUsagePercent,
@@ -99,7 +101,7 @@ public class Worker(
         return new ReportDTO
         {
             Name = name,
-            Timestamp = DateTime.Now,
+            Timestamp = GetLocalDateTime(),
             TotalMemory = Convert.ToDouble(totalMemory),
             FreeMemory = Convert.ToDouble(freeMemory),
             CpuUsagePercent = cpuUsagePercent,
@@ -133,5 +135,13 @@ public class Worker(
             / 1024d;
 
         return (totalSpace, freeSpace);
+    }
+
+    private LocalDateTime GetLocalDateTime()
+    {
+        return clock
+            .GetCurrentInstant()
+            .InZone(DateTimeZoneProviders.Tzdb.GetSystemDefault())
+            .LocalDateTime;
     }
 }

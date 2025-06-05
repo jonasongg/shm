@@ -1,8 +1,10 @@
+using NodaTime;
+
 namespace Shared.DTOs;
 
 public class ReportDTO
 {
-    public required DateTimeOffset Timestamp { get; set; }
+    public required LocalDateTime Timestamp { get; set; }
     public required string Name { get; set; }
     public required double TotalMemory { get; set; }
     public required double FreeMemory { get; set; }

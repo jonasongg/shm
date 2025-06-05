@@ -13,16 +13,16 @@ namespace SHM_MS.Controllers
     public class ReportController(SHMContext context, ReportChannelService reportChannelService)
         : ControllerBase
     {
-        // GET: api/report
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Report>>> GetReports()
+        // GET: api/report/vm_id
+        [HttpGet("{vm_id}")]
+        public async Task<ActionResult<IEnumerable<Report>>> GetReports(int vm_id)
         {
-            // return await _context.Reports.ToListAsync();
-            return Ok(
-                (await context.Reports.ToListAsync())
+            return (
+                await context
+                    .Reports.Where(r => r.VmId == vm_id)
                     .OrderByDescending(r => r.Timestamp)
-                    .GroupBy(r => r.Vm)
-                    .SelectMany(rs => rs.Take(10))
+                    .Take(10)
+                    .ToListAsync()
             );
         }
 
