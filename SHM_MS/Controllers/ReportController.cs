@@ -8,7 +8,7 @@ using SHM_MS.Services;
 
 namespace SHM_MS.Controllers
 {
-    [Route("api/report")]
+    [Route("api/[controller]")]
     [ApiController]
     public class ReportController(SHMContext context, ReportChannelService reportChannelService)
         : ControllerBase

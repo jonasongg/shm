@@ -5,7 +5,7 @@ using SHM_MS.Models;
 
 namespace SHM_MS.Controllers
 {
-    [Route("api/vm")]
+    [Route("api/[controller]")]
     [ApiController]
     public class VmController(SHMContext context) : ControllerBase
     {
