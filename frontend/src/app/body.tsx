@@ -13,18 +13,18 @@ export default function Body({ vms: _vms }: { vms: RawVm[] }) {
     const eventSource = new EventSource(toAbsoluteUrl("/report/stream"));
     eventSource.onmessage = (event) => {
       const dataReport: RawDataReport = JSON.parse(event.data);
-      const vm = vms.find(({ id }) => id === dataReport.vmId);
 
-      if (vm) {
+      setVms((d) => {
+        const vm = d.find(({ id }) => id === dataReport.vmId);
+        if (!vm) return d;
+
         const updatedReports = [
           dataReport,
           ...vm.reports.slice(0, vm.reports.length < 10 ? undefined : -1),
         ];
         const updatedVm = { ...vm, reports: updatedReports };
-        setVms((d) =>
-          d.map((vm) => (vm.id === dataReport.vmId ? updatedVm : vm)),
-        );
-      }
+        return d.map((vm) => (vm.id === dataReport.vmId ? updatedVm : vm));
+      });
     };
 
     return () => eventSource.close();
