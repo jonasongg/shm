@@ -29,7 +29,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 
-export default function VmDialog() {
+export default function AddVmDialog() {
   const [open, setOpen] = useState(false);
   const router = useRouter();
 

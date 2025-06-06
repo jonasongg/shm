@@ -1,8 +1,8 @@
 import { Toaster } from "@/components/ui/sonner";
 import { toAbsoluteUrl } from "@/lib/utils";
 import { RawDataReport, RawVm } from "@/types/types";
+import AddVmDialog from "./addVmDialog";
 import Body from "./body";
-import VmDialog from "./vmDialog";
 
 export default async function Page() {
   // initial fetch
@@ -40,7 +40,7 @@ export default async function Page() {
       </header>
       {<Body data={data} />}
       <Toaster />
-      <VmDialog />
+      <AddVmDialog />
     </>
   );
 }
