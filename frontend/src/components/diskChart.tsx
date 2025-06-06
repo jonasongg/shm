@@ -64,6 +64,7 @@ export default function DiskChart({
             stackId="a"
             fill="var(--color-usedSpace)"
             radius={[4, 0, 0, 4]}
+            isAnimationActive={false}
           >
             {spaceUsagePercent > 50 && (
               <LabelList
@@ -77,6 +78,7 @@ export default function DiskChart({
             stackId="a"
             fill="var(--color-totalSpace)"
             radius={[0, 4, 4, 0]}
+            isAnimationActive={false}
           >
             {spaceUsagePercent <= 50 && (
               <LabelList
