@@ -28,7 +28,7 @@ export default function Body({ vms: _vms }: { vms: RawVm[] }) {
     };
 
     return () => eventSource.close();
-  });
+  }, []);
 
   const transformedVms = vms.map((vm) => ({
     ...vm,

@@ -12,9 +12,10 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { toAbsoluteUrl } from "@/lib/utils";
 import { Trash } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { toast } from "sonner";
 
 export default function DeleteVmDialog({
   name,
@@ -23,34 +24,31 @@ export default function DeleteVmDialog({
   name: string;
   vmId: number;
 }) {
-  const [open, setOpen] = useState(false);
   const router = useRouter();
 
   const handleSubmit = async (isReportOnly: boolean) => {
-    // const response = await fetch(toAbsoluteUrl("/vm"), {
-    //   method: "DELETE",
-    //   headers: {
-    //     Accept: "application/json",
-    //     "Content-Type": "application/json",
-    //   },
-    //   body: JSON.stringify(values),
-    // });
-    // if (response.ok) {
-    //   setOpen(false);
-    //   toast(`VM ${values.name} created successfully!`, {
-    //     position: "bottom-center",
-    //   });
-    //   // update vm list
-    //   router.refresh();
-    // } else {
-    //   form.setError("name", {
-    //     message:
-    //       (await response.json()) || "Failed to add VM. Please try again.",
-    //   });
+    try {
+      const response = await fetch(
+        toAbsoluteUrl(`/vm/${vmId}${isReportOnly ? "/reports" : ""}`),
+        { method: "DELETE" },
+      );
+      if (response.ok) {
+        toast(
+          `VM ${name}${isReportOnly ? "'s reports" : ""} deleted successfully!`,
+        );
+        // update vm list
+        router.refresh();
+      } else {
+        toast("There was an error in deleting the VM.");
+      }
+    } catch (e) {
+      toast("There was an error in deleting the VM.");
+      console.error(e);
+    }
   };
 
   return (
-    <AlertDialog open={open} onOpenChange={setOpen}>
+    <AlertDialog>
       <AlertDialogTrigger asChild>
         <Button
           className="cursor-pointer mb-[-16px]"
@@ -73,7 +71,7 @@ export default function DeleteVmDialog({
             className="bg-destructive/20 hover:bg-destructive/30 text-destructive/80"
             onClick={() => handleSubmit(true)}
           >
-            Delete VM's reports
+            {"Delete VM's reports"}
           </AlertDialogAction>
           <AlertDialogAction
             className={buttonVariants({ variant: "destructive" })}

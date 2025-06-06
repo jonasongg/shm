@@ -39,9 +39,7 @@ export default function AddVmDialog() {
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: "",
-    },
+    defaultValues: { name: "" },
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
@@ -55,9 +53,7 @@ export default function AddVmDialog() {
     });
     if (response.ok) {
       setOpen(false);
-      toast(`VM ${values.name} created successfully!`, {
-        position: "bottom-center",
-      });
+      toast(`VM ${values.name} created successfully!`);
 
       // update vm list
       router.refresh();
@@ -70,7 +66,13 @@ export default function AddVmDialog() {
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog
+      open={open}
+      onOpenChange={(open) => {
+        setOpen(open);
+        form.reset();
+      }}
+    >
       <DialogTrigger asChild>
         <Button className="fixed bottom-8 right-8 cursor-pointer" size="lg">
           <Plus /> Add VM
@@ -85,9 +87,9 @@ export default function AddVmDialog() {
             <DialogHeader>
               <DialogTitle>Add a VM</DialogTitle>
               <DialogDescription>
-                Make sure to enter the same name for this VM as in the
-                "appsettings.json" file in the same directory as the monitoring
-                executable.
+                {
+                  'Make sure to enter the same name for this VM as in the "appsettings.json" file in the same directory as the monitoring executable.'
+                }
               </DialogDescription>
             </DialogHeader>
 

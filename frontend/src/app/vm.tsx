@@ -20,7 +20,7 @@ export default function Vm({
   reports: DataReport[];
 }) {
   return (
-    <Card className="h-140 md:h-81.5">
+    <Card className="h-140 md:h-81">
       <CardHeader className="text-xl flex justify-between">
         <CardTitle>{name}</CardTitle>
         <DeleteVmDialog name={name} vmId={vmId} />

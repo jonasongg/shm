@@ -65,5 +65,21 @@ namespace SHM_MS.Controllers
 
             return NoContent();
         }
+
+        // DELETE: api/vm/5/reports
+        [HttpDelete("{id}/reports")]
+        public async Task<IActionResult> DeleteVmReports(int id)
+        {
+            var vm = await context.Vms.FindAsync(id);
+            if (vm == null)
+            {
+                return NotFound();
+            }
+
+            vm.Reports.Clear();
+            await context.SaveChangesAsync();
+
+            return NoContent();
+        }
     }
 }
