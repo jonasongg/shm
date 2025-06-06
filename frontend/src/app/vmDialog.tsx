@@ -72,7 +72,7 @@ export default function VmDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="absolute bottom-8 right-8 cursor-pointer" size="lg">
+        <Button className="fixed bottom-8 right-8 cursor-pointer" size="lg">
           <Plus /> Add VM
         </Button>
       </DialogTrigger>

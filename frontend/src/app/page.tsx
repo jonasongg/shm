@@ -35,7 +35,7 @@ export default async function Page() {
 
   return (
     <>
-      <header className="font-(family-name:--font-geist-sans) text-2xl font-extrabold bg-white p-6 border-b-1 centred-shadow">
+      <header className="sticky top-0 z-99 font-(family-name:--font-geist-sans) text-2xl font-extrabold bg-white p-6 border-b-1 centred-shadow">
         Dashboard
       </header>
       {<Body data={data} />}
