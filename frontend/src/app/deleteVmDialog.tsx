@@ -12,9 +12,10 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { toAbsoluteUrl } from "@/lib/utils";
-import { Trash } from "lucide-react";
+import { cn, toAbsoluteUrl } from "@/lib/utils";
+import { Loader2Icon, Trash } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { toast } from "sonner";
 
 export default function DeleteVmDialog({
@@ -25,8 +26,12 @@ export default function DeleteVmDialog({
   vmId: number;
 }) {
   const router = useRouter();
+  const [submitting, setSubmitting] = useState<
+    "notSubmitting" | "reports" | "vm"
+  >("notSubmitting");
 
   const handleSubmit = async (isReportOnly: boolean) => {
+    setSubmitting(isReportOnly ? "reports" : "vm");
     try {
       const response = await fetch(
         toAbsoluteUrl(`/vm/${vmId}${isReportOnly ? "/reports" : ""}`),
@@ -44,6 +49,8 @@ export default function DeleteVmDialog({
     } catch (e) {
       toast("There was an error in deleting the VM.");
       console.error(e);
+    } finally {
+      setSubmitting("notSubmitting");
     }
   };
 
@@ -68,25 +75,29 @@ export default function DeleteVmDialog({
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogAction
-            className="bg-destructive/20 hover:bg-destructive/30 text-destructive/80"
+            className="bg-destructive/20 hover:bg-destructive/30 text-destructive/80 cursor-pointer"
             onClick={() => handleSubmit(true)}
+            disabled={submitting !== "notSubmitting"}
           >
+            {submitting === "reports" && (
+              <Loader2Icon className="animate-spin" />
+            )}
             {"Delete VM's reports"}
           </AlertDialogAction>
           <AlertDialogAction
-            className={buttonVariants({ variant: "destructive" })}
+            className={cn(
+              buttonVariants({ variant: "destructive" }),
+              "cursor-pointer",
+            )}
             onClick={() => handleSubmit(false)}
+            disabled={submitting !== "notSubmitting"}
           >
+            {submitting === "vm" && <Loader2Icon className="animate-spin" />}
             Delete VM
           </AlertDialogAction>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          {/* {form.formState.isSubmitting ? (
-                <Button type="submit" disabled>
-                  <Loader2Icon className="animate-spin" /> Adding...
-                </Button>
-              ) : (
-                <Button type="submit">Add</Button>
-              )} */}
+          <AlertDialogCancel className="cursor-pointer">
+            Cancel
+          </AlertDialogCancel>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
