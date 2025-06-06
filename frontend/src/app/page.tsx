@@ -18,16 +18,19 @@ export default async function Page() {
   }
   const vms: RawVm[] = await response.json();
 
-  const data = [];
+  if (vms.length === 0) {
+    return (
+      <div className="h-full flex items-center justify-center text-xl text-gray-500">
+        No active VMs to display
+      </div>
+    );
+  }
 
+  const data: Record<string, RawDataReport[]> = {};
   for await (const { id, name } of vms) {
     const response = await fetch(toAbsoluteUrl(`/report/${id}`));
-    if (!response.ok) {
-      throw new Error(`Failed to fetch data for VM ${name}`);
-    }
     const reports: RawDataReport[] = await response.json();
-    console.log(reports);
-    data.push(...reports.map((report) => ({ ...report, name })));
+    data[name] = reports;
   }
 
   return (
