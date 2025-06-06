@@ -107,9 +107,6 @@ export default function AddVmDialog() {
               />
             </div>
             <DialogFooter>
-              <DialogClose asChild>
-                <Button variant="outline">Cancel</Button>
-              </DialogClose>
               {form.formState.isSubmitting ? (
                 <Button type="submit" disabled>
                   <Loader2Icon className="animate-spin" /> Adding...
@@ -117,6 +114,9 @@ export default function AddVmDialog() {
               ) : (
                 <Button type="submit">Add</Button>
               )}
+              <DialogClose asChild>
+                <Button variant="outline">Cancel</Button>
+              </DialogClose>
             </DialogFooter>
           </form>
         </Form>

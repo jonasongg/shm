@@ -1,42 +1,38 @@
 "use client";
 
 import { bytesFormatter, toAbsoluteUrl } from "@/lib/utils";
-import { DataReport, RawDataReport } from "@/types/types";
+import { RawDataReport, RawVm } from "@/types/types";
 import { useEffect, useState } from "react";
 import Vm from "./vm";
 
-export default function Body({
-  data: _data,
-}: {
-  data: Record<string, RawDataReport[]>;
-}) {
-  const [data, setData] = useState(_data);
+export default function Body({ vms: _vms }: { vms: RawVm[] }) {
+  const [vms, setVms] = useState(_vms);
 
   useEffect(() => {
     // initiate stream
     const eventSource = new EventSource(toAbsoluteUrl("/report/stream"));
     eventSource.onmessage = (event) => {
       const dataReport: RawDataReport = JSON.parse(event.data);
-      const vmName = Object.entries(data).find(
-        ([_, [{ vmId }]]) => vmId === dataReport.vmId,
-      )?.[0];
+      const vm = vms.find(({ id }) => id === dataReport.vmId);
 
-      if (vmName != null)
-        setData((d) => ({
-          ...d,
-          [vmName]: [
-            dataReport,
-            ...d[vmName].slice(0, d[vmName].length < 10 ? undefined : -1),
-          ],
-        }));
+      if (vm) {
+        const updatedReports = [
+          dataReport,
+          ...vm.reports.slice(0, vm.reports.length < 10 ? undefined : -1),
+        ];
+        const updatedVm = { ...vm, reports: updatedReports };
+        setVms((d) =>
+          d.map((vm) => (vm.id === dataReport.vmId ? updatedVm : vm)),
+        );
+      }
     };
 
     return () => eventSource.close();
   });
 
-  const transformedData: Record<string, DataReport[]> = {};
-  for (const name in data) {
-    const transformedReports = data[name].map((d) => ({
+  const transformedVms = vms.map((vm) => ({
+    ...vm,
+    reports: vm.reports.map((d) => ({
       ...d,
       timestamp: new Date(d.timestamp),
       totalMemory: bytesFormatter(d.totalMemory),
@@ -46,14 +42,13 @@ export default function Body({
       totalSpace: bytesFormatter(d.totalSpace),
       usedSpace: bytesFormatter(d.totalSpace - d.freeSpace),
       spaceUsagePercent: ((d.totalSpace - d.freeSpace) / d.totalSpace) * 100,
-    }));
-    transformedData[name] = transformedReports;
-  }
+    })),
+  }));
 
   return (
     <main className="p-8 gap-8 flex-1 font-(family-name:--font-geist-sans) grid grid-cols-1 md:grid-cols-2">
-      {Object.entries(transformedData).map(([name, reportForVm], i) => (
-        <Vm name={name} reports={reportForVm} key={i} />
+      {transformedVms.map(({ id, name, reports }, i) => (
+        <Vm name={name} vmId={id} reports={reports} key={i} />
       ))}
     </main>
   );
