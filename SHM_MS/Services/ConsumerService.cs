@@ -56,41 +56,39 @@ namespace SHM_MS.Services
             while (!stoppingToken.IsCancellationRequested)
             {
                 var result = await Task.Run(() => consumer.Consume(stoppingToken), stoppingToken);
-                var report = result.Message.Value;
+                var reportDTO = result.Message.Value;
 
-                using (var context = contextFactory.CreateDbContext())
+                using var context = contextFactory.CreateDbContext();
+                var vm = await context.Vms.FirstOrDefaultAsync(
+                    v => v.Name == reportDTO.Name,
+                    stoppingToken
+                );
+
+                if (vm is null)
                 {
-                    var vm = await context.Vms.FirstOrDefaultAsync(
-                        v => v.Name == report.Name,
-                        stoppingToken
+                    logger.LogError(
+                        "VM with name {report} not found in the database.",
+                        reportDTO.Name
                     );
-
-                    if (vm is null)
-                    {
-                        logger.LogError(
-                            "VM with name {report} not found in the database.",
-                            report.Name
-                        );
-                    }
-                    else
-                    {
-                        context.Reports.Add(
-                            new Report
-                            {
-                                Vm = vm,
-                                Timestamp = report.Timestamp,
-                                TotalMemory = report.TotalMemory,
-                                FreeMemory = report.FreeMemory,
-                                CpuUsagePercent = report.CpuUsagePercent,
-                                TotalSpace = report.TotalSpace,
-                                FreeSpace = report.FreeSpace,
-                            }
-                        );
-                    }
-                    await context.SaveChangesAsync(stoppingToken);
                 }
+                else
+                {
+                    // VmId is automatic
+                    var report = new Report
+                    {
+                        Vm = vm,
+                        Timestamp = reportDTO.Timestamp,
+                        TotalMemory = reportDTO.TotalMemory,
+                        FreeMemory = reportDTO.FreeMemory,
+                        CpuUsagePercent = reportDTO.CpuUsagePercent,
+                        TotalSpace = reportDTO.TotalSpace,
+                        FreeSpace = reportDTO.FreeSpace,
+                    };
+                    context.Reports.Add(report);
 
-                await reportChannelService.WriteAsync(report, stoppingToken);
+                    await context.SaveChangesAsync(stoppingToken);
+                    await reportChannelService.WriteAsync(report, stoppingToken);
+                }
             }
         }
     }

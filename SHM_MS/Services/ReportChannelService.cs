@@ -1,18 +1,18 @@
 using System.Threading.Channels;
-using Shared.DTOs;
+using SHM_MS.Models;
 
 namespace SHM_MS.Services
 {
     public class ReportChannelService
     {
-        private readonly Channel<ReportDTO> channel = Channel.CreateUnbounded<ReportDTO>();
+        private readonly Channel<Report> channel = Channel.CreateUnbounded<Report>();
 
-        public async Task WriteAsync(ReportDTO metric, CancellationToken cancellationToken)
+        public async Task WriteAsync(Report report, CancellationToken cancellationToken)
         {
-            await channel.Writer.WriteAsync(metric, cancellationToken);
+            await channel.Writer.WriteAsync(report, cancellationToken);
         }
 
-        public ValueTask<ReportDTO> ReadAsync(CancellationToken cancellationToken)
+        public ValueTask<Report> ReadAsync(CancellationToken cancellationToken)
         {
             return channel.Reader.ReadAsync(cancellationToken);
         }

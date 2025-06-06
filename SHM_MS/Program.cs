@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using NodaTime.Serialization.SystemTextJson;
 using SHM_MS.DbContexts;
@@ -9,8 +10,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder
     .Services.AddControllers()
     .AddJsonOptions(options =>
-        options.JsonSerializerOptions.Converters.Add(NodaConverters.LocalDateTimeConverter)
-    );
+    {
+        options.JsonSerializerOptions.Converters.Add(NodaConverters.LocalDateTimeConverter);
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+    });
 builder.Services.AddDbContextFactory<SHMContext>(options =>
     options
         .UseNpgsql(

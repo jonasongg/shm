@@ -1,7 +1,9 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Net.Http.Headers;
+using NodaTime.Serialization.SystemTextJson;
 using SHM_MS.DbContexts;
 using SHM_MS.Models;
 using SHM_MS.Services;
@@ -35,6 +37,9 @@ namespace SHM_MS.Controllers
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             };
+            options.Converters.Add(NodaConverters.LocalDateTimeConverter);
+            options.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+
             while (!cancellationToken.IsCancellationRequested)
             {
                 var report = await reportChannelService.ReadAsync(cancellationToken);
