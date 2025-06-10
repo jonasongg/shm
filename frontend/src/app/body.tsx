@@ -34,14 +34,13 @@ export default function Body({ vms: _vms }: { vms: RawVm[] }) {
     };
 
     vmStatusEventSource.onmessage = (event) => {
-      const vms: RawVm[] = JSON.parse(event.data);
+      const newVms: RawVm[] = JSON.parse(event.data);
 
       setVms((d) =>
         d.map((vm) => {
-          const status = vms.find((v) => v.id === vm.id)?.status;
+          const status = newVms.find((v) => v.id === vm.id)?.status;
           return {
             ...vm,
-            // reports: status === "Offline" ? [] : vm.reports,
             status: status ?? vm.status,
           };
         }),
