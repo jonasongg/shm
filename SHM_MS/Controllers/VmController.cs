@@ -84,7 +84,7 @@ namespace SHM_MS.Controllers
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             };
             options.Converters.Add(NodaConverters.LocalDateTimeConverter);
-            options.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
+            options.Converters.Add(new JsonStringEnumConverter());
 
             while (!cancellationToken.IsCancellationRequested)
             {
@@ -126,7 +126,7 @@ namespace SHM_MS.Controllers
                 {
                     Id = vm.Id,
                     Name = vm.Name,
-                    VmStatus = status is null ? VmStatus.Offline : status.VmStatus,
+                    Status = status is null ? VmStatus.Offline : status.VmStatus,
                 };
             });
         }

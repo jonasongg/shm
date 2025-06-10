@@ -2,8 +2,10 @@ import CpuChart from "@/components/cpuChart";
 import DiskChart from "@/components/diskChart";
 import MemChart from "@/components/memChart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { DataReport } from "@/types/types";
+import { cn } from "@/lib/utils";
+import { DataReport, VmStatus } from "@/types/types";
 import dynamic from "next/dynamic";
 import DeleteVmDialog from "./deleteVmDialog";
 const MediaQuery = dynamic(() => import("react-responsive"), {
@@ -12,18 +14,30 @@ const MediaQuery = dynamic(() => import("react-responsive"), {
 
 export default function Vm({
   name,
-  vmId,
+  id,
+  status,
   reports,
 }: {
   name: string;
-  vmId: number;
+  id: number;
+  status: VmStatus;
   reports: DataReport[];
 }) {
   return (
     <Card className="h-140 md:h-81">
-      <CardHeader className="text-xl flex justify-between">
+      <CardHeader className="text-xl flex">
         <CardTitle>{name}</CardTitle>
-        <DeleteVmDialog name={name} vmId={vmId} />
+        <div
+          className={cn(
+            "ml-4 w-2 h-2 rounded-full self-center transition-colors",
+            {
+              "bg-red-600": status === "Offline",
+              "bg-green-600": status === "Online",
+            },
+          )}
+        />
+        <Label className="text-xs text-gray-500 self-center">{status}</Label>
+        <DeleteVmDialog name={name} id={id} />
       </CardHeader>
       {reports.length === 0 ? (
         <div className="h-full flex items-center justify-center text-gray-500">

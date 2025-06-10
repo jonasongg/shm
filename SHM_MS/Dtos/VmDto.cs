@@ -10,6 +10,6 @@ namespace SHM_MS.Dtos
 
     public class VmDto : Vm
     {
-        public VmStatus VmStatus { get; set; }
+        public VmStatus Status { get; set; }
     }
 }

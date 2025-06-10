@@ -63,8 +63,8 @@ export default function Body({ vms: _vms }: { vms: RawVm[] }) {
 
   return (
     <main className="p-8 gap-8 flex-1 font-(family-name:--font-geist-sans) grid grid-cols-1 md:grid-cols-2">
-      {transformedVms.map(({ id, name, reports }, i) => (
-        <Vm name={name} vmId={id} reports={reports} key={i} />
+      {transformedVms.map((vm, i) => (
+        <Vm {...vm} key={i} />
       ))}
     </main>
   );

@@ -20,10 +20,10 @@ import { toast } from "sonner";
 
 export default function DeleteVmDialog({
   name,
-  vmId,
+  id,
 }: {
   name: string;
-  vmId: number;
+  id: number;
 }) {
   const router = useRouter();
   const [submitting, setSubmitting] = useState<
@@ -34,7 +34,7 @@ export default function DeleteVmDialog({
     setSubmitting(isReportOnly ? "reports" : "vm");
     try {
       const response = await fetch(
-        toAbsoluteUrl(`/vm/${vmId}${isReportOnly ? "/reports" : ""}`),
+        toAbsoluteUrl(`/vm/${id}${isReportOnly ? "/reports" : ""}`),
         { method: "DELETE" },
       );
       if (response.ok) {
@@ -58,7 +58,7 @@ export default function DeleteVmDialog({
     <AlertDialog>
       <AlertDialogTrigger asChild>
         <Button
-          className="cursor-pointer mb-[-16px]"
+          className="cursor-pointer mb-[-16px] ml-auto"
           variant="secondary"
           size="icon"
         >
