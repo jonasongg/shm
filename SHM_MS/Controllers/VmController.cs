@@ -1,33 +1,25 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Net.Http.Headers;
+using NodaTime;
+using NodaTime.Serialization.SystemTextJson;
 using SHM_MS.DbContexts;
+using SHM_MS.Dtos;
 using SHM_MS.Models;
 
 namespace SHM_MS.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class VmController(SHMContext context) : ControllerBase
+    public class VmController(SHMContext context, IClock clock) : ControllerBase
     {
         // GET: api/vm
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Vm>>> GetVms()
+        public async Task<ActionResult<IEnumerable<VmDto>>> GetVms()
         {
-            return await context.Vms.ToListAsync();
-        }
-
-        // GET: api/vm/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Vm>> GetVm(int id)
-        {
-            var vm = await context.Vms.FindAsync(id);
-
-            if (vm == null)
-            {
-                return NotFound();
-            }
-
-            return vm;
+            return (await GetVmsWithStatusAsync()).ToList();
         }
 
         // POST: api/vm
@@ -80,6 +72,56 @@ namespace SHM_MS.Controllers
             await context.SaveChangesAsync();
 
             return NoContent();
+        }
+
+        // GET: api/vm/status
+        [HttpGet("status")]
+        public async Task GetReportStream(CancellationToken cancellationToken)
+        {
+            HttpContext.Response.Headers.Append(HeaderNames.ContentType, "text/event-stream");
+            var options = new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            };
+            options.Converters.Add(NodaConverters.LocalDateTimeConverter);
+            options.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
+
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                await HttpContext.Response.WriteAsync("data: ", cancellationToken);
+                await JsonSerializer.SerializeAsync(
+                    HttpContext.Response.Body,
+                    GetVmsWithStatusAsync(),
+                    options: options,
+                    cancellationToken: cancellationToken
+                );
+                await HttpContext.Response.WriteAsync("\n\n", cancellationToken);
+                await HttpContext.Response.Body.FlushAsync(cancellationToken);
+
+                await Task.Delay(5000, cancellationToken);
+            }
+        }
+
+        private async Task<IEnumerable<VmDto>> GetVmsWithStatusAsync()
+        {
+            return await context
+                .Reports.FromSql(
+                    $"SELECT DISTINCT ON (vm_id) * FROM reports ORDER BY vm_id, timestamp desc"
+                )
+                .Select(r => new VmDto
+                {
+                    Id = r.VmId,
+                    Name = r.Vm.Name,
+                    VmStatus =
+                        r.Timestamp
+                        < clock
+                            .GetCurrentInstant()
+                            .InZone(DateTimeZoneProviders.Tzdb.GetSystemDefault())
+                            .LocalDateTime.Minus(Period.FromSeconds(5))
+                            ? VmStatus.Offline
+                            : VmStatus.Online,
+                })
+                .ToListAsync();
         }
     }
 }

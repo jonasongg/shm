@@ -10,8 +10,10 @@ export default function Body({ vms: _vms }: { vms: RawVm[] }) {
 
   useEffect(() => {
     // initiate stream
-    const eventSource = new EventSource(toAbsoluteUrl("/report/stream"));
-    eventSource.onmessage = (event) => {
+    const reportsEventSource = new EventSource(toAbsoluteUrl("/report/stream"));
+    const vmStatusEventSource = new EventSource(toAbsoluteUrl("/vm/status"));
+
+    reportsEventSource.onmessage = (event) => {
       const dataReport: RawDataReport = JSON.parse(event.data);
 
       setVms((d) => {
@@ -27,7 +29,21 @@ export default function Body({ vms: _vms }: { vms: RawVm[] }) {
       });
     };
 
-    return () => eventSource.close();
+    vmStatusEventSource.onmessage = (event) => {
+      const vms: RawVm[] = JSON.parse(event.data);
+
+      setVms((d) =>
+        d.map((vm) => ({
+          ...vm,
+          status: vms.find((v) => v.id === vm.id)?.status ?? vm.status,
+        })),
+      );
+    };
+
+    return () => {
+      reportsEventSource.close();
+      vmStatusEventSource.close();
+    };
   }, []);
 
   const transformedVms = vms.map((vm) => ({

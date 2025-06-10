@@ -18,14 +18,15 @@ export type DataReport = Pick<RawDataReport, "cpuUsagePercent" | "vmId"> & {
   spaceUsagePercent: number;
 };
 
+export type VmStatus = "offline" | "online";
+
 export type RawVm = {
   id: number;
   name: string;
+  status: VmStatus;
   reports: RawDataReport[];
 };
 
-export type VmType = {
-  id: number;
-  name: string;
+export type VmType = Omit<RawVm, "reports"> & {
   reports: DataReport[];
 };

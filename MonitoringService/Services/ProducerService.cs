@@ -1,5 +1,5 @@
 using Confluent.Kafka;
-using Shared.DTOs;
+using Shared.Dtos;
 using Shared.Serializers;
 
 namespace MonitoringService.Services
@@ -7,7 +7,7 @@ namespace MonitoringService.Services
     public class ProducerService : IDisposable
     {
         private readonly IConfiguration configuration;
-        private readonly IProducer<string, ReportDTO> producer;
+        private readonly IProducer<string, ReportDto> producer;
 
         public ProducerService(IConfiguration configuration)
         {
@@ -19,20 +19,20 @@ namespace MonitoringService.Services
                 .Value;
             var config = new ProducerConfig { BootstrapServers = bootstrapServers };
 
-            producer = new ProducerBuilder<string, ReportDTO>(config)
-                .SetValueSerializer(new JsonSerializer<ReportDTO>())
+            producer = new ProducerBuilder<string, ReportDto>(config)
+                .SetValueSerializer(new JsonSerializer<ReportDto>())
                 .Build();
         }
 
-        public async Task<DeliveryResult<string, ReportDTO>> ProduceAsync(
+        public async Task<DeliveryResult<string, ReportDto>> ProduceAsync(
             string name,
-            ReportDTO message,
+            ReportDto message,
             CancellationToken cancellationToken
         )
         {
             var topic = configuration.GetSection("Kafka").GetSection("Topic").Value;
 
-            var kafkaMessage = new Message<string, ReportDTO> { Key = name, Value = message };
+            var kafkaMessage = new Message<string, ReportDto> { Key = name, Value = message };
             return await producer.ProduceAsync(topic, kafkaMessage, cancellationToken);
         }
 

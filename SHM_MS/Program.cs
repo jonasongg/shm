@@ -1,5 +1,7 @@
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
+using NodaTime;
 using NodaTime.Serialization.SystemTextJson;
 using SHM_MS.DbContexts;
 using SHM_MS.Services;
@@ -12,6 +14,9 @@ builder
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.Converters.Add(NodaConverters.LocalDateTimeConverter);
+        options.JsonSerializerOptions.Converters.Add(
+            new JsonStringEnumConverter(JsonNamingPolicy.CamelCase)
+        );
         options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
     });
 builder.Services.AddDbContextFactory<SHMContext>(options =>
@@ -25,6 +30,7 @@ builder.Services.AddDbContextFactory<SHMContext>(options =>
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddSingleton<ReportChannelService>();
 builder.Services.AddHostedService<ConsumerService>();
+builder.Services.AddSingleton<IClock>(SystemClock.Instance);
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(
