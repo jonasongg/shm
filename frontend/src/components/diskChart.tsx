@@ -6,9 +6,11 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from "./ui/chart";
 export default function DiskChart({
   data,
   className,
+  disabled,
 }: {
   data: DataReport[];
   className?: string;
+  disabled: boolean;
 }) {
   const { totalSpace, usedSpace, spaceUsagePercent } = data.reduce((acc, d) =>
     acc.timestamp > d.timestamp ? acc : d,
@@ -24,7 +26,10 @@ export default function DiskChart({
           },
           usedSpace: {
             label: "Used Disk Space",
-            color: "var(--chart-2)",
+            color: cn({
+              "var(--chart-2)": !disabled,
+              "var(--muted-foreground)": disabled,
+            }),
           },
         }}
         className="w-full"

@@ -1,3 +1,4 @@
+import { cn } from "@/lib/utils";
 import { DataReport } from "@/types/types";
 import {
   Label,
@@ -11,9 +12,11 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from "./ui/chart";
 export default function MemChart({
   data,
   className,
+  disabled,
 }: {
   data: DataReport[];
   className?: string;
+  disabled: boolean;
 }) {
   const { totalMemory, usedMemory, memoryUsagePercent } = data.reduce(
     (acc, d) => (acc.timestamp > d.timestamp ? acc : d),
@@ -28,7 +31,10 @@ export default function MemChart({
         },
         usedMemory: {
           label: "Used Memory",
-          color: "var(--chart-3)",
+          color: cn({
+            "var(--chart-3)": !disabled,
+            "var(--muted-foreground)": disabled,
+          }),
         },
       }}
       className={className}

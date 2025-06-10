@@ -24,7 +24,11 @@ export default function Body({ vms: _vms }: { vms: RawVm[] }) {
           dataReport,
           ...vm.reports.slice(0, vm.reports.length < 10 ? undefined : -1),
         ];
-        const updatedVm = { ...vm, reports: updatedReports };
+        const updatedVm: RawVm = {
+          ...vm,
+          reports: updatedReports,
+          status: "Online",
+        };
         return d.map((vm) => (vm.id === dataReport.vmId ? updatedVm : vm));
       });
     };
@@ -33,10 +37,14 @@ export default function Body({ vms: _vms }: { vms: RawVm[] }) {
       const vms: RawVm[] = JSON.parse(event.data);
 
       setVms((d) =>
-        d.map((vm) => ({
-          ...vm,
-          status: vms.find((v) => v.id === vm.id)?.status ?? vm.status,
-        })),
+        d.map((vm) => {
+          const status = vms.find((v) => v.id === vm.id)?.status;
+          return {
+            ...vm,
+            // reports: status === "Offline" ? [] : vm.reports,
+            status: status ?? vm.status,
+          };
+        }),
       );
     };
 

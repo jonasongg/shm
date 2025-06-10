@@ -24,7 +24,12 @@ export default function Vm({
   reports: DataReport[];
 }) {
   return (
-    <Card className="h-140 md:h-81">
+    <Card
+      className={cn(
+        "h-140 md:h-81 relative overflow-hidden before:absolute before:inset-0 before:z-20 before:transition-colors before:pointer-events-none",
+        { "before:bg-black/5": status === "Offline" },
+      )}
+    >
       <CardHeader className="text-xl flex">
         <CardTitle>{name}</CardTitle>
         <div
@@ -46,7 +51,11 @@ export default function Vm({
       ) : (
         <CardContent className="flex flex-col h-full">
           <div className="flex flex-col flex-7/8 md:flex-row md:flex-3/4">
-            <CpuChart data={reports} className="flex-1/2 md:flex-2/3" />
+            <CpuChart
+              data={reports}
+              className="flex-1/2 md:flex-2/3"
+              disabled={status === "Offline"}
+            />
             <MediaQuery minWidth={768}>
               <Separator
                 className="my-2 md:my-0 md:mx-2"
@@ -59,10 +68,18 @@ export default function Vm({
                 orientation="horizontal"
               />
             </MediaQuery>
-            <MemChart data={reports} className="flex-1/2 md:flex-1/3" />
+            <MemChart
+              data={reports}
+              className="flex-1/2 md:flex-1/3"
+              disabled={status === "Offline"}
+            />
           </div>
           <Separator className="my-2" />
-          <DiskChart data={reports} className="flex-1/8 md:flex-1/4" />
+          <DiskChart
+            data={reports}
+            className="flex-1/8 md:flex-1/4"
+            disabled={status === "Offline"}
+          />
         </CardContent>
       )}
     </Card>

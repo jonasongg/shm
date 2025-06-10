@@ -1,4 +1,4 @@
-import { numberFormatter } from "@/lib/utils";
+import { cn, numberFormatter } from "@/lib/utils";
 import { DataReport } from "@/types/types";
 import { Area, AreaChart, CartesianGrid, Label, XAxis, YAxis } from "recharts";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "./ui/chart";
@@ -6,16 +6,21 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from "./ui/chart";
 export default function CpuChart({
   data,
   className,
+  disabled,
 }: {
   data: DataReport[];
   className?: string;
+  disabled: boolean;
 }) {
   return (
     <ChartContainer
       config={{
         cpuUsagePercent: {
           label: "CPU Usage",
-          color: "var(--chart-1)",
+          color: cn({
+            "var(--chart-1)": !disabled,
+            "var(--muted-foreground)": disabled,
+          }),
         },
       }}
       className={className}
