@@ -104,24 +104,31 @@ namespace SHM_MS.Controllers
 
         private async Task<IEnumerable<VmDto>> GetVmsWithStatusAsync()
         {
-            return await context
+            var statuses = context
                 .Reports.FromSql(
                     $"SELECT DISTINCT ON (vm_id) * FROM reports ORDER BY vm_id, timestamp desc"
                 )
-                .Select(r => new VmDto
+                .Select(r => new
                 {
                     Id = r.VmId,
-                    Name = r.Vm.Name,
-                    VmStatus =
-                        r.Timestamp
-                        < clock
-                            .GetCurrentInstant()
-                            .InZone(DateTimeZoneProviders.Tzdb.GetSystemDefault())
-                            .LocalDateTime.Minus(Period.FromSeconds(5))
-                            ? VmStatus.Offline
-                            : VmStatus.Online,
-                })
-                .ToListAsync();
+                    VmStatus = r.Timestamp
+                    < clock
+                        .GetCurrentInstant()
+                        .InZone(DateTimeZoneProviders.Tzdb.GetSystemDefault())
+                        .LocalDateTime.Minus(Period.FromSeconds(5))
+                        ? VmStatus.Offline
+                        : VmStatus.Online,
+                });
+            return (await context.Vms.ToListAsync()).Select(vm =>
+            {
+                var status = statuses.FirstOrDefault(status => status.Id == vm.Id);
+                return new VmDto
+                {
+                    Id = vm.Id,
+                    Name = vm.Name,
+                    VmStatus = status is null ? VmStatus.Offline : status.VmStatus,
+                };
+            });
         }
     }
 }
