@@ -91,7 +91,7 @@ namespace SHM_MS.Controllers
                 await HttpContext.Response.WriteAsync("data: ", cancellationToken);
                 await JsonSerializer.SerializeAsync(
                     HttpContext.Response.Body,
-                    GetVmsWithStatusAsync(),
+                    await GetVmsWithStatusAsync(),
                     options: options,
                     cancellationToken: cancellationToken
                 );
