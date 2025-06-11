@@ -22,7 +22,12 @@ export default function Body({ vms: _vms }: { vms: RawVm[] }) {
 
         const updatedReports = [
           dataReport,
-          ...vm.reports.slice(0, vm.reports.length < 10 ? undefined : -1),
+          ...vm.reports
+            .filter(
+              ({ timestamp }) =>
+                new Date(timestamp).valueOf() > new Date().valueOf() - 15000,
+            )
+            .slice(0, vm.reports.length < 10 ? undefined : -1),
         ];
         const updatedVm: RawVm = {
           ...vm,
