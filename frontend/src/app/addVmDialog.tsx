@@ -43,25 +43,31 @@ export default function AddVmDialog() {
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    const response = await fetch(toAbsoluteUrl("/vm"), {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(values),
-    });
-    if (response.ok) {
-      setOpen(false);
-      toast(`VM ${values.name} created successfully!`);
-
-      // update vm list
-      router.refresh();
-    } else {
-      form.setError("name", {
-        message:
-          (await response.json()) || "Failed to add VM. Please try again.",
+    try {
+      const response = await fetch(toAbsoluteUrl("/vm"), {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(values),
       });
+      if (response.ok) {
+        setOpen(false);
+        toast(`VM ${values.name} created successfully!`);
+
+        // update vm list
+        router.refresh();
+      } else {
+        form.setError("name", {
+          message:
+            (await response.json()) || "Failed to add VM. Please try again.",
+        });
+      }
+    } catch (e) {
+      toast("There was an error in connecting to the server.");
+      console.error(e);
+      setOpen(false);
     }
   };
 
