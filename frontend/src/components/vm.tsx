@@ -30,7 +30,7 @@ export default function Vm({
         { "before:bg-black/5 dark:before:bg-black/20": status === "Offline" },
       )}
     >
-      <CardHeader className="text-xl flex">
+      <CardHeader className="text-xl flex gap-2">
         <CardTitle>{name}</CardTitle>
         <div
           className={cn(

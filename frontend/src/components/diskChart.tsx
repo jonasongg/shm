@@ -48,7 +48,7 @@ export default function DiskChart({
             dataKey="totalSpace"
             domain={[0, "dataMax"]}
           >
-            <Label className="font-bold" position="bottom" offset={-24}>
+            <Label className="font-bold" position="bottom" offset={-22}>
               Disk Space Usage
             </Label>
           </XAxis>
