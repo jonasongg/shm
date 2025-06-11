@@ -27,7 +27,7 @@ export default function Vm({
     <Card
       className={cn(
         "h-140 md:h-80.5 relative overflow-hidden before:absolute before:inset-0 before:z-20 before:transition-colors before:pointer-events-none transition-colors",
-        { "before:bg-black/5": status === "Offline" },
+        { "before:bg-black/5 dark:before:bg-black/20": status === "Offline" },
       )}
     >
       <CardHeader className="text-xl flex">
