@@ -87,7 +87,7 @@ export default function DiskChart({
           >
             {spaceUsagePercent <= 50 && (
               <LabelList
-                className="fill-gray-500"
+                className="fill-neutral-500"
                 formatter={() =>
                   `${(100 - spaceUsagePercent).toFixed(1)}% free`
                 }
@@ -97,7 +97,7 @@ export default function DiskChart({
         </BarChart>
       </ChartContainer>
 
-      <span className="text-xs text-gray-500 whitespace-nowrap mb-5 self-center cursor-default">
+      <span className="text-xs text-neutral-500 whitespace-nowrap mb-5 self-center cursor-default">
         {`${numberFormatter(+usedSpace)} / ${numberFormatter(+totalSpace)} GB used`}
       </span>
     </div>

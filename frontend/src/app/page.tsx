@@ -1,7 +1,8 @@
+import { ModeToggle } from "@/components/modeToggle";
 import { Toaster } from "@/components/ui/sonner";
 import { cn, toAbsoluteUrl } from "@/lib/utils";
 import { RawDataReport, RawVm } from "@/types/types";
-import AddVmDialog from "./addVmDialog";
+import AddVmDialog from "../components/addVmDialog";
 import Body from "./body";
 
 export default async function Page() {
@@ -28,14 +29,15 @@ export default async function Page() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 font-(family-name:--font-geist-sans) text-2xl font-extrabold bg-white p-6 border-b-1 centred-shadow">
+      <header className="sticky top-0 z-40 font-(family-name:--font-geist-sans) text-2xl font-extrabold bg-white dark:bg-neutral-800 p-6 border-b-1 centred-shadow flex transition-colors">
         Dashboard
+        <ModeToggle />
       </header>
       {!vms || vms.length === 0 ? (
         <div
           className={cn("h-full flex items-center justify-center text-xl", {
-            "text-gray-500": vms,
-            "text-red-600": !vms,
+            "text-neutral-500": vms,
+            "text-red-600 dark:text-red-300": !vms,
           })}
         >
           {vms

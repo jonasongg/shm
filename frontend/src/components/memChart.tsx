@@ -101,7 +101,7 @@ export default function MemChart({
         >
           {memoryUsagePercent <= 50 && (
             <LabelList
-              className="fill-gray-500"
+              className="fill-neutral-500"
               formatter={() => `${(100 - memoryUsagePercent).toFixed(1)}% free`}
               position="insideStart"
             />

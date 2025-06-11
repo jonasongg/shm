@@ -3,7 +3,7 @@
 import { bytesFormatter, toAbsoluteUrl } from "@/lib/utils";
 import { RawDataReport, RawVm } from "@/types/types";
 import { useEffect, useState } from "react";
-import Vm from "./vm";
+import Vm from "../components/vm";
 
 export default function Body({ vms: _vms }: { vms: RawVm[] }) {
   const [vms, setVms] = useState(_vms);

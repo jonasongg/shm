@@ -58,7 +58,7 @@ export default function DeleteVmDialog({
     <AlertDialog>
       <AlertDialogTrigger asChild>
         <Button
-          className="cursor-pointer mb-[-16px] ml-auto"
+          className="cursor-pointer mb-[-16px] ml-auto bg-destructive/10 hover:bg-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30"
           variant="secondary"
           size="icon"
         >

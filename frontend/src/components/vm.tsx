@@ -26,7 +26,7 @@ export default function Vm({
   return (
     <Card
       className={cn(
-        "h-140 md:h-81 relative overflow-hidden before:absolute before:inset-0 before:z-20 before:transition-colors before:pointer-events-none",
+        "h-140 md:h-80.5 relative overflow-hidden before:absolute before:inset-0 before:z-20 before:transition-colors before:pointer-events-none transition-colors",
         { "before:bg-black/5": status === "Offline" },
       )}
     >
@@ -41,11 +41,11 @@ export default function Vm({
             },
           )}
         />
-        <Label className="text-xs text-gray-500 self-center">{status}</Label>
+        <Label className="text-xs text-neutral-500 self-center">{status}</Label>
         <DeleteVmDialog name={name} id={id} />
       </CardHeader>
       {reports.length === 0 ? (
-        <div className="h-full flex items-center justify-center text-gray-500">
+        <div className="h-full flex items-center justify-center text-neutral-500">
           No data available for this VM
         </div>
       ) : (
