@@ -5,13 +5,13 @@ using SHM_MS.Models;
 namespace SHM_MS.Dtos;
 
 [method: SetsRequiredMembers]
-public record ReportDto(Report R)
+public class ReportDto(Report r)
 {
-    public required LocalDateTime Timestamp = R.Timestamp;
-    public required double TotalMemory = R.TotalMemory;
-    public required double FreeMemory = R.FreeMemory;
-    public required double CpuUsagePercent = R.CpuUsagePercent;
-    public required double TotalSpace = R.TotalSpace;
-    public required double FreeSpace = R.FreeSpace;
-    public required int VmId = R.VmId;
+    public required LocalDateTime Timestamp { get; set; } = r.Timestamp;
+    public required double TotalMemory { get; set; } = r.TotalMemory;
+    public required double FreeMemory { get; set; } = r.FreeMemory;
+    public required double CpuUsagePercent { get; set; } = r.CpuUsagePercent;
+    public required double TotalSpace { get; set; } = r.TotalSpace;
+    public required double FreeSpace { get; set; } = r.FreeSpace;
+    public required int VmId { get; set; } = r.VmId;
 }
