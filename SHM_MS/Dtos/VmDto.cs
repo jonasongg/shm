@@ -22,7 +22,7 @@ public record VmDto
     public VmDto(Vm vm)
     {
         Reports.AddRange(vm.Reports.Select(r => new ReportDto(r)));
-        DependentOns.AddRange(vm.DependentOns);
+        DependentOns.AddRange(vm.Dependencies);
         Dependants.AddRange(vm.Dependants);
     }
 }
