@@ -7,7 +7,7 @@ namespace MonitoringService.Services
     public class ProducerService : IDisposable
     {
         private readonly IConfiguration configuration;
-        private readonly IProducer<string, ReportDto> producer;
+        private readonly IProducer<string, KafkaReportDto> producer;
 
         public ProducerService(IConfiguration configuration)
         {
@@ -19,20 +19,20 @@ namespace MonitoringService.Services
                 .Value;
             var config = new ProducerConfig { BootstrapServers = bootstrapServers };
 
-            producer = new ProducerBuilder<string, ReportDto>(config)
-                .SetValueSerializer(new JsonSerializer<ReportDto>())
+            producer = new ProducerBuilder<string, KafkaReportDto>(config)
+                .SetValueSerializer(new JsonSerializer<KafkaReportDto>())
                 .Build();
         }
 
-        public async Task<DeliveryResult<string, ReportDto>> ProduceAsync(
+        public async Task<DeliveryResult<string, KafkaReportDto>> ProduceAsync(
             string name,
-            ReportDto message,
+            KafkaReportDto message,
             CancellationToken cancellationToken
         )
         {
             var topic = configuration.GetSection("Kafka").GetSection("Topic").Value;
 
-            var kafkaMessage = new Message<string, ReportDto> { Key = name, Value = message };
+            var kafkaMessage = new Message<string, KafkaReportDto> { Key = name, Value = message };
             return await producer.ProduceAsync(topic, kafkaMessage, cancellationToken);
         }
 

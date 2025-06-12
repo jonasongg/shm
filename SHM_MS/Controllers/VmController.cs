@@ -135,7 +135,7 @@ namespace SHM_MS.Controllers
 
         private async Task<IEnumerable<VmDto>> GetVmsWithStatusAsync()
         {
-            var statusMap = new Dictionary<Vm, VmStatus>();
+            var statusMap = new Dictionary<int, VmStatus>();
             await context
                 .Reports.FromSql(
                     $"SELECT DISTINCT ON (vm_id) * FROM reports ORDER BY vm_id, timestamp desc"
@@ -150,12 +150,22 @@ namespace SHM_MS.Controllers
                             .LocalDateTime.Minus(Period.FromSeconds(5))
                             ? VmStatus.Offline
                             : VmStatus.Online;
-                    statusMap[r.Vm] = vmStatus;
+                    statusMap.Add(r.VmId, vmStatus);
                 });
 
-            var offlineDependants = statusMap
-                .Where(kvp => kvp.Value == VmStatus.Offline)
-                .SelectMany(kvp => kvp.Key.Dependants);
+            var vms = (
+                await context
+                    .Vms.Include(vm => vm.Reports.OrderByDescending(r => r.Timestamp).Take(10))
+                    .ToListAsync()
+            ).Select(vm => new VmDto(vm)
+            {
+                Id = vm.Id,
+                Name = vm.Name,
+                Status = statusMap.TryGetValue(vm.Id, out var status) ? status : VmStatus.Offline,
+            });
+
+            var offlineDependants = vms.Where(vm => vm.Status == VmStatus.Offline)
+                .SelectMany(vm => vm.Dependants);
 
             Queue<Vm> dependants = new(offlineDependants);
             while (dependants.Count != 0)
@@ -165,21 +175,23 @@ namespace SHM_MS.Controllers
                 // Assume that we can find this VM from the query above, which should be the case.
                 // Here, status is either Online or Offline.
                 // If it's Offline, set all Dependants to Degraded if they're Online.
-                if (statusMap[dependant] == VmStatus.Online)
+                if (
+                    statusMap.TryGetValue(dependant.Id, out var status)
+                    && status == VmStatus.Online
+                )
                 {
-                    statusMap[dependant] = VmStatus.Degraded;
+                    var d = vms.FirstOrDefault(vm => vm.Id == dependant.Id);
+                    if (d is not null)
+                    {
+                        d.Status = VmStatus.Degraded;
+                    }
                 }
                 foreach (var grandDependants in dependant.Dependants)
                 {
                     dependants.Enqueue(grandDependants);
                 }
             }
-            return (await context.Vms.ToListAsync()).Select(vm => new VmDto
-            {
-                Id = vm.Id,
-                Name = vm.Name,
-                Status = statusMap[vm],
-            });
+            return vms;
         }
     }
 }

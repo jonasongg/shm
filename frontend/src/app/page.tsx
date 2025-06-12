@@ -7,7 +7,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn, toAbsoluteUrl } from "@/lib/utils";
-import { RawDataReport, RawVm } from "@/types/types";
+import { RawVm } from "@/types/types";
 import { Settings } from "lucide-react";
 import AddVmDialog from "../components/addVmDialog";
 import Body from "./body";
@@ -20,15 +20,7 @@ export default async function Page() {
     if (!response.ok) {
       console.error("Failed to fetch VMs:", response.statusText);
     } else {
-      const vmsWithoutReport: Omit<RawVm, "reports">[] = await response.json();
-
-      vms = await Promise.all(
-        vmsWithoutReport.map(async (vm) => {
-          const response = await fetch(toAbsoluteUrl(`/report/${vm.id}`));
-          const reports: RawDataReport[] = await response.json();
-          return { ...vm, reports };
-        }),
-      );
+      vms = await response.json();
     }
   } catch (error) {
     console.error("Fetch error:", error);

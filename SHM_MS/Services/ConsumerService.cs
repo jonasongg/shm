@@ -9,7 +9,7 @@ namespace SHM_MS.Services
 {
     public class ConsumerService : BackgroundService
     {
-        private readonly IConsumer<string, ReportDto> consumer;
+        private readonly IConsumer<string, KafkaReportDto> consumer;
         private readonly IDbContextFactory<SHMContext> contextFactory;
         private readonly ReportChannelService reportChannelService;
         private readonly ILogger<ConsumerService> logger;
@@ -37,8 +37,8 @@ namespace SHM_MS.Services
                 GroupId = Guid.NewGuid().ToString(),
             };
 
-            consumer = new ConsumerBuilder<string, ReportDto>(config)
-                .SetValueDeserializer(new JsonSerializer<ReportDto>())
+            consumer = new ConsumerBuilder<string, KafkaReportDto>(config)
+                .SetValueDeserializer(new JsonSerializer<KafkaReportDto>())
                 .Build();
             consumer.Subscribe(topic);
         }

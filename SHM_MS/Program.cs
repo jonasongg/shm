@@ -15,7 +15,6 @@ builder
     {
         options.JsonSerializerOptions.Converters.Add(NodaConverters.LocalDateTimeConverter);
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
     });
 builder.Services.AddDbContextFactory<SHMContext>(options =>
     options

@@ -2,7 +2,7 @@ using NodaTime;
 
 namespace Shared.Dtos;
 
-public class ReportDto
+public class KafkaReportDto
 {
     public required LocalDateTime Timestamp { get; set; }
     public required string Name { get; set; }

@@ -38,7 +38,7 @@ public class Worker(
                     result.Timestamp.UtcDateTime
                 );
             }
-            catch (ProduceException<string, ReportDto> e)
+            catch (ProduceException<string, KafkaReportDto> e)
             {
                 logger.LogCritical("Couldn't produce info! {e}", e);
             }
@@ -48,7 +48,7 @@ public class Worker(
     }
 
     [SupportedOSPlatform("windows")]
-    private ReportDto GetWindowsInfo(string name)
+    private KafkaReportDto GetWindowsInfo(string name)
     {
         using ManagementObjectSearcher memSearcher = new("select * from Win32_OperatingSystem");
         var memObj = memSearcher.Get().OfType<ManagementObject>().First(); // there's only one
@@ -61,7 +61,7 @@ public class Worker(
 
         var (totalSpace, freeSpace) = DiskInfo();
 
-        return new ReportDto
+        return new KafkaReportDto
         {
             Name = name,
             Timestamp = GetLocalDateTime(),
@@ -74,7 +74,7 @@ public class Worker(
     }
 
     [SupportedOSPlatform("linux")]
-    private ReportDto GetLinuxInfo(string name)
+    private KafkaReportDto GetLinuxInfo(string name)
     {
         var memoryInfo = ReadProcFile("/proc/meminfo");
 
@@ -98,7 +98,7 @@ public class Worker(
 
         var (totalSpace, freeSpace) = DiskInfo();
 
-        return new ReportDto
+        return new KafkaReportDto
         {
             Name = name,
             Timestamp = GetLocalDateTime(),

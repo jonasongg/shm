@@ -1,3 +1,4 @@
+using NuGet.Packaging;
 using SHM_MS.Models;
 
 namespace SHM_MS.Dtos
@@ -9,8 +10,20 @@ namespace SHM_MS.Dtos
         Degraded,
     }
 
-    public class VmDto : Vm
+    public record VmDto
     {
-        public VmStatus Status { get; set; }
+        public int Id { get; set; }
+        public required string Name { get; set; }
+        public ICollection<ReportDto> Reports { get; } = [];
+        public ICollection<Vm> DependentOns { get; } = [];
+        public ICollection<Vm> Dependants { get; } = [];
+        public required VmStatus Status { get; set; }
+
+        public VmDto(Vm vm)
+        {
+            Reports.AddRange(vm.Reports.Select(r => new ReportDto(r)));
+            DependentOns.AddRange(vm.DependentOns);
+            Dependants.AddRange(vm.Dependants);
+        }
     }
 }
