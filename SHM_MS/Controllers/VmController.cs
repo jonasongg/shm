@@ -70,7 +70,7 @@ public class VmController(SHMContext context, IClock clock) : ControllerBase
         context.Vms.Add(vm);
         await context.SaveChangesAsync();
 
-        return CreatedAtAction("GetVm", new { id = vm.Id }, vm);
+        return Created();
     }
 
     // DELETE: api/vm/5
