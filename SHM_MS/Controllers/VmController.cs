@@ -22,6 +22,37 @@ namespace SHM_MS.Controllers
             return (await GetVmsWithStatusAsync()).ToList();
         }
 
+        // PUT: api/vm/5
+        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutVm(int id, Vm vm)
+        {
+            if (id != vm.Id)
+            {
+                return BadRequest();
+            }
+
+            context.Entry(vm).State = EntityState.Modified;
+
+            try
+            {
+                await context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!context.Vms.Any(e => e.Id == id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return NoContent();
+        }
+
         // POST: api/vm
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
