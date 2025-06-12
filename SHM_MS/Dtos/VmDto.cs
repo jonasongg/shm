@@ -15,14 +15,14 @@ public record VmDto
     public int Id { get; set; }
     public required string Name { get; set; }
     public ICollection<ReportDto> Reports { get; } = [];
-    public ICollection<Vm> DependentOns { get; } = [];
+    public ICollection<Vm> Dependencies { get; } = [];
     public ICollection<Vm> Dependants { get; } = [];
     public required VmStatus Status { get; set; }
 
     public VmDto(Vm vm)
     {
         Reports.AddRange(vm.Reports.Select(r => new ReportDto(r)));
-        DependentOns.AddRange(vm.Dependencies);
+        Dependencies.AddRange(vm.Dependencies);
         Dependants.AddRange(vm.Dependants);
     }
 }
