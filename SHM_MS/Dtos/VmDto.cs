@@ -6,6 +6,7 @@ namespace SHM_MS.Dtos
     {
         Offline,
         Online,
+        Degraded,
     }
 
     public class VmDto : Vm
