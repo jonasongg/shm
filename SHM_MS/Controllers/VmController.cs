@@ -149,9 +149,12 @@ public class VmController(SHMContext context, IClock clock) : ControllerBase
             }
         }
 
+        foreach (var kvp in vms)
+        {
+            kvp.Value.Dependants.Clear();
+        }
         foreach (var kvp in newDependencies)
         {
-            vms[kvp.Key].Dependants.Clear();
             vms[kvp.Key].Dependants.AddRange(kvp.Value.Select(id => vms[id]));
         }
 
@@ -182,36 +185,44 @@ public class VmController(SHMContext context, IClock clock) : ControllerBase
         var vms = (
             await context
                 .Vms.Include(vm => vm.Reports.OrderByDescending(r => r.Timestamp).Take(10))
+                .Include(vm => vm.Dependants)
+                .Include(vm => vm.Dependencies)
                 .ToListAsync()
-        ).Select(vm => new VmDto(vm)
-        {
-            Id = vm.Id,
-            Name = vm.Name,
-            Status = statusMap.TryGetValue(vm.Id, out var status) ? status : VmStatus.Offline,
-        });
+        )
+            .Select(vm => new VmDto(vm)
+            {
+                Id = vm.Id,
+                Name = vm.Name,
+                Status = statusMap.TryGetValue(vm.Id, out var status) ? status : VmStatus.Offline,
+            })
+            .ToList();
 
         var offlineDependants = vms.Where(vm => vm.Status == VmStatus.Offline)
-            .SelectMany(vm => vm.Dependants);
+            .SelectMany(vm => vm.DependantIds);
 
-        Queue<Vm> dependants = new(offlineDependants);
-        while (dependants.Count != 0)
+        Queue<int> dependantIds = new(offlineDependants);
+        while (dependantIds.Count != 0)
         {
-            var dependant = dependants.Dequeue();
+            var dependantId = dependantIds.Dequeue();
 
             // Assume that we can find this VM from the query above, which should be the case.
             // Here, status is either Online or Offline.
             // If it's Offline, set all Dependants to Degraded if they're Online.
-            if (statusMap.TryGetValue(dependant.Id, out var status) && status == VmStatus.Online)
+            if (statusMap.TryGetValue(dependantId, out var status) && status == VmStatus.Online)
             {
-                var d = vms.FirstOrDefault(vm => vm.Id == dependant.Id);
+                var d = vms.FirstOrDefault(vm => vm.Id == dependantId);
                 if (d is not null)
                 {
                     d.Status = VmStatus.Degraded;
                 }
             }
-            foreach (var grandDependants in dependant.Dependants)
+            var grandDependants = vms.FirstOrDefault(vm => vm.Id == dependantId)?.DependantIds;
+            if (grandDependants is not null)
             {
-                dependants.Enqueue(grandDependants);
+                foreach (var grandDependant in grandDependants)
+                {
+                    dependantIds.Enqueue(grandDependant);
+                }
             }
         }
         return vms;
