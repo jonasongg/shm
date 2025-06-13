@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Net.Http.Headers;
 using NodaTime;
 using NodaTime.Serialization.SystemTextJson;
+using NuGet.Packaging;
 using SHM_MS.DbContexts;
 using SHM_MS.Dtos;
 using SHM_MS.Models;
@@ -20,37 +21,6 @@ public class VmController(SHMContext context, IClock clock) : ControllerBase
     public async Task<ActionResult<IEnumerable<VmDto>>> GetVms()
     {
         return (await GetVmsWithStatusAsync()).ToList();
-    }
-
-    // PUT: api/vm/5
-    // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-    [HttpPut("{id}")]
-    public async Task<IActionResult> PutVm(int id, Vm vm)
-    {
-        if (id != vm.Id)
-        {
-            return BadRequest();
-        }
-
-        context.Entry(vm).State = EntityState.Modified;
-
-        try
-        {
-            await context.SaveChangesAsync();
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            if (!context.Vms.Any(e => e.Id == id))
-            {
-                return NotFound();
-            }
-            else
-            {
-                throw;
-            }
-        }
-
-        return NoContent();
     }
 
     // POST: api/vm
@@ -131,6 +101,62 @@ public class VmController(SHMContext context, IClock clock) : ControllerBase
 
             await Task.Delay(5000, cancellationToken);
         }
+    }
+
+    // PUT: api/vm/dependencies
+    [HttpPut("dependencies")]
+    public async Task<IActionResult> PutDependencies(
+        Dictionary<int, ICollection<int>> newDependencies
+    )
+    {
+        var vms = await context.Vms.Include(vm => vm.Dependants).ToDictionaryAsync(vm => vm.Id);
+
+        foreach (var kvp in newDependencies)
+        {
+            if (!vms.ContainsKey(kvp.Key) || kvp.Value.Any(dep => !vms.ContainsKey(dep)))
+            {
+                return BadRequest("Unknown VM id in the dependencies!");
+            }
+        }
+
+        var visited = new Dictionary<int, bool>(
+            vms.Select(kvp => new KeyValuePair<int, bool>(kvp.Key, false))
+        );
+        var recursionList = new Dictionary<int, bool>(visited);
+
+        bool IsCyclic(int current)
+        {
+            if (recursionList[current])
+                return true; // already visited in this path, so return true
+
+            if (visited[current])
+                return false; // already visited via another path, so no cycle
+
+            visited[current] = recursionList[current] = true;
+
+            if (newDependencies.TryGetValue(current, out var dep) && dep.Any(d => IsCyclic(d)))
+                return true;
+
+            recursionList[current] = false;
+            return false;
+        }
+
+        foreach (var kvp in visited)
+        {
+            if (!kvp.Value && IsCyclic(kvp.Key))
+            {
+                return BadRequest("There is a cycle in the VM dependencies!");
+            }
+        }
+
+        foreach (var kvp in newDependencies)
+        {
+            vms[kvp.Key].Dependants.Clear();
+            vms[kvp.Key].Dependants.AddRange(kvp.Value.Select(id => vms[id]));
+        }
+
+        await context.SaveChangesAsync();
+        return Ok();
     }
 
     private async Task<IEnumerable<VmDto>> GetVmsWithStatusAsync()
