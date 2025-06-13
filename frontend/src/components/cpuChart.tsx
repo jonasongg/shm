@@ -4,10 +4,12 @@ import { Area, AreaChart, CartesianGrid, Label, XAxis, YAxis } from "recharts";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "./ui/chart";
 
 export default function CpuChart({
+  id,
   data,
   className,
   disabled,
 }: {
+  id: number;
   data: DataReport[];
   className?: string;
   disabled: boolean;
@@ -31,7 +33,13 @@ export default function CpuChart({
         margin={{ right: 12, bottom: 12 }}
       >
         <defs>
-          <linearGradient id="cpuUsagePercent" x1="0" y1="0" x2="0" y2="1">
+          <linearGradient
+            id={`cpuUsagePercent${id}`}
+            x1="0"
+            y1="0"
+            x2="0"
+            y2="1"
+          >
             <stop
               offset="5%"
               stopColor="var(--color-cpuUsagePercent)"
@@ -90,7 +98,7 @@ export default function CpuChart({
         <Area
           dataKey="cpuUsagePercent"
           type="bump"
-          fill="url(#cpuUsagePercent)"
+          fill={`url(#cpuUsagePercent${id})`}
           stroke="var(--color-cpuUsagePercent)"
           isAnimationActive={false}
         />

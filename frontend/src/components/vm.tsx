@@ -52,6 +52,7 @@ export default function Vm({
         <CardContent className="flex flex-col h-full">
           <div className="flex flex-col flex-7/8 md:flex-row md:flex-3/4">
             <CpuChart
+              id={id}
               data={reports}
               className="flex-1/2 md:flex-2/3"
               disabled={status === "Offline"}
