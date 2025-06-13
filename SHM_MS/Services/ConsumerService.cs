@@ -13,17 +13,20 @@ public class ConsumerService : BackgroundService
     private readonly IDbContextFactory<SHMContext> contextFactory;
     private readonly ReportChannelService reportChannelService;
     private readonly ILogger<ConsumerService> logger;
+    private readonly VmStatusService vmStatusService;
 
     public ConsumerService(
         IConfiguration configuration,
         IDbContextFactory<SHMContext> contextFactory,
         ReportChannelService reportChannelService,
-        ILogger<ConsumerService> logger
+        ILogger<ConsumerService> logger,
+        VmStatusService vmStatusService
     )
     {
         this.contextFactory = contextFactory;
         this.reportChannelService = reportChannelService;
         this.logger = logger;
+        this.vmStatusService = vmStatusService;
 
         var bootstrapServers = configuration
             .GetSection("Kafka")
@@ -45,8 +48,6 @@ public class ConsumerService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        // await Task.Yield();
-
         stoppingToken.Register(() =>
         {
             consumer.Close();
@@ -83,6 +84,7 @@ public class ConsumerService : BackgroundService
                 };
                 context.Reports.Add(report);
 
+                vmStatusService.NotifyReportReceived(report.VmId);
                 await context.SaveChangesAsync(stoppingToken);
                 await reportChannelService.WriteAsync(report, stoppingToken);
             }

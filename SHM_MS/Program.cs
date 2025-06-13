@@ -28,6 +28,7 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddSingleton<ReportChannelService>();
 builder.Services.AddHostedService<ConsumerService>();
 builder.Services.AddSingleton<IClock>(SystemClock.Instance);
+builder.Services.AddSingleton<VmStatusService>();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(

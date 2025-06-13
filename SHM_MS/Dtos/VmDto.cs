@@ -3,13 +3,6 @@ using SHM_MS.Models;
 
 namespace SHM_MS.Dtos;
 
-public enum VmStatus
-{
-    Offline,
-    Online,
-    Degraded,
-}
-
 public record VmDto
 {
     public int Id { get; set; }
