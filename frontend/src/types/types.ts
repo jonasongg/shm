@@ -18,7 +18,7 @@ export type DataReport = Pick<RawDataReport, "cpuUsagePercent" | "vmId"> & {
   spaceUsagePercent: number;
 };
 
-export type VmStatus = "Offline" | "Online";
+export type VmStatus = "Offline" | "Online" | "Degraded";
 
 export type RawVm = {
   id: number;

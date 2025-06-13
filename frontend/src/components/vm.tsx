@@ -23,11 +23,16 @@ export default function Vm({
   status: VmStatus;
   reports: DataReport[];
 }) {
+  const disabled = status === "Degraded" || status === "Offline";
   return (
     <Card
       className={cn(
         "h-140 md:h-80.5 relative overflow-hidden before:absolute before:inset-0 before:z-20 before:transition-colors before:pointer-events-none transition-colors",
-        { "before:bg-black/5 dark:before:bg-black/20": status === "Offline" },
+        {
+          "before:bg-red-900/5 dark:before:bg-red-700/20": status === "Offline",
+          "before:bg-amber-900/5 dark:before:bg-amber-800/20":
+            status === "Degraded",
+        },
       )}
     >
       <CardHeader className="text-xl flex gap-2">
@@ -37,6 +42,7 @@ export default function Vm({
             "ml-4 w-2 h-2 rounded-full self-center transition-colors",
             {
               "bg-red-600": status === "Offline",
+              "bg-amber-600": status === "Degraded",
               "bg-green-600": status === "Online",
             },
           )}
@@ -55,7 +61,7 @@ export default function Vm({
               id={id}
               data={reports}
               className="flex-1/2 md:flex-2/3"
-              disabled={status === "Offline"}
+              disabled={disabled}
             />
             <MediaQuery minWidth={768}>
               <Separator
@@ -72,14 +78,14 @@ export default function Vm({
             <MemChart
               data={reports}
               className="flex-1/2 md:flex-1/3"
-              disabled={status === "Offline"}
+              disabled={disabled}
             />
           </div>
           <Separator className="my-2" />
           <DiskChart
             data={reports}
             className="flex-1/8 md:flex-1/4"
-            disabled={status === "Offline"}
+            disabled={disabled}
           />
         </CardContent>
       )}
