@@ -14,5 +14,5 @@ public class Vm
     public ICollection<Report> Reports { get; } = [];
     public ICollection<Vm> Dependencies { get; } = [];
     public ICollection<Vm> Dependants { get; } = [];
-    public required VmStatus Status { get; set; }
+    public VmStatus Status { get; set; }
 }
