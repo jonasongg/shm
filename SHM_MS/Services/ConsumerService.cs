@@ -59,7 +59,7 @@ public class ConsumerService : BackgroundService
             var result = await Task.Run(() => consumer.Consume(stoppingToken), stoppingToken);
             var reportDTO = result.Message.Value;
 
-            using var context = contextFactory.CreateDbContext();
+            await using var context = contextFactory.CreateDbContext();
             var vm = await context.Vms.FirstOrDefaultAsync(
                 v => v.Name == reportDTO.Name,
                 stoppingToken
@@ -83,9 +83,9 @@ public class ConsumerService : BackgroundService
                     FreeSpace = reportDTO.FreeSpace,
                 };
                 context.Reports.Add(report);
+                await context.SaveChangesAsync(stoppingToken);
 
                 vmStatusService.NotifyReportReceived(report.VmId);
-                await context.SaveChangesAsync(stoppingToken);
                 await reportChannelService.WriteAsync(report, stoppingToken);
             }
         }

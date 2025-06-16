@@ -9,18 +9,23 @@ using NuGet.Packaging;
 using SHM_MS.DbContexts;
 using SHM_MS.Dtos;
 using SHM_MS.Models;
+using SHM_MS.Services;
 
 namespace SHM_MS.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class VmController(SHMContext context, IClock clock) : ControllerBase
+public class VmController(
+    SHMContext context,
+    IDbContextFactory<SHMContext> contextFactory,
+    VmStatusService vmStatusService
+) : ControllerBase
 {
     // GET: api/vm
     [HttpGet]
     public async Task<ActionResult<IEnumerable<VmDto>>> GetVms()
     {
-        return (await GetVmsWithStatusAsync()).ToList();
+        return (await GetVmsWithStatusAsync(context)).ToList();
     }
 
     // POST: api/vm
@@ -77,7 +82,7 @@ public class VmController(SHMContext context, IClock clock) : ControllerBase
 
     // GET: api/vm/status
     [HttpGet("status")]
-    public async Task GetReportStream(CancellationToken cancellationToken)
+    public async Task GetStatusStream(CancellationToken cancellationToken)
     {
         HttpContext.Response.Headers.Append(HeaderNames.ContentType, "text/event-stream");
         var options = new JsonSerializerOptions
@@ -89,10 +94,11 @@ public class VmController(SHMContext context, IClock clock) : ControllerBase
 
         while (!cancellationToken.IsCancellationRequested)
         {
+            await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
             await HttpContext.Response.WriteAsync("data: ", cancellationToken);
             await JsonSerializer.SerializeAsync(
                 HttpContext.Response.Body,
-                await GetVmsWithStatusAsync(),
+                await GetVmsWithStatusAsync(context),
                 options: options,
                 cancellationToken: cancellationToken
             );
@@ -158,73 +164,18 @@ public class VmController(SHMContext context, IClock clock) : ControllerBase
             vms[kvp.Key].Dependants.AddRange(kvp.Value.Select(id => vms[id]));
         }
 
+        await vmStatusService.RecalculateStatusesAsync(context);
         await context.SaveChangesAsync();
         return Ok();
     }
 
-    private async Task<IEnumerable<VmDto>> GetVmsWithStatusAsync()
+    private async Task<IEnumerable<VmDto>> GetVmsWithStatusAsync(SHMContext context)
     {
-        var statusMap = new Dictionary<int, VmStatus>();
-        await context
-            .Reports.FromSql(
-                $"SELECT DISTINCT ON (vm_id) * FROM reports ORDER BY vm_id, timestamp desc"
-            )
-            .ForEachAsync(r =>
-            {
-                var vmStatus =
-                    r.Timestamp
-                    < clock
-                        .GetCurrentInstant()
-                        .InZone(DateTimeZoneProviders.Tzdb.GetSystemDefault())
-                        .LocalDateTime.Minus(Period.FromSeconds(5))
-                        ? VmStatus.Offline
-                        : VmStatus.Online;
-                statusMap.Add(r.VmId, vmStatus);
-            });
-
-        var vms = (
-            await context
-                .Vms.Include(vm => vm.Reports.OrderByDescending(r => r.Timestamp).Take(10))
-                .Include(vm => vm.Dependants)
-                .Include(vm => vm.Dependencies)
-                .ToListAsync()
-        )
-            .Select(vm => new VmDto(vm)
-            {
-                Id = vm.Id,
-                Name = vm.Name,
-                Status = statusMap.TryGetValue(vm.Id, out var status) ? status : VmStatus.Offline,
-            })
-            .ToList();
-
-        var offlineDependants = vms.Where(vm => vm.Status == VmStatus.Offline)
-            .SelectMany(vm => vm.DependantIds);
-
-        Queue<int> dependantIds = new(offlineDependants);
-        while (dependantIds.Count != 0)
-        {
-            var dependantId = dependantIds.Dequeue();
-
-            // Assume that we can find this VM from the query above, which should be the case.
-            // Here, status is either Online or Offline.
-            // If it's Offline, set all Dependants to Degraded if they're Online.
-            if (statusMap.TryGetValue(dependantId, out var status) && status == VmStatus.Online)
-            {
-                var d = vms.FirstOrDefault(vm => vm.Id == dependantId);
-                if (d is not null)
-                {
-                    d.Status = VmStatus.Degraded;
-                }
-            }
-            var grandDependants = vms.FirstOrDefault(vm => vm.Id == dependantId)?.DependantIds;
-            if (grandDependants is not null)
-            {
-                foreach (var grandDependant in grandDependants)
-                {
-                    dependantIds.Enqueue(grandDependant);
-                }
-            }
-        }
-        return vms;
+        return await context
+            .Vms.Include(vm => vm.Reports.OrderByDescending(r => r.Timestamp).Take(10))
+            .Include(vm => vm.Dependants)
+            .Include(vm => vm.Dependencies)
+            .Select(vm => new VmDto(vm))
+            .ToListAsync();
     }
 }

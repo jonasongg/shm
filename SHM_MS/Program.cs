@@ -1,4 +1,3 @@
-using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using NodaTime;
@@ -27,7 +26,6 @@ builder.Services.AddDbContextFactory<SHMContext>(options =>
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddSingleton<ReportChannelService>();
 builder.Services.AddHostedService<ConsumerService>();
-builder.Services.AddSingleton<IClock>(SystemClock.Instance);
 builder.Services.AddSingleton<VmStatusService>();
 builder.Services.AddCors(options =>
 {

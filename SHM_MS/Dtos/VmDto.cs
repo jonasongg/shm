@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using NuGet.Packaging;
 using SHM_MS.Models;
 
@@ -12,10 +13,14 @@ public record VmDto
     public ICollection<int> DependantIds { get; } = [];
     public required VmStatus Status { get; set; }
 
+    [SetsRequiredMembers]
     public VmDto(Vm vm)
     {
+        Id = vm.Id;
+        Name = vm.Name;
         Reports.AddRange(vm.Reports.Select(r => new ReportDto(r)));
         DependencyIds.AddRange(vm.Dependencies.Select(d => d.Id));
         DependantIds.AddRange(vm.Dependants.Select(d => d.Id));
+        Status = vm.Status;
     }
 }
