@@ -15,19 +15,22 @@ public class ConsumerService : BackgroundService
     private readonly ReportChannelService reportChannelService;
     private readonly ILogger<ConsumerService> logger;
     private readonly VmStatusService vmStatusService;
+    private readonly SystemStatusChannelService systemStatusChannelService;
 
     public ConsumerService(
         IConfiguration configuration,
         IDbContextFactory<SHMContext> contextFactory,
         ReportChannelService reportChannelService,
         ILogger<ConsumerService> logger,
-        VmStatusService vmStatusService
+        VmStatusService vmStatusService,
+        SystemStatusChannelService systemStatusChannelService
     )
     {
         this.contextFactory = contextFactory;
         this.reportChannelService = reportChannelService;
         this.logger = logger;
         this.vmStatusService = vmStatusService;
+        this.systemStatusChannelService = systemStatusChannelService;
 
         var bootstrapServers = configuration
             .GetSection("Kafka")
@@ -43,6 +46,7 @@ public class ConsumerService : BackgroundService
 
         consumer = new ConsumerBuilder<string, KafkaReportDto>(config)
             .SetValueDeserializer(new JsonSerializer<KafkaReportDto>())
+            .SetErrorHandler(ErrorHandler)
             .Build();
         consumer.Subscribe(topic);
     }
@@ -90,5 +94,13 @@ public class ConsumerService : BackgroundService
                 await reportChannelService.WriteAsync(new ReportDto(report), stoppingToken);
             }
         }
+    }
+
+    private async void ErrorHandler(IConsumer<string, KafkaReportDto> consumer, Error error)
+    {
+        await systemStatusChannelService.WriteAsync(
+            new SystemStatusDto { Status = SystemStatus.KafkaBrokerDown },
+            default
+        );
     }
 }
