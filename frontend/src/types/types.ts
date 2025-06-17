@@ -25,6 +25,8 @@ export type RawVm = {
   name: string;
   status: VmStatus;
   reports: RawDataReport[];
+  dependantIds: number[];
+  dependencyIds: number[];
 };
 
 export type VmType = Omit<RawVm, "reports"> & {

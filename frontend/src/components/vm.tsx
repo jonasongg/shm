@@ -5,9 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
-import { DataReport, VmStatus } from "@/types/types";
+import { DataReport, VmStatus, VmType } from "@/types/types";
 import dynamic from "next/dynamic";
 import DeleteVmDialog from "./deleteVmDialog";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 const MediaQuery = dynamic(() => import("react-responsive"), {
   ssr: false,
 });
@@ -17,11 +18,13 @@ export default function Vm({
   id,
   status,
   reports,
+  offlineDependencies,
 }: {
   name: string;
   id: number;
   status: VmStatus;
   reports: DataReport[];
+  offlineDependencies?: VmType[];
 }) {
   const disabled = status === "Degraded" || status === "Offline";
   return (
@@ -47,7 +50,18 @@ export default function Vm({
             },
           )}
         />
-        <Label className="text-xs text-neutral-500 self-center">{status}</Label>
+        <Tooltip>
+          {status === "Degraded" && offlineDependencies && (
+            <TooltipContent>
+              {`This VM is degraded because these VM(s) are offline:\n${offlineDependencies.map((d) => d.name).join(", ")}`}
+            </TooltipContent>
+          )}
+          <TooltipTrigger className="self-center">
+            <Label className="text-xs text-neutral-500 self-center">
+              {status}
+            </Label>
+          </TooltipTrigger>
+        </Tooltip>
         <DeleteVmDialog name={name} id={id} />
       </CardHeader>
       {reports.length === 0 ? (
