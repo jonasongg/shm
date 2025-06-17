@@ -30,3 +30,8 @@ export type RawVm = {
 export type VmType = Omit<RawVm, "reports"> & {
   reports: DataReport[];
 };
+
+export type VmStatusUpdate = {
+  id: number;
+  status: VmStatus;
+};

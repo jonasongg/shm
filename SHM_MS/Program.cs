@@ -26,7 +26,9 @@ builder.Services.AddDbContextFactory<SHMContext>(options =>
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddSingleton<ReportChannelService>();
 builder.Services.AddHostedService<ConsumerService>();
+builder.Services.AddSingleton<IClock>(SystemClock.Instance);
 builder.Services.AddSingleton<VmStatusService>();
+builder.Services.AddSingleton<VmStatusChannelService>();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(
@@ -44,4 +46,7 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 app.UseCors(AllowedSpecificOrigins);
 app.MapControllers();
+
+await app.Services.GetRequiredService<VmStatusService>().RecalculateStatusesOnStartupAsync();
+
 app.Run();

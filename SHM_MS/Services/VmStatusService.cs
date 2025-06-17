@@ -2,14 +2,22 @@ using System.Collections.Concurrent;
 using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using NodaTime;
+using NodaTime.Extensions;
 using SHM_MS.DbContexts;
+using SHM_MS.Dtos;
 using SHM_MS.Models;
 
 namespace SHM_MS.Services;
 
-public class VmStatusService(IDbContextFactory<SHMContext> contextFactory)
+public class VmStatusService(
+    IDbContextFactory<SHMContext> contextFactory,
+    VmStatusChannelService vmStatusChannelService,
+    IClock clock
+)
 {
-    const int TimerInterval = 5000;
+    private readonly Period TimerInterval = Period.FromSeconds(5);
     private readonly ConcurrentDictionary<int, CancellationTokenSource> timers = new();
 
     public void NotifyReportReceived(int vmId)
@@ -23,20 +31,42 @@ public class VmStatusService(IDbContextFactory<SHMContext> contextFactory)
         var newCts = new CancellationTokenSource();
         timers[vmId] = newCts;
 
-        _ = Task.Run(async () =>
+        _ = Task.Run(
+            async () =>
+            {
+                await using var context = await contextFactory.CreateDbContextAsync(newCts.Token);
+                try
+                {
+                    await SetOnlineAsync(context, vmId, newCts.Token);
+                    await Task.Delay(TimerInterval.ToDuration().ToTimeSpan(), newCts.Token);
+                    await SetOfflineAsync(context, vmId, newCts.Token);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error processing VM {vmId}: {ex.Message}");
+                }
+            },
+            newCts.Token
+        );
+    }
+
+    private async Task SetOnlineAsync(
+        SHMContext context,
+        int vmId,
+        CancellationToken cancellationToken
+    )
+    {
+        var vm = await context.Vms.FirstOrDefaultAsync(vm => vm.Id == vmId, cancellationToken);
+        if (vm is null)
         {
-            await using var context = await contextFactory.CreateDbContextAsync(newCts.Token);
-            try
-            {
-                await SetOnlineAsync(context, vmId, newCts.Token);
-                await Task.Delay(TimerInterval, newCts.Token);
-                await SetOfflineAsync(context, vmId, newCts.Token);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error processing VM {vmId}: {ex.Message}");
-            }
-        });
+            return;
+        }
+
+        vm.Status = VmStatus.Online;
+
+        // we don't save changes first - we want to recalculate status first
+        // in case this vm is supposed to be degraded
+        await RecalculateStatusesAsync(context, cancellationToken);
     }
 
     private async Task SetOfflineAsync(
@@ -66,25 +96,7 @@ public class VmStatusService(IDbContextFactory<SHMContext> contextFactory)
             }
         }
 
-        await context.SaveChangesAsync(cancellationToken);
-    }
-
-    private async Task SetOnlineAsync(
-        SHMContext context,
-        int vmId,
-        CancellationToken cancellationToken
-    )
-    {
-        var vm = await context.Vms.FirstOrDefaultAsync(vm => vm.Id == vmId, cancellationToken);
-        if (vm is null)
-        {
-            return;
-        }
-
-        vm.Status = VmStatus.Online;
-        await context.SaveChangesAsync(cancellationToken);
-
-        await RecalculateStatusesAsync(context, cancellationToken);
+        await SaveChangesAndPublishStatusAsync(context, cancellationToken);
     }
 
     public async Task RecalculateStatusesAsync(
@@ -111,6 +123,57 @@ public class VmStatusService(IDbContextFactory<SHMContext> contextFactory)
             {
                 dependant.Status = VmStatus.Degraded;
             }
+        }
+
+        await SaveChangesAndPublishStatusAsync(context, cancellationToken);
+    }
+
+    public async Task RecalculateStatusesOnStartupAsync(
+        CancellationToken cancellationToken = default
+    )
+    {
+        await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
+        var vms = await context
+            .Vms.Include(vm => vm.Reports.OrderByDescending(r => r.Timestamp).Take(1))
+            .ToListAsync(cancellationToken);
+        foreach (var vm in vms)
+        {
+            var lastReport = vm.Reports.FirstOrDefault();
+            if (
+                lastReport is null
+                || lastReport.Timestamp
+                    // < now - 5 seconds
+                    < clock
+                        .GetCurrentInstant()
+                        .InZone(DateTimeZoneProviders.Tzdb.GetSystemDefault())
+                        .LocalDateTime.Minus(TimerInterval)
+            )
+            {
+                vm.Status = VmStatus.Offline;
+            }
+            else
+            {
+                vm.Status = VmStatus.Online;
+            }
+        }
+
+        await RecalculateStatusesAsync(context, cancellationToken);
+    }
+
+    private async Task SaveChangesAndPublishStatusAsync(
+        SHMContext context,
+        CancellationToken cancellationToken
+    )
+    {
+        var statusChanges = context
+            .ChangeTracker.Entries<Vm>()
+            .Where(e => e.State == EntityState.Modified && e.Property(vm => vm.Status).IsModified)
+            .Select(e => new VmStatusDto { Id = e.Entity.Id, Status = e.Entity.Status })
+            .ToList();
+
+        foreach (var change in statusChanges)
+        {
+            await vmStatusChannelService.WriteAsync(change, cancellationToken);
         }
 
         await context.SaveChangesAsync(cancellationToken);

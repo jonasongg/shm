@@ -1,7 +1,7 @@
 "use client";
 
 import { bytesFormatter, toAbsoluteUrl } from "@/lib/utils";
-import { RawDataReport, RawVm } from "@/types/types";
+import { RawDataReport, RawVm, VmStatusUpdate } from "@/types/types";
 import { useEffect, useState } from "react";
 import Vm from "../components/vm";
 
@@ -39,17 +39,9 @@ export default function Body({ vms: _vms }: { vms: RawVm[] }) {
     };
 
     vmStatusEventSource.onmessage = (event) => {
-      const newVms: RawVm[] = JSON.parse(event.data);
+      const { id, status }: VmStatusUpdate = JSON.parse(event.data);
 
-      setVms((d) =>
-        d.map((vm) => {
-          const status = newVms.find((v) => v.id === vm.id)?.status;
-          return {
-            ...vm,
-            status: status ?? vm.status,
-          };
-        }),
-      );
+      setVms((d) => d.map((vm) => (vm.id === id ? { ...vm, status } : vm)));
     };
 
     return () => {

@@ -17,15 +17,20 @@ namespace SHM_MS.Controllers;
 [ApiController]
 public class VmController(
     SHMContext context,
-    IDbContextFactory<SHMContext> contextFactory,
-    VmStatusService vmStatusService
+    VmStatusService vmStatusService,
+    VmStatusChannelService vmStatusChannelService
 ) : ControllerBase
 {
     // GET: api/vm
     [HttpGet]
     public async Task<ActionResult<IEnumerable<VmDto>>> GetVms()
     {
-        return (await GetVmsWithStatusAsync(context)).ToList();
+        return await context
+            .Vms.Include(vm => vm.Reports.OrderByDescending(r => r.Timestamp).Take(10))
+            .Include(vm => vm.Dependants)
+            .Include(vm => vm.Dependencies)
+            .Select(vm => new VmDto(vm))
+            .ToListAsync();
     }
 
     // POST: api/vm
@@ -94,18 +99,17 @@ public class VmController(
 
         while (!cancellationToken.IsCancellationRequested)
         {
-            await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
+            var vmStatusDto = await vmStatusChannelService.ReadAsync(cancellationToken);
+
             await HttpContext.Response.WriteAsync("data: ", cancellationToken);
             await JsonSerializer.SerializeAsync(
                 HttpContext.Response.Body,
-                await GetVmsWithStatusAsync(context),
+                vmStatusDto,
                 options: options,
                 cancellationToken: cancellationToken
             );
             await HttpContext.Response.WriteAsync("\n\n", cancellationToken);
             await HttpContext.Response.Body.FlushAsync(cancellationToken);
-
-            await Task.Delay(5000, cancellationToken);
         }
     }
 
@@ -167,15 +171,5 @@ public class VmController(
         await vmStatusService.RecalculateStatusesAsync(context);
         await context.SaveChangesAsync();
         return Ok();
-    }
-
-    private async Task<IEnumerable<VmDto>> GetVmsWithStatusAsync(SHMContext context)
-    {
-        return await context
-            .Vms.Include(vm => vm.Reports.OrderByDescending(r => r.Timestamp).Take(10))
-            .Include(vm => vm.Dependants)
-            .Include(vm => vm.Dependencies)
-            .Select(vm => new VmDto(vm))
-            .ToListAsync();
     }
 }
