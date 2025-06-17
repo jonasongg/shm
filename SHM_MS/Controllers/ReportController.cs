@@ -24,12 +24,12 @@ public class ReportController(ReportChannelService reportChannelService) : Contr
 
         while (!cancellationToken.IsCancellationRequested)
         {
-            var report = await reportChannelService.ReadAsync(cancellationToken);
+            var reportDto = await reportChannelService.ReadAsync(cancellationToken);
 
             await HttpContext.Response.WriteAsync("data: ", cancellationToken);
             await JsonSerializer.SerializeAsync(
                 HttpContext.Response.Body,
-                new ReportDto(report),
+                reportDto,
                 options: options,
                 cancellationToken: cancellationToken
             );

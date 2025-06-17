@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Shared.Dtos;
 using Shared.Serializers;
 using SHM_MS.DbContexts;
+using SHM_MS.Dtos;
 using SHM_MS.Models;
 
 namespace SHM_MS.Services;
@@ -86,7 +87,7 @@ public class ConsumerService : BackgroundService
                 await context.SaveChangesAsync(stoppingToken);
 
                 vmStatusService.NotifyReportReceived(report.VmId);
-                await reportChannelService.WriteAsync(report, stoppingToken);
+                await reportChannelService.WriteAsync(new ReportDto(report), stoppingToken);
             }
         }
     }
