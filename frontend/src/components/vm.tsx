@@ -57,7 +57,15 @@ export default function Vm({
             </TooltipContent>
           )}
           <TooltipTrigger className="self-center">
-            <Label className="text-xs text-neutral-500 self-center">
+            <Label
+              className={cn(
+                "text-xs text-neutral-500 dark:text-neutral-400 self-center",
+                {
+                  "border-dotted border-b-2 border-b-neutral-400 dark:border-b-neutral-500":
+                    status === "Degraded",
+                },
+              )}
+            >
               {status}
             </Label>
           </TooltipTrigger>
