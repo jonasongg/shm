@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Net.Http.Headers;
 using NodaTime.Serialization.SystemTextJson;
@@ -22,6 +23,7 @@ public class StreamController(IEnumerable<IChannelServiceReader> channelServiceR
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         };
         options.Converters.Add(NodaConverters.LocalDateTimeConverter);
+        options.Converters.Add(new JsonStringEnumConverter());
 
         var readTasks = channelServiceReaders
             .Select(reader => reader.ReadAsync(cancellationToken))
@@ -31,7 +33,7 @@ public class StreamController(IEnumerable<IChannelServiceReader> channelServiceR
         {
             var completedTask = await Task.WhenAny(readTasks);
             var serverEvent = await completedTask;
-            var eventType = serverEvent.EventType.ToString();
+            var eventType = serverEvent.EventType;
 
             await HttpContext.Response.WriteAsync($"event: {eventType}\ndata: ", cancellationToken);
             await JsonSerializer.SerializeAsync(
