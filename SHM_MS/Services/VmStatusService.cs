@@ -7,13 +7,14 @@ using NodaTime;
 using NodaTime.Extensions;
 using SHM_MS.DbContexts;
 using SHM_MS.Dtos;
+using SHM_MS.Interfaces;
 using SHM_MS.Models;
 
 namespace SHM_MS.Services;
 
 public class VmStatusService(
     IDbContextFactory<SHMContext> contextFactory,
-    VmStatusChannelService vmStatusChannelService,
+    IChannelServiceWriter<VmStatusDto> vmStatusChannelServiceWriter,
     IClock clock
 )
 {
@@ -173,7 +174,7 @@ public class VmStatusService(
 
         foreach (var change in statusChanges)
         {
-            await vmStatusChannelService.WriteAsync(change, cancellationToken);
+            await vmStatusChannelServiceWriter.WriteAsync(change, cancellationToken);
         }
 
         await context.SaveChangesAsync(cancellationToken);

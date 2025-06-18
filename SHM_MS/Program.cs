@@ -24,11 +24,10 @@ builder.Services.AddDbContextFactory<SHMContext>(options =>
         .UseSnakeCaseNamingConvention()
 );
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
-builder.Services.AddSingleton<ReportChannelService>();
 builder.Services.AddHostedService<ConsumerService>();
 builder.Services.AddSingleton<IClock>(SystemClock.Instance);
 builder.Services.AddSingleton<VmStatusService>();
-builder.Services.AddSingleton<VmStatusChannelService>();
+builder.Services.AddChannelServices();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(

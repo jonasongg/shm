@@ -10,44 +10,35 @@ export default function Body({ vms: _vms }: { vms: RawVm[] }) {
 
   useEffect(() => {
     // initiate stream
-    const reportsEventSource = new EventSource(toAbsoluteUrl("/report/stream"));
-    const vmStatusEventSource = new EventSource(toAbsoluteUrl("/vm/status"));
+    const streamEventSource = new EventSource(toAbsoluteUrl("/stream"));
 
-    reportsEventSource.onmessage = (event) => {
+    streamEventSource.addEventListener("Report", (event) => {
       const dataReport: RawDataReport = JSON.parse(event.data);
 
       setVms((d) => {
         const vm = d.find(({ id }) => id === dataReport.vmId);
         if (!vm) return d;
 
-        const updatedReports = [
-          dataReport,
-          ...vm.reports
-            .filter(
-              ({ timestamp }) =>
-                new Date(timestamp).valueOf() > new Date().valueOf() - 15000,
-            )
-            .slice(0, vm.reports.length < 10 ? undefined : -1),
-        ];
+        let newReports = vm.reports.filter(
+          ({ timestamp }) =>
+            new Date(timestamp).valueOf() > new Date().valueOf() - 15000,
+        );
+        if (vm.reports.length >= 10) newReports = newReports.slice(0, -1);
+
         const updatedVm: RawVm = {
           ...vm,
-          reports: updatedReports,
-          status: "Online",
+          reports: [dataReport, ...newReports],
         };
         return d.map((vm) => (vm.id === dataReport.vmId ? updatedVm : vm));
       });
-    };
+    });
 
-    vmStatusEventSource.onmessage = (event) => {
+    streamEventSource.addEventListener("VmStatus", (event) => {
       const { id, status }: VmStatusUpdate = JSON.parse(event.data);
-
       setVms((d) => d.map((vm) => (vm.id === id ? { ...vm, status } : vm)));
-    };
+    });
 
-    return () => {
-      reportsEventSource.close();
-      vmStatusEventSource.close();
-    };
+    return () => streamEventSource.close();
   }, []);
 
   const transformedVms: VmType[] = vms.map((vm) => ({

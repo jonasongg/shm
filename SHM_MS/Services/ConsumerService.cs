@@ -4,6 +4,7 @@ using Shared.Dtos;
 using Shared.Serializers;
 using SHM_MS.DbContexts;
 using SHM_MS.Dtos;
+using SHM_MS.Interfaces;
 using SHM_MS.Models;
 
 namespace SHM_MS.Services;
@@ -12,25 +13,25 @@ public class ConsumerService : BackgroundService
 {
     private readonly IConsumer<string, KafkaReportDto> consumer;
     private readonly IDbContextFactory<SHMContext> contextFactory;
-    private readonly ReportChannelService reportChannelService;
+    private readonly IChannelServiceWriter<ReportDto> reportChannelServiceWriter;
     private readonly ILogger<ConsumerService> logger;
     private readonly VmStatusService vmStatusService;
-    private readonly SystemStatusChannelService systemStatusChannelService;
+    private readonly IChannelService<SystemStatusDto> systemStatusChannelServiceWriter;
 
     public ConsumerService(
         IConfiguration configuration,
         IDbContextFactory<SHMContext> contextFactory,
-        ReportChannelService reportChannelService,
+        IChannelServiceWriter<ReportDto> reportChannelServiceWriter,
         ILogger<ConsumerService> logger,
         VmStatusService vmStatusService,
-        SystemStatusChannelService systemStatusChannelService
+        IChannelService<SystemStatusDto> systemStatusChannelServiceWriter
     )
     {
         this.contextFactory = contextFactory;
-        this.reportChannelService = reportChannelService;
+        this.reportChannelServiceWriter = reportChannelServiceWriter;
         this.logger = logger;
         this.vmStatusService = vmStatusService;
-        this.systemStatusChannelService = systemStatusChannelService;
+        this.systemStatusChannelServiceWriter = systemStatusChannelServiceWriter;
 
         var bootstrapServers = configuration
             .GetSection("Kafka")
@@ -91,14 +92,14 @@ public class ConsumerService : BackgroundService
                 await context.SaveChangesAsync(stoppingToken);
 
                 vmStatusService.NotifyReportReceived(report.VmId);
-                await reportChannelService.WriteAsync(new ReportDto(report), stoppingToken);
+                await reportChannelServiceWriter.WriteAsync(new ReportDto(report), stoppingToken);
             }
         }
     }
 
     private async void ErrorHandler(IConsumer<string, KafkaReportDto> consumer, Error error)
     {
-        await systemStatusChannelService.WriteAsync(
+        await systemStatusChannelServiceWriter.WriteAsync(
             new SystemStatusDto { Status = SystemStatus.KafkaBrokerDown },
             default
         );

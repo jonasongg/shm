@@ -1,3 +1,5 @@
+using SHM_MS.Interfaces;
+
 namespace SHM_MS.Dtos;
 
 public enum SystemStatus
@@ -6,7 +8,8 @@ public enum SystemStatus
     KafkaBrokerDown,
 }
 
-public record SystemStatusDto
+public record SystemStatusDto : IServerEvent
 {
+    public EventType EventType => EventType.SystemStatus;
     public required SystemStatus Status { get; set; }
 }

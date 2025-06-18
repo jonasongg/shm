@@ -15,11 +15,7 @@ namespace SHM_MS.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class VmController(
-    SHMContext context,
-    VmStatusService vmStatusService,
-    VmStatusChannelService vmStatusChannelService
-) : ControllerBase
+public class VmController(SHMContext context, VmStatusService vmStatusService) : ControllerBase
 {
     // GET: api/vm
     [HttpGet]
@@ -83,34 +79,6 @@ public class VmController(
         await context.SaveChangesAsync();
 
         return NoContent();
-    }
-
-    // GET: api/vm/status
-    [HttpGet("status")]
-    public async Task GetStatusStream(CancellationToken cancellationToken)
-    {
-        HttpContext.Response.Headers.Append(HeaderNames.ContentType, "text/event-stream");
-        var options = new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        };
-        options.Converters.Add(NodaConverters.LocalDateTimeConverter);
-        options.Converters.Add(new JsonStringEnumConverter());
-
-        while (!cancellationToken.IsCancellationRequested)
-        {
-            var vmStatusDto = await vmStatusChannelService.ReadAsync(cancellationToken);
-
-            await HttpContext.Response.WriteAsync("data: ", cancellationToken);
-            await JsonSerializer.SerializeAsync(
-                HttpContext.Response.Body,
-                vmStatusDto,
-                options: options,
-                cancellationToken: cancellationToken
-            );
-            await HttpContext.Response.WriteAsync("\n\n", cancellationToken);
-            await HttpContext.Response.Body.FlushAsync(cancellationToken);
-        }
     }
 
     // PUT: api/vm/dependencies

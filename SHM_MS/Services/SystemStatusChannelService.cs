@@ -1,9 +1,10 @@
 using System.Threading.Channels;
 using SHM_MS.Dtos;
+using SHM_MS.Interfaces;
 
 namespace SHM_MS.Services;
 
-public class SystemStatusChannelService()
+public class SystemStatusChannelService() : IChannelService<SystemStatusDto>
 {
     private readonly Channel<SystemStatusDto> channel = Channel.CreateUnbounded<SystemStatusDto>();
 
@@ -12,8 +13,6 @@ public class SystemStatusChannelService()
         await channel.Writer.WriteAsync(vmStatus, cancellationToken);
     }
 
-    public ValueTask<SystemStatusDto> ReadAsync(CancellationToken cancellationToken)
-    {
-        return channel.Reader.ReadAsync(cancellationToken);
-    }
+    public async Task<IServerEvent> ReadAsync(CancellationToken cancellationToken) =>
+        await channel.Reader.ReadAsync(cancellationToken);
 }

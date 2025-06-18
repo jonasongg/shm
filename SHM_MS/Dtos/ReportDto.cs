@@ -1,12 +1,14 @@
 using System.Diagnostics.CodeAnalysis;
 using NodaTime;
+using SHM_MS.Interfaces;
 using SHM_MS.Models;
 
 namespace SHM_MS.Dtos;
 
 [method: SetsRequiredMembers]
-public class ReportDto(Report r)
+public class ReportDto(Report r) : IServerEvent
 {
+    public EventType EventType => EventType.Report;
     public required LocalDateTime Timestamp { get; set; } = r.Timestamp;
     public required double TotalMemory { get; set; } = r.TotalMemory;
     public required double FreeMemory { get; set; } = r.FreeMemory;
