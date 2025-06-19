@@ -37,3 +37,9 @@ export type VmStatusUpdate = {
   id: number;
   status: VmStatus;
 };
+
+export type SystemStatus = "Ok" | "KafkaBrokerDown";
+
+export type SystemStatusUpdate = {
+  status: SystemStatus;
+};
