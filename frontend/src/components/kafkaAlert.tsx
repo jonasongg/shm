@@ -18,7 +18,12 @@ export function KafkaAlert() {
       >
         <AlertCircle color={theme === "dark" ? "black" : "red"} />
       </TooltipTrigger>
-      <TooltipContent>The Kafka broker is down!</TooltipContent>
+      <TooltipContent
+        className="bg-red-700 dark:bg-red-300"
+        fillClassName="fill-red-700 dark:fill-red-300"
+      >
+        The Kafka broker is down!
+      </TooltipContent>
     </Tooltip>
   );
 }
