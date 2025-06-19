@@ -22,7 +22,7 @@ public class StreamController(IEnumerable<IChannelServiceReader> channelServiceR
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         };
-        options.Converters.Add(NodaConverters.LocalDateTimeConverter);
+        options.Converters.Add(NodaConverters.InstantConverter);
         options.Converters.Add(new JsonStringEnumConverter());
 
         var readTasks = channelServiceReaders

@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using NodaTime;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using SHM_MS.DbContexts;
 
@@ -27,7 +28,7 @@ namespace SHM_MS.Migrations
 
             modelBuilder.Entity("SHM_MS.Models.Report", b =>
                 {
-                    b.Property<DateTimeOffset>("Timestamp")
+                    b.Property<Instant>("Timestamp")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("timestamp");
 

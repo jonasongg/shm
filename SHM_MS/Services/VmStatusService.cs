@@ -140,15 +140,7 @@ public class VmStatusService(
         foreach (var vm in vms)
         {
             var lastReport = vm.Reports.FirstOrDefault();
-            if (
-                lastReport is null
-                || lastReport.Timestamp
-                    // < now - 5 seconds
-                    < clock
-                        .GetCurrentInstant()
-                        .InZone(DateTimeZoneProviders.Tzdb.GetSystemDefault())
-                        .LocalDateTime.Minus(TimerInterval)
-            )
+            if (lastReport is null || lastReport.Timestamp < clock.GetCurrentInstant())
             {
                 vm.Status = VmStatus.Offline;
             }

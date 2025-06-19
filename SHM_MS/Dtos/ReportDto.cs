@@ -9,7 +9,7 @@ namespace SHM_MS.Dtos;
 public class ReportDto(Report r) : IServerEvent
 {
     public EventType EventType => EventType.Report;
-    public required LocalDateTime Timestamp { get; set; } = r.Timestamp;
+    public required Instant Timestamp { get; set; } = r.Timestamp;
     public required double TotalMemory { get; set; } = r.TotalMemory;
     public required double FreeMemory { get; set; } = r.FreeMemory;
     public required double CpuUsagePercent { get; set; } = r.CpuUsagePercent;

@@ -12,7 +12,7 @@ builder
     .Services.AddControllers()
     .AddJsonOptions(options =>
     {
-        options.JsonSerializerOptions.Converters.Add(NodaConverters.LocalDateTimeConverter);
+        options.JsonSerializerOptions.Converters.Add(NodaConverters.InstantConverter);
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     });
 builder.Services.AddDbContextFactory<SHMContext>(options =>

@@ -27,7 +27,7 @@ namespace SHM_MS.Migrations
 
             modelBuilder.Entity("SHM_MS.Models.Report", b =>
                 {
-                    b.Property<LocalDateTime>("Timestamp")
+                    b.Property<Instant>("Timestamp")
                         .HasColumnType("timestamp without time zone")
                         .HasColumnName("timestamp");
 

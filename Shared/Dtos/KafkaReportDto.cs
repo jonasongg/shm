@@ -4,7 +4,7 @@ namespace Shared.Dtos;
 
 public class KafkaReportDto
 {
-    public required LocalDateTime Timestamp { get; set; }
+    public required Instant Timestamp { get; set; }
     public required string Name { get; set; }
     public required double TotalMemory { get; set; }
     public required double FreeMemory { get; set; }

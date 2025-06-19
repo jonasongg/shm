@@ -10,7 +10,7 @@ public class JsonSerializer<T> : ISerializer<T>, IDeserializer<T>
 
     public JsonSerializer()
     {
-        options.Converters.Add(NodaConverters.LocalDateTimeConverter);
+        options.Converters.Add(NodaConverters.InstantConverter);
     }
 
     public byte[] Serialize(T data, SerializationContext context)

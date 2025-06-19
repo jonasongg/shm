@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore.Migrations;
+using NodaTime;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
@@ -33,7 +34,7 @@ namespace SHM_MS.Migrations
                 name: "reports",
                 columns: table => new
                 {
-                    timestamp = table.Column<DateTimeOffset>(
+                    timestamp = table.Column<Instant>(
                         type: "timestamp with time zone",
                         nullable: false
                     ),

@@ -64,7 +64,7 @@ public class Worker(
         return new KafkaReportDto
         {
             Name = name,
-            Timestamp = GetLocalDateTime(),
+            Timestamp = clock.GetCurrentInstant(),
             TotalMemory = totalMemory,
             FreeMemory = freeMemory,
             CpuUsagePercent = cpuUsagePercent,
@@ -97,11 +97,10 @@ public class Worker(
         lastCpuTotalTime = totalTime;
 
         var (totalSpace, freeSpace) = DiskInfo();
-
         return new KafkaReportDto
         {
             Name = name,
-            Timestamp = GetLocalDateTime(),
+            Timestamp = clock.GetCurrentInstant(),
             TotalMemory = Convert.ToDouble(totalMemory),
             FreeMemory = Convert.ToDouble(freeMemory),
             CpuUsagePercent = cpuUsagePercent,
@@ -135,13 +134,5 @@ public class Worker(
             / 1024d;
 
         return (totalSpace, freeSpace);
-    }
-
-    private LocalDateTime GetLocalDateTime()
-    {
-        return clock
-            .GetCurrentInstant()
-            .InZone(DateTimeZoneProviders.Tzdb.GetSystemDefault())
-            .LocalDateTime;
     }
 }
