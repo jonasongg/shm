@@ -1,0 +1,71 @@
+x-base-environment: &base-environment
+  Kafka:BootstrapServers: broker:29092
+
+services:
+  broker:
+    image: confluentinc/confluent-local:7.6.0
+    hostname: broker
+    container_name: broker
+    ports:
+      - 40853:40853
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:29092,PLAINTEXT_HOST://localhost:40853
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_NODE_ID: 1
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@broker:29093
+      KAFKA_LISTENERS: PLAINTEXT://broker:29092,CONTROLLER://broker:29093,PLAINTEXT_HOST://0.0.0.0:40853
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
+      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
+
+  init-broker:
+    image: confluentinc/confluent-local:7.6.0
+    depends_on:
+      - broker
+    entrypoint: [ '/bin/sh', '-c' ]
+    command: |
+      "
+      kafka-topics --bootstrap-server broker:29092 --list
+
+      echo -e 'Creating kafka topics'
+      kafka-topics --bootstrap-server broker:29092 --create --if-not-exists --topic reports
+
+      echo -e 'Successfully created the following topics:'
+      kafka-topics --bootstrap-server broker:29092 --list
+      "
+  VM1: &VM1
+    image: jonasong2/monitoring-service:latest
+    container_name: VM1
+    depends_on:
+      - init-broker
+    environment:
+      <<: *base-environment
+      VM_Name: VM1
+
+  VM2:
+    <<: *VM1
+    container_name: VM2
+    environment:
+      <<: *base-environment
+      VM_Name: VM2
+
+  VM3:
+    <<: *VM1
+    container_name: VM3
+    environment:
+      <<: *base-environment
+      VM_Name: VM3
+
+  VM4:
+    <<: *VM1
+    container_name: VM4
+    environment:
+      <<: *base-environment
+      VM_Name: VM4

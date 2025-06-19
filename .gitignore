@@ -55,6 +55,7 @@ nunit-*.xml
 
 output/
 appsettings*.json
+*.crt
 # ----- Node -----
 
 # Logs
