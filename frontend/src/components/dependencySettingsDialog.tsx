@@ -1,4 +1,5 @@
 import { VmType } from "@/types/types";
+import { ReactFlowProvider } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { Settings } from "lucide-react";
 import DependencyGraph from "./dependencyGraph";
@@ -29,7 +30,9 @@ export default function DependencySettingsDialog({ vms }: { vms: VmType[] }) {
         <DialogHeader>
           <DialogTitle> Configure VM Dependencies</DialogTitle>
         </DialogHeader>
-        <DependencyGraph vms={vms} />
+        <ReactFlowProvider>
+          <DependencyGraph vms={vms} />
+        </ReactFlowProvider>
       </DialogContent>
     </Dialog>
   );
