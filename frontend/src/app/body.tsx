@@ -13,7 +13,7 @@ import { useEffect, useState } from "react";
 import Vm from "../components/vm";
 
 export default function Body({ vms: _vms }: { vms: RawVm[] | undefined }) {
-  const [vms, setVms] = useState(_vms);
+  const [vms, setVms] = useState(_vms ?? []);
   const [kafkaDown, setKafkaDown] = useState(false);
 
   useEffect(() => {
@@ -24,7 +24,7 @@ export default function Body({ vms: _vms }: { vms: RawVm[] | undefined }) {
       const dataReport: RawDataReport = JSON.parse(event.data);
 
       setVms((d) => {
-        const vm = d?.find(({ id }) => id === dataReport.vmId);
+        const vm = d.find(({ id }) => id === dataReport.vmId);
         if (!vm) return d;
 
         let newReports = vm.reports.filter(
@@ -37,14 +37,14 @@ export default function Body({ vms: _vms }: { vms: RawVm[] | undefined }) {
           ...vm,
           reports: [dataReport, ...newReports],
         };
-        return d?.map((vm) => (vm.id === dataReport.vmId ? updatedVm : vm));
+        return d.map((vm) => (vm.id === dataReport.vmId ? updatedVm : vm));
       });
       setKafkaDown(false);
     });
 
     streamEventSource.addEventListener("VmStatus", (event) => {
       const { id, status }: VmStatusUpdate = JSON.parse(event.data);
-      setVms((d) => d?.map((vm) => (vm.id === id ? { ...vm, status } : vm)));
+      setVms((d) => d.map((vm) => (vm.id === id ? { ...vm, status } : vm)));
     });
 
     streamEventSource.addEventListener("SystemStatus", (event) => {
@@ -55,7 +55,7 @@ export default function Body({ vms: _vms }: { vms: RawVm[] | undefined }) {
     return () => streamEventSource.close();
   }, []);
 
-  const transformedVms: VmType[] | undefined = vms?.map((vm) => ({
+  const transformedVms: VmType[] = vms.map((vm) => ({
     ...vm,
     reports: vm.reports.map((d) => ({
       ...d,
@@ -77,7 +77,7 @@ export default function Body({ vms: _vms }: { vms: RawVm[] | undefined }) {
       const dependencyId = dependencies.pop();
       if (dependencyId == null) continue;
 
-      const dependency = transformedVms?.find((vm) => vm.id === dependencyId);
+      const dependency = transformedVms.find((vm) => vm.id === dependencyId);
       if (!dependency) continue;
 
       dependencies.push(...dependency.dependencyIds);
@@ -89,7 +89,7 @@ export default function Body({ vms: _vms }: { vms: RawVm[] | undefined }) {
 
   return (
     <>
-      <Header displayAlert={kafkaDown} />
+      <Header displayAlert={kafkaDown} vms={transformedVms} />
       {!transformedVms ? (
         <div
           className={cn("h-full flex items-center justify-center text-xl", {
