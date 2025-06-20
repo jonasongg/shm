@@ -94,7 +94,7 @@ export default function AddVmDialog() {
               <DialogTitle>Add a VM</DialogTitle>
               <DialogDescription>
                 {
-                  'Make sure to enter the same name for this VM as in the "appsettings.json" file in the same directory as the monitoring executable.'
+                  'Make sure to enter the same name for this VM as in the environment variables of the "docker-compose.yaml".'
                 }
               </DialogDescription>
             </DialogHeader>
