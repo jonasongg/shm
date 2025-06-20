@@ -26,15 +26,13 @@ export default function Vm({
   reports: DataReport[];
   offlineDependencies?: VmType[];
 }) {
-  const disabled = status === "Degraded" || status === "Offline";
+  const disabled = status === "Offline";
   return (
     <Card
       className={cn(
         "h-140 md:h-80.5 relative overflow-hidden before:absolute before:inset-0 before:z-20 before:transition-colors before:pointer-events-none transition-colors",
         {
           "before:bg-red-900/5 dark:before:bg-red-700/20": status === "Offline",
-          "before:bg-amber-900/5 dark:before:bg-amber-800/20":
-            status === "Degraded",
         },
       )}
     >

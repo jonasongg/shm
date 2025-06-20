@@ -8,10 +8,8 @@ public class SystemStatusChannelService() : IChannelService<SystemStatusDto>
 {
     private readonly Channel<SystemStatusDto> channel = Channel.CreateUnbounded<SystemStatusDto>();
 
-    public async Task WriteAsync(SystemStatusDto vmStatus, CancellationToken cancellationToken)
-    {
+    public async Task WriteAsync(SystemStatusDto vmStatus, CancellationToken cancellationToken) =>
         await channel.Writer.WriteAsync(vmStatus, cancellationToken);
-    }
 
     public async Task<IServerEvent> ReadAsync(CancellationToken cancellationToken) =>
         await channel.Reader.ReadAsync(cancellationToken);
