@@ -7,8 +7,7 @@ using SHM_MS.Models;
 
 namespace SHM_MS.Services;
 
-public class ReportChannelService(IDbContextFactory<SHMContext> contextFactory)
-    : IChannelService<ReportDto>
+public class ReportChannelService() : IChannelService<ReportDto>
 {
     private readonly Channel<ReportDto> channel = Channel.CreateUnbounded<ReportDto>();
 
