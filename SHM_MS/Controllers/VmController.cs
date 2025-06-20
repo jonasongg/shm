@@ -136,8 +136,8 @@ public class VmController(SHMContext context, VmStatusService vmStatusService) :
             vms[kvp.Key].Dependants.AddRange(kvp.Value.Select(id => vms[id]));
         }
 
-        await vmStatusService.RecalculateStatusesAsync(context);
         await context.SaveChangesAsync();
+        await vmStatusService.RecalculateStatusesAsync(context);
         return Ok();
     }
 }

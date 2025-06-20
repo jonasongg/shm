@@ -44,7 +44,8 @@ public class VmStatusService(
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Error processing VM {vmId}: {ex.Message}");
+                    if (ex is not TaskCanceledException)
+                        Console.WriteLine($"Error processing VM {vmId}: {ex.Message}");
                 }
             },
             newCts.Token
@@ -110,16 +111,15 @@ public class VmStatusService(
             v.Status = VmStatus.Online;
         }
 
+        var vms = await context.Vms.Include(vm => vm.Dependants).ToListAsync(cancellationToken);
+
         var dependants = new Queue<Vm>(
-            context
-                .Vms.Include(vm => vm.Dependants)
-                .Where(vm => vm.Status == VmStatus.Offline)
-                .SelectMany(vm => vm.Dependants)
+            vms.Where(vm => vm.Status == VmStatus.Offline).SelectMany(vm => vm.Dependants)
         );
         while (dependants.Count > 0)
         {
             var dependant = dependants.Dequeue();
-            dependant.Dependants.ToList().ForEach(dependants.Enqueue);
+            vms.Find(vm => vm.Id == dependant.Id)?.Dependants.ToList().ForEach(dependants.Enqueue);
             if (dependant.Status == VmStatus.Online)
             {
                 dependant.Status = VmStatus.Degraded;
@@ -166,6 +166,7 @@ public class VmStatusService(
 
         foreach (var change in statusChanges)
         {
+            Console.WriteLine($"STATUSCHANGE: ${change.Id}, ${change.Status}");
             await vmStatusChannelServiceWriter.WriteAsync(change, cancellationToken);
         }
 
