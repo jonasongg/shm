@@ -11,18 +11,18 @@ import {
   EdgeProps,
   getBezierPath,
   Handle,
-  MarkerType,
   Node,
   NodeProps,
+  OnEdgesChange,
   Position,
   ReactFlow,
-  useEdgesState,
   useNodesInitialized,
   useNodesState,
   useReactFlow,
 } from "@xyflow/react";
 import { X } from "lucide-react";
-import { useCallback, useEffect } from "react";
+import { Dispatch, SetStateAction, useCallback, useEffect } from "react";
+import { baseEdge } from "./dependencySettingsDialog";
 
 type CircleNodeType = Node<{
   label: string;
@@ -85,7 +85,6 @@ const getLayoutedElements = (nodes: CircleNodeType[], edges: Edge[]) => {
   g.setGraph({ rankdir: "LR" });
 
   edges.forEach((e) => g.setEdge(e.source, e.target));
-  console.log(nodes.map((n) => n.measured));
   nodes.forEach((n) =>
     g.setNode(n.id, {
       ...n,
@@ -110,7 +109,19 @@ const getLayoutedElements = (nodes: CircleNodeType[], edges: Edge[]) => {
   };
 };
 
-export default function DependencyGraph({ vms }: { vms: VmType[] }) {
+export default function DependencyGraph({
+  vms,
+  setDependenciesDirty,
+  edges,
+  setEdges,
+  onEdgesChange,
+}: {
+  vms: VmType[];
+  setDependenciesDirty: Dispatch<SetStateAction<boolean>>;
+  edges: Edge[];
+  setEdges: Dispatch<SetStateAction<Edge[]>>;
+  onEdgesChange: OnEdgesChange<Edge>;
+}) {
   const initialNodes: CircleNodeType[] = vms.map((vm) => ({
     id: vm.id.toString(),
     data: { label: vm.name },
@@ -118,24 +129,9 @@ export default function DependencyGraph({ vms }: { vms: VmType[] }) {
     type: "circleNode",
   }));
 
-  const baseEdge = {
-    markerEnd: { type: MarkerType.ArrowClosed, width: 20, height: 20 },
-    animated: true,
-    type: "deletableEdge",
-  };
-  const initialEdges = vms.flatMap((vm) =>
-    vm.dependantIds.map<Edge>((depId) => ({
-      ...baseEdge,
-      id: `${vm.id}-${depId}`,
-      source: vm.id.toString(),
-      target: depId.toString(),
-    })),
-  );
-
   const nodesInitialized = useNodesInitialized();
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
   const onLayout = useCallback(() => {
     const layouted = getLayoutedElements(nodes, edges);
@@ -150,11 +146,10 @@ export default function DependencyGraph({ vms }: { vms: VmType[] }) {
     }
   }, [nodesInitialized]);
 
-  const onConnect = useCallback(
-    (params: Connection) =>
-      setEdges((edges) => addEdge({ ...params, ...baseEdge }, edges)),
-    [],
-  );
+  const onConnect = useCallback((params: Connection) => {
+    setDependenciesDirty(true);
+    setEdges((edges) => addEdge({ ...params, ...baseEdge }, edges));
+  }, []);
 
   return (
     <div className="h-100">
@@ -164,7 +159,10 @@ export default function DependencyGraph({ vms }: { vms: VmType[] }) {
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
+        onEdgesChange={(changes) => {
+          setDependenciesDirty(true);
+          onEdgesChange(changes);
+        }}
         onConnect={onConnect}
       >
         <Background />
