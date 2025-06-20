@@ -58,7 +58,7 @@ export default function DeleteVmDialog({
     <AlertDialog>
       <AlertDialogTrigger asChild>
         <Button
-          className="cursor-pointer mb-[-16px] ml-auto bg-destructive/10 hover:bg-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30"
+          className="mb-[-16px] ml-auto bg-destructive/10 hover:bg-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30"
           variant="secondary"
           size="icon"
         >
@@ -75,7 +75,7 @@ export default function DeleteVmDialog({
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogAction
-            className="bg-destructive/20 hover:bg-destructive/30 text-destructive/80 cursor-pointer"
+            className="bg-destructive/20 hover:bg-destructive/30 text-destructive/80"
             onClick={() => handleSubmit(true)}
             disabled={submitting !== "notSubmitting"}
           >
@@ -85,19 +85,14 @@ export default function DeleteVmDialog({
             {"Delete VM's reports"}
           </AlertDialogAction>
           <AlertDialogAction
-            className={cn(
-              buttonVariants({ variant: "destructive" }),
-              "cursor-pointer",
-            )}
+            className={cn(buttonVariants({ variant: "destructive" }))}
             onClick={() => handleSubmit(false)}
             disabled={submitting !== "notSubmitting"}
           >
             {submitting === "vm" && <Loader2Icon className="animate-spin" />}
             Delete VM
           </AlertDialogAction>
-          <AlertDialogCancel className="cursor-pointer">
-            Cancel
-          </AlertDialogCancel>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

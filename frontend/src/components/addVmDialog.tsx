@@ -80,10 +80,7 @@ export default function AddVmDialog() {
       }}
     >
       <DialogTrigger asChild>
-        <Button
-          className="fixed bottom-8 right-8 cursor-pointer z-40"
-          size="lg"
-        >
+        <Button className="fixed bottom-8 right-8 z-40" size="lg">
           <Plus /> Add VM
         </Button>
       </DialogTrigger>
