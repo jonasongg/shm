@@ -20,7 +20,7 @@ export function KafkaAlert() {
       </TooltipTrigger>
       <TooltipContent
         className="bg-red-700 dark:bg-red-300"
-        fillClassName="fill-red-700 dark:fill-red-300"
+        fillClassName="bg-red-700 fill-red-700 dark:bg-red-300 dark:fill-red-300"
       >
         The Kafka broker is down!
       </TooltipContent>
