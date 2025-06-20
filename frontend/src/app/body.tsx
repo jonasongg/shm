@@ -90,7 +90,7 @@ export default function Body({ vms: _vms }: { vms: RawVm[] | undefined }) {
   return (
     <>
       <Header displayAlert={kafkaDown} vms={transformedVms} />
-      {!transformedVms ? (
+      {transformedVms.length === 0 ? (
         <div
           className={cn("h-full flex items-center justify-center text-xl", {
             "text-neutral-500": vms,
