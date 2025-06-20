@@ -130,8 +130,8 @@ export default function DependencyGraph({
   }));
 
   const nodesInitialized = useNodesInitialized();
-
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
+  const { fitView } = useReactFlow();
 
   const onLayout = useCallback(() => {
     const layouted = getLayoutedElements(nodes, edges);
@@ -143,6 +143,9 @@ export default function DependencyGraph({
   useEffect(() => {
     if (nodesInitialized) {
       onLayout();
+      fitView({
+        padding: 0.5,
+      });
     }
   }, [nodesInitialized]);
 
@@ -152,7 +155,7 @@ export default function DependencyGraph({
   }, []);
 
   return (
-    <div className="h-100">
+    <div className="h-100 border-2 rounded-xl">
       <ReactFlow
         nodes={nodes}
         edges={edges}
