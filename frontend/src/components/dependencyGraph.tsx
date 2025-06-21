@@ -82,7 +82,7 @@ const edgeTypes = { deletableEdge: DeletableEdge };
 
 const getLayoutedElements = (nodes: CircleNodeType[], edges: Edge[]) => {
   const g = new Dagre.graphlib.Graph().setDefaultEdgeLabel(() => ({}));
-  g.setGraph({ rankdir: "LR" });
+  g.setGraph({ rankdir: "LR", ranksep: 100, nodesep: 30 });
 
   edges.forEach((e) => g.setEdge(e.source, e.target));
   nodes.forEach((n) =>
