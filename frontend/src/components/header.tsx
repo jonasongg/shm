@@ -8,14 +8,14 @@ export default function Header({
   vms,
 }: {
   displayAlert: boolean;
-  vms: VmType[];
+  vms: VmType[] | undefined;
 }) {
   return (
     <header className="sticky top-0 z-40 font-(family-name:--font-geist-sans) text-2xl font-extrabold bg-white dark:bg-neutral-800 p-6 border-b-1 centred-shadow flex transition-colors">
       Dashboard
       <div className="ml-auto flex gap-2">
         {displayAlert && <KafkaAlert />}
-        <DependencySettingsDialog vms={vms} />
+        {vms && <DependencySettingsDialog vms={vms} />}
         <ModeToggle />
       </div>
     </header>
