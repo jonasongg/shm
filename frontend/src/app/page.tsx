@@ -20,7 +20,7 @@ export default async function Page() {
 
   return (
     <>
-      <Body vms={vms} key={vms?.length} />
+      <Body vms={vms} />
       <Toaster position="bottom-center" />
       <AddVmDialog />
     </>

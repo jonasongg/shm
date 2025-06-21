@@ -55,6 +55,10 @@ export default function Body({ vms: _vms }: { vms: RawVm[] | undefined }) {
     return () => streamEventSource.close();
   }, []);
 
+  useEffect(() => {
+    setVms(_vms);
+  }, [_vms]);
+
   const transformedVms: VmType[] | undefined = vms?.map((vm) => ({
     ...vm,
     reports: vm.reports.map((d) => ({
