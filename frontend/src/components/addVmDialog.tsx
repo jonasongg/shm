@@ -123,7 +123,12 @@ export default function AddVmDialog() {
                 <Button type="submit">Add</Button>
               )}
               <DialogClose asChild>
-                <Button variant="outline">Cancel</Button>
+                <Button
+                  variant="outline"
+                  disabled={form.formState.isSubmitting}
+                >
+                  Cancel
+                </Button>
               </DialogClose>
             </DialogFooter>
           </form>
