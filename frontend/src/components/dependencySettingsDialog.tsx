@@ -7,7 +7,7 @@ import {
   useEdgesState,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { Settings } from "lucide-react";
+import { Loader2Icon, Settings } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -51,13 +51,13 @@ export default function DependencySettingsDialog({ vms }: { vms: VmType[] }) {
   const form = useForm();
 
   const onSubmit = async () => {
-    const values = edges.reduce((acc, { source, target }) => {
-      const t = acc[+source];
-      return {
+    const values = edges.reduce(
+      (acc, { source, target }) => ({
         ...acc,
         [source]: [...(acc[+source] ?? []), target],
-      };
-    }, {} as DependenciesPutType);
+      }),
+      {} as DependenciesPutType,
+    );
     try {
       const response = await fetch(toAbsoluteUrl("/vm/dependencies"), {
         method: "PUT",
@@ -92,6 +92,7 @@ export default function DependencySettingsDialog({ vms }: { vms: VmType[] }) {
       onOpenChange={(open) => {
         setOpen(open);
         setDependenciesDirty(false);
+        setEdges(initialEdges);
       }}
     >
       <Tooltip>
@@ -122,11 +123,22 @@ export default function DependencySettingsDialog({ vms }: { vms: VmType[] }) {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <DialogFooter>
-              <Button disabled={!dependenciesDirty} type="submit">
-                Save Changes
-              </Button>
+              {form.formState.isSubmitting ? (
+                <Button type="submit" disabled>
+                  <Loader2Icon className="animate-spin" /> Saving Changes...
+                </Button>
+              ) : (
+                <Button disabled={!dependenciesDirty} type="submit">
+                  Save Changes
+                </Button>
+              )}
               <DialogClose asChild>
-                <Button variant="outline">Discard Changes</Button>
+                <Button
+                  variant="outline"
+                  disabled={form.formState.isSubmitting || !dependenciesDirty}
+                >
+                  Discard Changes
+                </Button>
               </DialogClose>
             </DialogFooter>
           </form>
