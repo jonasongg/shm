@@ -11,7 +11,7 @@ import {
 } from "@/types/types";
 import { DragDropProvider, DragOverlay } from "@dnd-kit/react";
 import { useEffect, useState } from "react";
-import Vm from "../components/vm";
+import Vm, { SortableVm } from "../components/vm";
 
 export default function Body({ vms: _vms }: { vms: RawVm[] | undefined }) {
   const [vms, setVms] = useState(_vms);
@@ -110,7 +110,7 @@ export default function Body({ vms: _vms }: { vms: RawVm[] | undefined }) {
         <main className="p-8 gap-8 flex-1 font-(family-name:--font-geist-sans) grid grid-cols-1 md:grid-cols-2">
           <DragDropProvider>
             {transformedVms.map((vm, i) => (
-              <Vm
+              <SortableVm
                 {...vm}
                 key={i}
                 index={i}
@@ -124,7 +124,7 @@ export default function Body({ vms: _vms }: { vms: RawVm[] | undefined }) {
             <DragOverlay>
               {({ id }) => {
                 const vm = transformedVms.find((vm) => vm.id === +id);
-                return vm && <Vm {...vm} id={+id} />;
+                return vm && <Vm {...vm} />;
               }}
             </DragOverlay>
           </DragDropProvider>

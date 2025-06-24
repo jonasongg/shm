@@ -14,30 +14,39 @@ const MediaQuery = dynamic(() => import("react-responsive"), {
   ssr: false,
 });
 
-export default function Vm({
-  name,
-  id,
-  index,
-  status,
-  reports,
-  offlineDependencies,
-}: {
-  name: string;
+type VmProps = {
   id: number;
-  index?: number;
+  name: string;
   status: VmStatus;
   reports: DataReport[];
   offlineDependencies?: VmType[];
-}) {
+};
+
+export function SortableVm({ index, ...vmProps }: VmProps & { index: number }) {
+  const { ref, isDragging } = useSortable({ id: vmProps.id, index });
+  return (
+    <Vm {...vmProps} ref={ref} className={cn({ "opacity-30": isDragging })} />
+  );
+}
+
+export default function Vm({
+  id,
+  name,
+  status,
+  reports,
+  offlineDependencies,
+  ref,
+  className,
+}: VmProps & { ref?: React.Ref<HTMLDivElement>; className?: string }) {
   const disabled = status === "Offline";
-  const { ref } = useSortable({ id, index: index ?? 0 });
   return (
     <Card
       className={cn(
-        "h-140 md:h-80.5 relative overflow-hidden before:absolute before:inset-0 before:z-20 before:transition-colors before:pointer-events-none transition-colors",
+        "h-140 md:h-80.5 relative overflow-hidden before:absolute before:inset-0 before:z-20 before:transition-colors before:pointer-events-none transition-all",
         {
           "before:bg-red-900/5 dark:before:bg-red-700/20": status === "Offline",
         },
+        className,
       )}
       ref={ref}
     >
