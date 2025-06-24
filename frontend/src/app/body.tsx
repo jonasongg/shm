@@ -9,6 +9,7 @@ import {
   VmStatusUpdate,
   VmType,
 } from "@/types/types";
+import { DragDropProvider, DragOverlay } from "@dnd-kit/react";
 import { useEffect, useState } from "react";
 import Vm from "../components/vm";
 
@@ -107,17 +108,26 @@ export default function Body({ vms: _vms }: { vms: RawVm[] | undefined }) {
         </div>
       ) : (
         <main className="p-8 gap-8 flex-1 font-(family-name:--font-geist-sans) grid grid-cols-1 md:grid-cols-2">
-          {transformedVms.map((vm, i) => (
-            <Vm
-              {...vm}
-              key={i}
-              offlineDependencies={
-                vm.status === "Degraded"
-                  ? getOfflineDependencies(vm)
-                  : undefined
-              }
-            />
-          ))}
+          <DragDropProvider>
+            {transformedVms.map((vm, i) => (
+              <Vm
+                {...vm}
+                key={i}
+                index={i}
+                offlineDependencies={
+                  vm.status === "Degraded"
+                    ? getOfflineDependencies(vm)
+                    : undefined
+                }
+              />
+            ))}
+            <DragOverlay>
+              {({ id }) => {
+                const vm = transformedVms.find((vm) => vm.id === +id);
+                return vm && <Vm {...vm} id={+id} />;
+              }}
+            </DragOverlay>
+          </DragDropProvider>
         </main>
       )}
     </>

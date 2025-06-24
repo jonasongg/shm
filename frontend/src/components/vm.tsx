@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { DataReport, VmStatus, VmType } from "@/types/types";
+import { useSortable } from "@dnd-kit/react/sortable";
 import dynamic from "next/dynamic";
 import DeleteVmDialog from "./deleteVmDialog";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
@@ -16,17 +17,20 @@ const MediaQuery = dynamic(() => import("react-responsive"), {
 export default function Vm({
   name,
   id,
+  index,
   status,
   reports,
   offlineDependencies,
 }: {
   name: string;
   id: number;
+  index?: number;
   status: VmStatus;
   reports: DataReport[];
   offlineDependencies?: VmType[];
 }) {
   const disabled = status === "Offline";
+  const { ref } = useSortable({ id, index: index ?? 0 });
   return (
     <Card
       className={cn(
@@ -35,6 +39,7 @@ export default function Vm({
           "before:bg-red-900/5 dark:before:bg-red-700/20": status === "Offline",
         },
       )}
+      ref={ref}
     >
       <CardHeader className="text-xl flex gap-2">
         <CardTitle>{name}</CardTitle>

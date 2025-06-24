@@ -166,7 +166,6 @@ public class VmStatusService(
 
         foreach (var change in statusChanges)
         {
-            Console.WriteLine($"STATUSCHANGE: ${change.Id}, ${change.Status}");
             await vmStatusChannelServiceWriter.WriteAsync(change, cancellationToken);
         }
 
