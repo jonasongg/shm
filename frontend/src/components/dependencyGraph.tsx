@@ -1,4 +1,5 @@
-import { VmType } from "@/types/types";
+import { cn } from "@/lib/utils";
+import { VmStatus, VmType } from "@/types/types";
 import Dagre from "@dagrejs/dagre";
 import {
   addEdge,
@@ -26,12 +27,21 @@ import { baseEdge } from "./dependencySettingsDialog";
 
 type CircleNodeType = Node<{
   label: string;
+  status: VmStatus;
 }>;
 
-const CircleNode = ({ data }: NodeProps<CircleNodeType>) => {
+const CircleNode = ({ data: { label, status } }: NodeProps<CircleNodeType>) => {
   return (
-    <div className="w-20 h-20 rounded-full bg-white border-2 flex justify-center items-center hover:border-neutral-500 transition-all">
-      {data.label}
+    <div
+      className={cn(
+        "w-20 h-20 rounded-full bg-white border-2 flex justify-center items-center hover:border-neutral-500 transition-all",
+        {
+          "bg-red-100 border-neutral-300": status === "Offline",
+          "bg-orange-100 border-neutral-300": status === "Degraded",
+        },
+      )}
+    >
+      {label}
       <Handle type="source" position={Position.Right} />
       <Handle type="target" position={Position.Left} />
     </div>
@@ -55,6 +65,7 @@ const DeletableEdge = ({
     targetX,
     targetY,
     targetPosition,
+    curvature: 0.5,
   });
   const { setEdges } = useReactFlow();
 
@@ -62,16 +73,16 @@ const DeletableEdge = ({
     <>
       <BaseEdge path={edgePath} markerEnd={markerEnd} />
       <EdgeLabelRenderer>
-        <div
+        <button
           style={{
             transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
             pointerEvents: "all",
           }}
-          className="absolute p-3 opacity-20 hover:opacity-100 transition-opacity rounded-full"
+          className="absolute p-0.5 rounded-full bg-red-100 hover:bg-red-300 border-background border-6 transition-colors cursor-pointer text-neutral-500 hover:text-black"
           onClick={() => setEdges((edges) => edges.filter((e) => e.id !== id))}
         >
-          <X className="bg-red-300 p-1 rounded-full" />
-        </div>
+          <X className="p-1" />
+        </button>
       </EdgeLabelRenderer>
     </>
   );
@@ -124,12 +135,11 @@ export default function DependencyGraph({
 }) {
   const initialNodes: CircleNodeType[] = vms.map((vm) => ({
     id: vm.id.toString(),
-    data: { label: vm.name },
+    data: { label: vm.name, status: vm.status },
     position: { x: vm.id * 100, y: 0 },
     type: "circleNode",
   }));
-
-  const nodesInitialized = useNodesInitialized();
+  const nodesInitialised = useNodesInitialized();
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const { fitView } = useReactFlow();
 
@@ -140,14 +150,25 @@ export default function DependencyGraph({
     setEdges([...layouted.edges]);
   }, [nodes, edges]);
 
+  const statusChanged =
+    initialNodes.map((n) => n.data.status).join(",") !==
+    nodes.map((n) => n.data.status).join(",");
+
   useEffect(() => {
-    if (nodesInitialized) {
+    if (nodesInitialised && !statusChanged) {
       onLayout();
-      fitView({
-        padding: 0.5,
-      });
+      fitView({ padding: 0.5 });
     }
-  }, [nodesInitialized]);
+  }, [nodesInitialised, statusChanged]);
+
+  if (statusChanged) {
+    setNodes((nodes) =>
+      nodes.map((node) => {
+        const status = vms.find((vm) => vm.id === +node.id)?.status;
+        return { ...node, data: { ...node.data, ...(status && { status }) } };
+      }),
+    );
+  }
 
   const onConnect = useCallback((params: Connection) => {
     setDependenciesDirty(true);
@@ -169,7 +190,10 @@ export default function DependencyGraph({
         onConnect={onConnect}
       >
         <Background />
-        <Controls />
+        <Controls
+          fitViewOptions={{ duration: 500, padding: 0.5 }}
+          showInteractive={false}
+        />
       </ReactFlow>
     </div>
   );
