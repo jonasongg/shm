@@ -23,7 +23,7 @@ export default function DeleteVmDialog({
   id,
 }: {
   name: string;
-  id: number;
+  id: string;
 }) {
   const router = useRouter();
   const [submitting, setSubmitting] = useState<

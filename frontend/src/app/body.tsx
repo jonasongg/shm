@@ -123,8 +123,10 @@ export default function Body({ vms: _vms }: { vms: RawVm[] | undefined }) {
             ))}
             <DragOverlay>
               {({ id }) => {
-                const vm = transformedVms.find((vm) => vm.id === +id);
-                return vm && <Vm {...vm} />;
+                const vm = transformedVms.find((vm) => vm.id === id);
+                return (
+                  vm && <Vm {...vm} className="outline-4 outline-red-400" />
+                );
               }}
             </DragOverlay>
           </DragDropProvider>

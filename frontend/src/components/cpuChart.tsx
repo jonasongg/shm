@@ -9,7 +9,7 @@ export default function CpuChart({
   className,
   disabled,
 }: {
-  id: number;
+  id: string;
   data: DataReport[];
   className?: string;
   disabled: boolean;

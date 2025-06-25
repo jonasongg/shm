@@ -8,19 +8,20 @@ import { cn } from "@/lib/utils";
 import { DataReport, VmStatus, VmType } from "@/types/types";
 import { useSortable } from "@dnd-kit/react/sortable";
 import dynamic from "next/dynamic";
+import React from "react";
 import DeleteVmDialog from "./deleteVmDialog";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 const MediaQuery = dynamic(() => import("react-responsive"), {
   ssr: false,
 });
 
-type VmProps = {
-  id: number;
+interface VmProps extends React.ComponentProps<"div"> {
+  id: string;
   name: string;
   status: VmStatus;
   reports: DataReport[];
   offlineDependencies?: VmType[];
-};
+}
 
 export function SortableVm({ index, ...vmProps }: VmProps & { index: number }) {
   const { ref, isDragging } = useSortable({ id: vmProps.id, index });
@@ -37,7 +38,7 @@ export default function Vm({
   offlineDependencies,
   ref,
   className,
-}: VmProps & { ref?: React.Ref<HTMLDivElement>; className?: string }) {
+}: VmProps) {
   const disabled = status === "Offline";
   return (
     <Card
