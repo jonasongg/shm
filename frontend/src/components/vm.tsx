@@ -24,9 +24,19 @@ interface VmProps extends React.ComponentProps<"div"> {
 }
 
 export function SortableVm({ index, ...vmProps }: VmProps & { index: number }) {
-  const { ref, isDragging } = useSortable({ id: vmProps.id, index });
+  const { ref, isDragging } = useSortable({
+    id: vmProps.id,
+    index,
+    feedback: "clone",
+  });
   return (
-    <Vm {...vmProps} ref={ref} className={cn({ "opacity-30": isDragging })} />
+    <Vm
+      {...vmProps}
+      ref={ref}
+      className={cn("aria-grabbed:scale-105 aria-grabbed:drop-shadow-2xl", {
+        '[&:not([aria-grabbed="true"])]:opacity-30': isDragging,
+      })}
+    />
   );
 }
 
@@ -38,6 +48,7 @@ export default function Vm({
   offlineDependencies,
   ref,
   className,
+  ...props
 }: VmProps) {
   const disabled = status === "Offline";
   return (
@@ -50,6 +61,7 @@ export default function Vm({
         className,
       )}
       ref={ref}
+      {...props}
     >
       <CardHeader className="text-xl flex gap-2">
         <CardTitle>{name}</CardTitle>

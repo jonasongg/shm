@@ -9,9 +9,9 @@ import {
   VmStatusUpdate,
   VmType,
 } from "@/types/types";
-import { DragDropProvider, DragOverlay } from "@dnd-kit/react";
+import { DragDropProvider } from "@dnd-kit/react";
 import { useEffect, useState } from "react";
-import Vm, { SortableVm } from "../components/vm";
+import { SortableVm } from "../components/vm";
 
 export default function Body({ vms: _vms }: { vms: RawVm[] | undefined }) {
   const [vms, setVms] = useState(_vms);
@@ -121,14 +121,6 @@ export default function Body({ vms: _vms }: { vms: RawVm[] | undefined }) {
                 }
               />
             ))}
-            <DragOverlay>
-              {({ id }) => {
-                const vm = transformedVms.find((vm) => vm.id === id);
-                return (
-                  vm && <Vm {...vm} className="outline-4 outline-red-400" />
-                );
-              }}
-            </DragOverlay>
           </DragDropProvider>
         </main>
       )}
