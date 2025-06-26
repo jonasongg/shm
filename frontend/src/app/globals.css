@@ -41,6 +41,17 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+
+  --animate-scale-pulse: scale-pulse 1s ease-in-out infinite;
+  @keyframes scale-pulse {
+    0,
+    100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.007);
+    }
+  }
 }
 
 :root {

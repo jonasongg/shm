@@ -6,9 +6,10 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { DataReport, VmStatus, VmType } from "@/types/types";
+import { closestCenter } from "@dnd-kit/collision";
 import { useSortable } from "@dnd-kit/react/sortable";
 import dynamic from "next/dynamic";
-import React from "react";
+import React, { memo, useState } from "react";
 import DeleteVmDialog from "./deleteVmDialog";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 const MediaQuery = dynamic(() => import("react-responsive"), {
@@ -21,26 +22,43 @@ interface VmProps extends React.ComponentProps<"div"> {
   status: VmStatus;
   reports: DataReport[];
   offlineDependencies?: VmType[];
+  sortingDisabled: boolean;
 }
 
-export function SortableVm({ index, ...vmProps }: VmProps & { index: number }) {
+export function SortableVm({
+  index,
+  sortingDisabled,
+  reports,
+  ...vmProps
+}: VmProps & { index: number }) {
+  const [reportsState, setReportsState] = useState(reports);
+  if (reports !== reportsState && sortingDisabled) setReportsState(reports);
+
   const { ref } = useSortable({
     id: vmProps.id,
     index,
     feedback: "clone",
+    disabled: sortingDisabled,
+    collisionDetector: closestCenter,
   });
   return (
     <Vm
+      reports={reportsState}
       {...vmProps}
+      sortingDisabled={sortingDisabled}
       ref={ref}
       className={cn(
         "aria-grabbed:scale-105 aria-grabbed:drop-shadow-2xl aria-hidden:opacity-50",
+        {
+          '[&:not([aria-hidden="true"])]:animate-scale-pulse cursor-grab':
+            !sortingDisabled,
+        },
       )}
     />
   );
 }
 
-export default function Vm({
+const Vm = memo(function Vm({
   id,
   name,
   status,
@@ -48,6 +66,7 @@ export default function Vm({
   offlineDependencies,
   ref,
   className,
+  sortingDisabled,
   ...props
 }: VmProps) {
   const disabled = status === "Offline";
@@ -57,6 +76,8 @@ export default function Vm({
         "h-140 md:h-80.5 relative overflow-hidden before:absolute before:inset-0 before:z-20 before:transition-colors before:pointer-events-none transition-all",
         {
           "before:bg-red-900/5 dark:before:bg-red-700/20": status === "Offline",
+          "before:inset-0 before:bg-neutral-50/30 before:z-10 before:absolute before:pointer-events-auto":
+            !sortingDisabled,
         },
         className,
       )}
@@ -138,4 +159,4 @@ export default function Vm({
       )}
     </Card>
   );
-}
+});

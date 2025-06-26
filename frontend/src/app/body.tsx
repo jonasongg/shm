@@ -16,6 +16,7 @@ import { SortableVm } from "../components/vm";
 export default function Body({ vms: _vms }: { vms: RawVm[] | undefined }) {
   const [vms, setVms] = useState(_vms);
   const [kafkaDown, setKafkaDown] = useState(false);
+  const [isRearranging, setIsRearranging] = useState(false);
 
   useEffect(() => {
     // initiate stream
@@ -60,6 +61,17 @@ export default function Body({ vms: _vms }: { vms: RawVm[] | undefined }) {
     setVms(_vms);
   }, [_vms]);
 
+  useEffect(() => {
+    const escapeListener = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && isRearranging) {
+        setIsRearranging(false);
+      }
+    };
+
+    document.addEventListener("keydown", escapeListener);
+    return () => document.removeEventListener("keydown", escapeListener);
+  }, [isRearranging]);
+
   const transformedVms: VmType[] | undefined = vms?.map((vm) => ({
     ...vm,
     reports: vm.reports.map((d) => ({
@@ -94,7 +106,12 @@ export default function Body({ vms: _vms }: { vms: RawVm[] | undefined }) {
 
   return (
     <>
-      <Header displayAlert={kafkaDown} vms={transformedVms} />
+      <Header
+        displayAlert={kafkaDown}
+        vms={transformedVms}
+        isRearranging={isRearranging}
+        setIsRearranging={setIsRearranging}
+      />
       {!transformedVms ? (
         <div
           className={cn("h-full flex items-center justify-center text-xl", {
@@ -121,6 +138,7 @@ export default function Body({ vms: _vms }: { vms: RawVm[] | undefined }) {
                       ? getOfflineDependencies(vm)
                       : undefined
                   }
+                  sortingDisabled={!isRearranging}
                 />
               );
             })}
