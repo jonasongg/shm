@@ -9,7 +9,7 @@ import { DataReport, VmStatus, VmType } from "@/types/types";
 import { directionBiased } from "@dnd-kit/collision";
 import { useSortable } from "@dnd-kit/react/sortable";
 import dynamic from "next/dynamic";
-import React, { memo, useState } from "react";
+import { memo, useState } from "react";
 import DeleteVmDialog from "./deleteVmDialog";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 const MediaQuery = dynamic(() => import("react-responsive"), {

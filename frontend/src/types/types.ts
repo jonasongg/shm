@@ -1,5 +1,5 @@
 export type RawDataReport = {
-  vmId: string;
+  vmId: number;
   timestamp: string;
   cpuUsagePercent: number;
   totalMemory: number;
@@ -21,12 +21,12 @@ export type DataReport = Pick<RawDataReport, "cpuUsagePercent" | "vmId"> & {
 export type VmStatus = "Offline" | "Online" | "Degraded";
 
 export type RawVm = {
-  id: string;
+  id: number;
   name: string;
   status: VmStatus;
   reports: RawDataReport[];
-  dependantIds: string[];
-  dependencyIds: string[];
+  dependantIds: number[];
+  dependencyIds: number[];
 };
 
 export type VmType = Omit<RawVm, "reports"> & {
@@ -34,7 +34,7 @@ export type VmType = Omit<RawVm, "reports"> & {
 };
 
 export type VmStatusUpdate = {
-  id: string;
+  id: number;
   status: VmStatus;
 };
 
