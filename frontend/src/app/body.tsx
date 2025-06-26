@@ -17,6 +17,7 @@ export default function Body({ vms: _vms }: { vms: RawVm[] | undefined }) {
   const [vms, setVms] = useState(_vms);
   const [kafkaDown, setKafkaDown] = useState(false);
   const [isRearranging, setIsRearranging] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => {
     // initiate stream
@@ -125,7 +126,10 @@ export default function Body({ vms: _vms }: { vms: RawVm[] | undefined }) {
         </div>
       ) : (
         <main className="p-8 gap-8 flex-1 font-(family-name:--font-geist-sans) grid grid-cols-1 md:grid-cols-2">
-          <DragDropProvider>
+          <DragDropProvider
+            onDragStart={() => setIsDragging(true)}
+            onDragEnd={() => setIsDragging(false)}
+          >
             {transformedVms.map((vm, i) => {
               const { dependantIds: _, dependencyIds: __, ...props } = vm;
               return (
@@ -139,6 +143,7 @@ export default function Body({ vms: _vms }: { vms: RawVm[] | undefined }) {
                       : undefined
                   }
                   sortingDisabled={!isRearranging}
+                  isDragging={isDragging}
                 />
               );
             })}

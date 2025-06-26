@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { DataReport, VmStatus, VmType } from "@/types/types";
-import { closestCenter } from "@dnd-kit/collision";
+import { directionBiased } from "@dnd-kit/collision";
 import { useSortable } from "@dnd-kit/react/sortable";
 import dynamic from "next/dynamic";
 import React, { memo, useState } from "react";
@@ -23,11 +23,13 @@ interface VmProps extends React.ComponentProps<"div"> {
   reports: DataReport[];
   offlineDependencies?: VmType[];
   sortingDisabled: boolean;
+  isDragging: boolean;
 }
 
 export function SortableVm({
   index,
   sortingDisabled,
+  isDragging,
   reports,
   ...vmProps
 }: VmProps & { index: number }) {
@@ -39,7 +41,7 @@ export function SortableVm({
     index,
     feedback: "clone",
     disabled: sortingDisabled,
-    collisionDetector: closestCenter,
+    collisionDetector: directionBiased,
   });
   return (
     <Vm
@@ -51,7 +53,7 @@ export function SortableVm({
         "aria-grabbed:scale-105 aria-grabbed:drop-shadow-2xl aria-hidden:opacity-50",
         {
           '[&:not([aria-hidden="true"])]:animate-scale-pulse cursor-grab':
-            !sortingDisabled,
+            !sortingDisabled && !isDragging,
         },
       )}
     />
