@@ -22,7 +22,7 @@ import {
   useReactFlow,
 } from "@xyflow/react";
 import { X } from "lucide-react";
-import { Dispatch, SetStateAction, useCallback, useEffect } from "react";
+import { Dispatch, SetStateAction, useEffect } from "react";
 import { baseEdge } from "./dependencySettingsDialog";
 
 type CircleNodeType = Node<{
@@ -91,35 +91,6 @@ const DeletableEdge = ({
 const nodeTypes = { circleNode: CircleNode };
 const edgeTypes = { deletableEdge: DeletableEdge };
 
-const getLayoutedElements = (nodes: CircleNodeType[], edges: Edge[]) => {
-  const g = new Dagre.graphlib.Graph().setDefaultEdgeLabel(() => ({}));
-  g.setGraph({ rankdir: "LR", ranksep: 100, nodesep: 30 });
-
-  edges.forEach((e) => g.setEdge(e.source, e.target));
-  nodes.forEach((n) =>
-    g.setNode(n.id, {
-      ...n,
-      width: n.measured?.width ?? 0,
-      height: n.measured?.height ?? 0,
-    }),
-  );
-
-  Dagre.layout(g);
-
-  return {
-    nodes: nodes.map((n) => {
-      const position = g.node(n.id);
-      // We are shifting the dagre node position (anchor=center center) to the top left
-      // so it matches the React Flow node anchor point (top left).
-      const x = position.x - (n.measured?.width ?? 0) / 2;
-      const y = position.y - (n.measured?.height ?? 0) / 2;
-
-      return { ...n, position: { x, y } };
-    }),
-    edges,
-  };
-};
-
 export default function DependencyGraph({
   vms,
   setDependenciesDirty,
@@ -136,19 +107,13 @@ export default function DependencyGraph({
   const initialNodes: CircleNodeType[] = vms.map((vm) => ({
     id: vm.id.toString(),
     data: { label: vm.name, status: vm.status },
-    position: { x: vm.id * 100, y: 0 },
+    position: { x: 0, y: 0 },
     type: "circleNode",
   }));
+
   const nodesInitialised = useNodesInitialized();
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const { fitView } = useReactFlow();
-
-  const onLayout = useCallback(() => {
-    const layouted = getLayoutedElements(nodes, edges);
-
-    setNodes([...layouted.nodes]);
-    setEdges([...layouted.edges]);
-  }, [nodes, edges]);
 
   const statusChanged =
     initialNodes.map((n) => n.data.status).join(",") !==
@@ -156,24 +121,32 @@ export default function DependencyGraph({
 
   useEffect(() => {
     if (nodesInitialised && !statusChanged) {
-      onLayout();
+      setNodes((nodes) => {
+        const g = new Dagre.graphlib.Graph().setDefaultEdgeLabel(() => ({}));
+        g.setGraph({ rankdir: "LR", ranksep: 100, nodesep: 30 });
+        edges.forEach((e) => g.setEdge(e.source, e.target));
+        nodes.forEach((n) => g.setNode(n.id, { ...n, ...n.measured }));
+        Dagre.layout(g);
+
+        return nodes.map((n) => ({ ...n, position: g.node(n.id) }));
+      });
       fitView({ padding: 0.5 });
     }
-  }, [nodesInitialised, statusChanged]);
+  }, [nodesInitialised, statusChanged, setNodes, setEdges, fitView, edges]);
 
   if (statusChanged) {
     setNodes((nodes) =>
       nodes.map((node) => {
-        const status = vms.find((vm) => vm.id === +node.id)?.status;
+        const status = vms.find((vm) => vm.id === node.id)?.status;
         return { ...node, data: { ...node.data, ...(status && { status }) } };
       }),
     );
   }
 
-  const onConnect = useCallback((params: Connection) => {
+  const onConnect = (params: Connection) => {
     setDependenciesDirty(true);
     setEdges((edges) => addEdge({ ...params, ...baseEdge }, edges));
-  }, []);
+  };
 
   return (
     <div className="h-100 border-2 rounded-xl">
