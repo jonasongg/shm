@@ -109,18 +109,21 @@ export default function Body({ vms: _vms }: { vms: RawVm[] | undefined }) {
       ) : (
         <main className="p-8 gap-8 flex-1 font-(family-name:--font-geist-sans) grid grid-cols-1 md:grid-cols-2">
           <DragDropProvider>
-            {transformedVms.map((vm, i) => (
-              <SortableVm
-                {...vm}
-                key={i}
-                index={i}
-                offlineDependencies={
-                  vm.status === "Degraded"
-                    ? getOfflineDependencies(vm)
-                    : undefined
-                }
-              />
-            ))}
+            {transformedVms.map((vm, i) => {
+              const { dependantIds: _, dependencyIds: __, ...props } = vm;
+              return (
+                <SortableVm
+                  {...props}
+                  key={i}
+                  index={i}
+                  offlineDependencies={
+                    vm.status === "Degraded"
+                      ? getOfflineDependencies(vm)
+                      : undefined
+                  }
+                />
+              );
+            })}
           </DragDropProvider>
         </main>
       )}

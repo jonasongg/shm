@@ -24,7 +24,7 @@ interface VmProps extends React.ComponentProps<"div"> {
 }
 
 export function SortableVm({ index, ...vmProps }: VmProps & { index: number }) {
-  const { ref, isDragging } = useSortable({
+  const { ref } = useSortable({
     id: vmProps.id,
     index,
     feedback: "clone",
@@ -33,9 +33,9 @@ export function SortableVm({ index, ...vmProps }: VmProps & { index: number }) {
     <Vm
       {...vmProps}
       ref={ref}
-      className={cn("aria-grabbed:scale-105 aria-grabbed:drop-shadow-2xl", {
-        '[&:not([aria-grabbed="true"])]:opacity-30': isDragging,
-      })}
+      className={cn(
+        "aria-grabbed:scale-105 aria-grabbed:drop-shadow-2xl aria-hidden:opacity-50",
+      )}
     />
   );
 }
