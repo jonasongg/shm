@@ -16,8 +16,8 @@ const MediaQuery = dynamic(() => import("react-responsive"), {
   ssr: false,
 });
 
-interface VmProps extends React.ComponentProps<"div"> {
-  id: string;
+interface VmProps extends Omit<React.ComponentProps<"div">, "id"> {
+  id: number;
   name: string;
   status: VmStatus;
   reports: DataReport[];

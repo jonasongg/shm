@@ -132,12 +132,12 @@ export default function DependencyGraph({
       });
       fitView({ padding: 0.5 });
     }
-  }, [nodesInitialised, statusChanged, setNodes, setEdges, fitView, edges]);
+  }, [nodesInitialised, statusChanged, setNodes, fitView, edges]);
 
   if (statusChanged) {
     setNodes((nodes) =>
       nodes.map((node) => {
-        const status = vms.find((vm) => vm.id === node.id)?.status;
+        const status = vms.find((vm) => vm.id === +node.id)?.status;
         return { ...node, data: { ...node.data, ...(status && { status }) } };
       }),
     );
