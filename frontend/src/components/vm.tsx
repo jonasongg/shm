@@ -23,7 +23,6 @@ interface VmProps extends React.ComponentProps<"div"> {
   reports: DataReport[];
   offlineDependencies?: VmType[];
   sortingDisabled: boolean;
-  isDragging: boolean;
 }
 
 export function SortableVm({
@@ -32,7 +31,7 @@ export function SortableVm({
   isDragging,
   reports,
   ...vmProps
-}: VmProps & { index: number }) {
+}: VmProps & { index: number; isDragging: boolean }) {
   const [reportsState, setReportsState] = useState(reports);
   if (reports !== reportsState && sortingDisabled) setReportsState(reports);
 
