@@ -1,3 +1,5 @@
+using Docker.DotNet;
+using Docker.DotNet.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NuGet.Packaging;
@@ -10,8 +12,14 @@ namespace SHM_MS.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class VmController(SHMContext context, VmStatusService vmStatusService) : ControllerBase
+public class VmController(
+    SHMContext context,
+    VmStatusService vmStatusService,
+    IConfiguration configuration
+) : ControllerBase
 {
+    private readonly DockerClient client = new DockerClientConfiguration().CreateClient();
+
     // GET: api/vm
     [HttpGet]
     public async Task<ActionResult<IEnumerable<VmDto>>> GetVms()
@@ -41,6 +49,35 @@ public class VmController(SHMContext context, VmStatusService vmStatusService) :
         context.Vms.Add(vm);
         await context.SaveChangesAsync();
 
+        try
+        {
+            var dockerConfig = configuration.GetSection("Docker");
+            var container = await client.Containers.CreateContainerAsync(
+                new CreateContainerParameters()
+                {
+                    Name = vm.Name,
+                    Image = dockerConfig.GetSection("MonitoringServiceImage").Value,
+                    Env =
+                    [
+                        $"Kafka:BootstrapServers={dockerConfig.GetSection("Kafka:BootstrapServers").Value}",
+                        $"VM_Name={vm.Name}",
+                    ],
+                }
+            );
+            await client.Networks.ConnectNetworkAsync(
+                dockerConfig.GetSection("BrokerNetworkName").Value,
+                new NetworkConnectParameters() { Container = container.ID }
+            );
+            await client.Containers.StartContainerAsync(
+                container.ID,
+                new ContainerStartParameters()
+            );
+        }
+        catch (DockerApiException)
+        {
+            return BadRequest("There was an error in creating the Docker container.");
+        }
+
         return Created();
     }
 
@@ -57,6 +94,17 @@ public class VmController(SHMContext context, VmStatusService vmStatusService) :
         context.Vms.Remove(vm);
         await context.SaveChangesAsync();
 
+        try
+        {
+            await client.Containers.RemoveContainerAsync(
+                vm.Name,
+                new ContainerRemoveParameters() { Force = true }
+            );
+        }
+        catch (DockerApiException)
+        {
+            return BadRequest("There was an error in removing the Docker container.");
+        }
         return NoContent();
     }
 

@@ -1,6 +1,11 @@
 x-base-environment: &base-environment
   Kafka:BootstrapServers: broker:29092
 
+networks:
+  default:
+    name: monitoring-network
+    driver: bridge
+
 services:
   broker:
     image: confluentinc/confluent-local:7.6.0
