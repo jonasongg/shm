@@ -49,6 +49,7 @@ export default function DependencySettingsDialog({ vms }: { vms: VmType[] }) {
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
   const form = useForm();
+  const errors = form.formState.errors.root;
 
   const onSubmit = async () => {
     const values = edges.reduce(
@@ -73,7 +74,7 @@ export default function DependencySettingsDialog({ vms }: { vms: VmType[] }) {
         // update vm list
         router.refresh();
       } else {
-        form.setError("name", {
+        form.setError("root.serverError", {
           message:
             (await response.json()) ||
             "Failed to update dependencies. Please try again.",
@@ -93,6 +94,7 @@ export default function DependencySettingsDialog({ vms }: { vms: VmType[] }) {
         setOpen(open);
         setDependenciesDirty(false);
         setEdges(initialEdges);
+        form.clearErrors();
       }}
     >
       <Tooltip>
@@ -116,13 +118,22 @@ export default function DependencySettingsDialog({ vms }: { vms: VmType[] }) {
             setDependenciesDirty={setDependenciesDirty}
             edges={edges}
             setEdges={setEdges}
-            onEdgesChange={onEdgesChange}
+            onEdgesChange={(changes) => {
+              onEdgesChange(changes);
+              form.clearErrors();
+            }}
+            error={!!errors}
           />
         </ReactFlowProvider>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <DialogFooter>
+              <p className="text-sm self-center mr-3 text-destructive">
+                {errors && "serverError" in errors
+                  ? errors.serverError.message
+                  : ""}
+              </p>
               {form.formState.isSubmitting ? (
                 <Button type="submit" disabled>
                   <Loader2Icon className="animate-spin" /> Saving Changes...

@@ -97,12 +97,14 @@ export default function DependencyGraph({
   edges,
   setEdges,
   onEdgesChange,
+  error,
 }: {
   vms: VmType[];
   setDependenciesDirty: Dispatch<SetStateAction<boolean>>;
   edges: Edge[];
   setEdges: Dispatch<SetStateAction<Edge[]>>;
   onEdgesChange: OnEdgesChange<Edge>;
+  error: boolean;
 }) {
   const initialNodes: CircleNodeType[] = vms.map((vm) => ({
     id: vm.id.toString(),
@@ -149,7 +151,11 @@ export default function DependencyGraph({
   };
 
   return (
-    <div className="h-100 border-2 rounded-xl">
+    <div
+      className={cn("h-100 border-2 rounded-xl transition-all", {
+        "border-destructive outline-destructive/30 outline-3": error,
+      })}
+    >
       <ReactFlow
         nodes={nodes}
         edges={edges}
