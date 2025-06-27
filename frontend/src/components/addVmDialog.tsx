@@ -28,6 +28,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { Checkbox } from "./ui/checkbox";
 
 export default function AddVmDialog() {
   const [open, setOpen] = useState(false);
@@ -35,11 +36,12 @@ export default function AddVmDialog() {
 
   const formSchema = z.object({
     name: z.string().nonempty("VM Name cannot be empty."),
+    autocreate: z.boolean(),
   });
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: { name: "" },
+    defaultValues: { name: "", autocreate: true },
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
@@ -87,7 +89,7 @@ export default function AddVmDialog() {
       <DialogContent>
         <Form {...form}>
           <form
-            className="flex flex-col gap-4"
+            className="flex flex-col gap-6"
             onSubmit={form.handleSubmit(onSubmit)}
           >
             <DialogHeader>
@@ -99,12 +101,12 @@ export default function AddVmDialog() {
               </DialogDescription>
             </DialogHeader>
 
-            <div className="px-6 py-2 flex flex-col gap-3">
+            <div className="px-6 py-2 flex flex-col gap-4 items-center">
               <FormField
                 control={form.control}
                 name="name"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="w-full">
                     <FormLabel>Name</FormLabel>
                     <FormControl>
                       <Input placeholder="VM Name" {...field} />
@@ -113,15 +115,32 @@ export default function AddVmDialog() {
                   </FormItem>
                 )}
               />
+              <FormField
+                control={form.control}
+                name="autocreate"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center gap-2">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={(checked) => field.onChange(checked)}
+                      />
+                    </FormControl>
+                    <FormLabel className="font-normal">
+                      Automatically create a Docker container for this VM
+                    </FormLabel>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
             <DialogFooter>
-              {form.formState.isSubmitting ? (
-                <Button type="submit" disabled>
-                  <Loader2Icon className="animate-spin" /> Adding...
-                </Button>
-              ) : (
-                <Button type="submit">Add</Button>
-              )}
+              <Button type="submit" disabled={form.formState.isSubmitting}>
+                {form.formState.isSubmitting && (
+                  <Loader2Icon className="animate-spin" />
+                )}
+                Add VM
+              </Button>
               <DialogClose asChild>
                 <Button
                   variant="outline"

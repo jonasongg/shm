@@ -35,55 +35,57 @@ public class VmController(
     // POST: api/vm
     // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
     [HttpPost]
-    public async Task<ActionResult<Vm>> PostVm(Vm vm)
+    public async Task<ActionResult<Vm>> PostVm(PostVmDto vmDto)
     {
-        if (await context.Vms.AnyAsync(v => v.Name == vm.Name))
+        if (await context.Vms.AnyAsync(v => v.Name == vmDto.Name))
         {
             return Conflict("A VM with this name already exists.");
         }
-        if (vm.Name == null || vm.Name.Trim() == "")
+        if (vmDto.Name == null || vmDto.Name.Trim() == "")
         {
             return BadRequest("VM name cannot be empty.");
         }
 
-        context.Vms.Add(vm);
+        context.Vms.Add(new Vm() { Name = vmDto.Name });
         await context.SaveChangesAsync();
 
-        try
+        if (vmDto.Autocreate)
         {
-            var dockerConfig = configuration.GetSection("Docker");
-            var container = await client.Containers.CreateContainerAsync(
-                new CreateContainerParameters()
-                {
-                    Name = vm.Name,
-                    Image = dockerConfig.GetSection("MonitoringServiceImage").Value,
-                    Env =
-                    [
-                        $"Kafka:BootstrapServers={dockerConfig.GetSection("Kafka:BootstrapServers").Value}",
-                        $"VM_Name={vm.Name}",
-                    ],
-                }
-            );
-            await client.Networks.ConnectNetworkAsync(
-                dockerConfig.GetSection("BrokerNetworkName").Value,
-                new NetworkConnectParameters() { Container = container.ID }
-            );
-            await client.Containers.StartContainerAsync(
-                container.ID,
-                new ContainerStartParameters()
-            );
+            try
+            {
+                var dockerConfig = configuration.GetSection("Docker");
+                var container = await client.Containers.CreateContainerAsync(
+                    new CreateContainerParameters()
+                    {
+                        Name = vmDto.Name,
+                        Image = dockerConfig.GetSection("MonitoringServiceImage").Value,
+                        Env =
+                        [
+                            $"Kafka:BootstrapServers={dockerConfig.GetSection("Kafka:BootstrapServers").Value}",
+                            $"VM_Name={vmDto.Name}",
+                        ],
+                    }
+                );
+                await client.Networks.ConnectNetworkAsync(
+                    dockerConfig.GetSection("BrokerNetworkName").Value,
+                    new NetworkConnectParameters() { Container = container.ID }
+                );
+                await client.Containers.StartContainerAsync(
+                    container.ID,
+                    new ContainerStartParameters()
+                );
+            }
+            catch (DockerApiException)
+            {
+                return BadRequest("There was an error in creating the Docker container.");
+            }
         }
-        catch (DockerApiException)
-        {
-            return BadRequest("There was an error in creating the Docker container.");
-        }
-
         return Created();
     }
 
     // DELETE: api/vm/5
     [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteVm(int id)
+    public async Task<IActionResult> DeleteVm(int id, DeleteVmDto vmDto)
     {
         var vm = await context.Vms.FindAsync(id);
         if (vm == null)
@@ -91,34 +93,29 @@ public class VmController(
             return NotFound();
         }
 
-        context.Vms.Remove(vm);
-        await context.SaveChangesAsync();
-
-        try
+        if (vmDto.DeleteType == DeleteType.Reports)
         {
-            await client.Containers.RemoveContainerAsync(
-                vm.Name,
-                new ContainerRemoveParameters() { Force = true }
-            );
+            vm.Reports.Clear();
         }
-        catch (DockerApiException)
+        else
         {
-            return BadRequest("There was an error in removing the Docker container.");
-        }
-        return NoContent();
-    }
-
-    // DELETE: api/vm/5/reports
-    [HttpDelete("{id}/reports")]
-    public async Task<IActionResult> DeleteVmReports(int id)
-    {
-        var vm = await context.Vms.FindAsync(id);
-        if (vm == null)
-        {
-            return NotFound();
+            context.Vms.Remove(vm);
+            if (vmDto.DeleteType == DeleteType.VmDocker)
+            {
+                try
+                {
+                    await client.Containers.RemoveContainerAsync(
+                        vm.Name,
+                        new ContainerRemoveParameters() { Force = true }
+                    );
+                }
+                catch (DockerApiException)
+                {
+                    return BadRequest("There was an error in removing the Docker container.");
+                }
+            }
         }
 
-        vm.Reports.Clear();
         await context.SaveChangesAsync();
 
         return NoContent();
