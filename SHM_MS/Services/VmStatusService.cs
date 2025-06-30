@@ -102,13 +102,11 @@ public class VmStatusService(
         CancellationToken cancellationToken = default
     )
     {
-        foreach (var v in context.Vms.Where(vm => vm.Status == VmStatus.Degraded))
-        {
-            v.Status = VmStatus.Online;
-        }
-
         var vms = await context.Vms.Include(vm => vm.Dependants).ToListAsync(cancellationToken);
 
+        vms.Where(vm => vm.Status == VmStatus.Degraded)
+            .ToList()
+            .ForEach(vm => vm.Status = VmStatus.Online);
         var dependants = new Queue<Vm>(
             vms.Where(vm => vm.Status == VmStatus.Offline).SelectMany(vm => vm.Dependants)
         );
