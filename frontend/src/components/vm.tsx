@@ -74,11 +74,10 @@ const Vm = memo(function Vm({
   return (
     <Card
       className={cn(
-        "h-140 md:h-80.5 relative overflow-hidden before:absolute before:inset-0 before:z-20 before:transition-colors before:pointer-events-none transition-all",
+        "resize-x h-140 md:h-80.5 relative overflow-hidden before:absolute before:inset-0 before:z-20 before:transition-colors before:pointer-events-none after:absolute after:inset-0 after:z-20 after:transition-colors after:pointer-events-none transition-all",
         {
           "before:bg-red-900/5 dark:before:bg-red-700/20": status === "Offline",
-          "before:inset-0 before:bg-neutral-50/30 before:z-10 before:absolute before:pointer-events-auto":
-            !sortingDisabled,
+          "after:bg-neutral-50/30 after:pointer-events-auto": !sortingDisabled,
         },
         className,
       )}
