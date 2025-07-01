@@ -34,11 +34,12 @@ export default function Header({
                 isRearranging,
             })}
             onClick={() => setIsRearranging(!isRearranging)}
+            disabled={!vms}
           >
             <Shuffle />
           </TooltipTrigger>
         </Tooltip>
-        {vms && <DependencySettingsDialog vms={vms} />}
+        <DependencySettingsDialog vms={vms} />
         <ModeToggle />
       </div>
     </header>

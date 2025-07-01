@@ -33,19 +33,24 @@ export const baseEdge = {
   animated: true,
   type: "deletableEdge",
 };
-export default function DependencySettingsDialog({ vms }: { vms: VmType[] }) {
+export default function DependencySettingsDialog({
+  vms,
+}: {
+  vms: VmType[] | undefined;
+}) {
   const [dependenciesDirty, setDependenciesDirty] = useState(false);
   const [open, setOpen] = useState(false);
   const router = useRouter();
 
-  const initialEdges = vms.flatMap((vm) =>
-    vm.dependantIds.map<Edge>((depId) => ({
-      ...baseEdge,
-      id: `${vm.id}-${depId}`,
-      source: vm.id.toString(),
-      target: depId.toString(),
-    })),
-  );
+  const initialEdges =
+    vms?.flatMap((vm) =>
+      vm.dependantIds.map<Edge>((depId) => ({
+        ...baseEdge,
+        id: `${vm.id}-${depId}`,
+        source: vm.id.toString(),
+        target: depId.toString(),
+      })),
+    ) ?? [];
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
   const form = useForm();
@@ -101,6 +106,7 @@ export default function DependencySettingsDialog({ vms }: { vms: VmType[] }) {
         <DialogTrigger asChild>
           <TooltipTrigger
             className={buttonVariants({ variant: "header", size: "icon" })}
+            disabled={!vms}
           >
             <Settings />
           </TooltipTrigger>
@@ -114,7 +120,7 @@ export default function DependencySettingsDialog({ vms }: { vms: VmType[] }) {
 
         <ReactFlowProvider>
           <DependencyGraph
-            vms={vms}
+            vms={vms ?? []}
             setDependenciesDirty={setDependenciesDirty}
             edges={edges}
             setEdges={setEdges}
