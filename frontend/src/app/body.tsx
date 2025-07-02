@@ -10,6 +10,7 @@ import {
   VmType,
 } from "@/types/types";
 import { DragDropProvider } from "@dnd-kit/react";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { SortableVm } from "../components/vm";
 
@@ -18,12 +19,16 @@ export default function Body({ vms: _vms }: { vms: RawVm[] | undefined }) {
   const [kafkaDown, setKafkaDown] = useState(false);
   const [isRearranging, setIsRearranging] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const router = useRouter();
+
+  const noData = !_vms;
 
   useEffect(() => {
     // initiate stream
     const streamEventSource = new EventSource(toAbsoluteUrl("/stream"));
 
     streamEventSource.addEventListener("Report", (event) => {
+      if (noData) router.refresh();
       const dataReport: RawDataReport = JSON.parse(event.data);
 
       setVms((d) => {
@@ -56,7 +61,7 @@ export default function Body({ vms: _vms }: { vms: RawVm[] | undefined }) {
     });
 
     return () => streamEventSource.close();
-  }, []);
+  }, [noData, router]);
 
   useEffect(() => {
     setVms(_vms);
