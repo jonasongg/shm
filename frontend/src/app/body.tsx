@@ -1,6 +1,7 @@
 "use client";
 
 import Header from "@/components/header";
+import { GridStackProvider } from "@/lib/gridStackReact/gridStackProvider";
 import { bytesFormatter, cn, toAbsoluteUrl } from "@/lib/utils";
 import {
   RawDataReport,
@@ -9,16 +10,18 @@ import {
   VmStatusUpdate,
   VmType,
 } from "@/types/types";
-import { DragDropProvider } from "@dnd-kit/react";
+import { GridStack } from "gridstack";
+import "gridstack/dist/gridstack.min.css";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { SortableVm } from "../components/vm";
+
+const gridStackOptions = { cellHeight: 118, margin: 16 };
 
 export default function Body({ vms: _vms }: { vms: RawVm[] | undefined }) {
   const [vms, setVms] = useState(_vms);
   const [kafkaDown, setKafkaDown] = useState(false);
   const [isRearranging, setIsRearranging] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
   const router = useRouter();
 
   const noData = !_vms;
@@ -78,6 +81,10 @@ export default function Body({ vms: _vms }: { vms: RawVm[] | undefined }) {
     return () => document.removeEventListener("keydown", escapeListener);
   }, [isRearranging]);
 
+  useEffect(() => {
+    GridStack.init();
+  }, []);
+
   const transformedVms: VmType[] | undefined = vms?.map((vm) => ({
     ...vm,
     reports: vm.reports.map((d) => ({
@@ -130,10 +137,10 @@ export default function Body({ vms: _vms }: { vms: RawVm[] | undefined }) {
             : "There was an error fetching VMs. Please try again later."}
         </div>
       ) : (
-        <main className="p-8 gap-8 flex-1 font-(family-name:--font-geist-sans) grid grid-cols-1 md:grid-cols-2">
-          <DragDropProvider
-            onDragStart={() => setIsDragging(true)}
-            onDragEnd={() => setIsDragging(false)}
+        <main className="font-(family-name:--font-geist-sans) p-4 h-full">
+          <GridStackProvider
+            initialOptions={gridStackOptions}
+            disabled={!isRearranging}
           >
             {transformedVms.map((vm, i) => {
               const { dependantIds: _, dependencyIds: __, ...props } = vm;
@@ -141,18 +148,18 @@ export default function Body({ vms: _vms }: { vms: RawVm[] | undefined }) {
                 <SortableVm
                   {...props}
                   key={i}
-                  index={i}
+                  // index={i}
                   offlineDependencies={
                     vm.status === "Degraded"
                       ? getOfflineDependencies(vm)
                       : undefined
                   }
                   sortingDisabled={!isRearranging}
-                  isDragging={isDragging}
+                  // isDragging={isDragging}
                 />
               );
             })}
-          </DragDropProvider>
+          </GridStackProvider>
         </main>
       )}
     </>

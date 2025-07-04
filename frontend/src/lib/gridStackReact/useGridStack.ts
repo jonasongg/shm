@@ -1,0 +1,26 @@
+import { GridStackWidget } from "gridstack";
+import { useLayoutEffect, useRef } from "react";
+import { useGridStackContext } from "./gridStackContext";
+
+export const useGridStack = (options: GridStackWidget) => {
+  const { makeWidget, removeWidget } = useGridStackContext();
+  const ref = useRef<HTMLDivElement>(null);
+
+  const handleRef = (element: HTMLDivElement | null) => {
+    if (element) ref.current = element;
+  };
+
+  useLayoutEffect(() => {
+    const element = ref.current;
+    if (element) {
+      makeWidget(element, options);
+    }
+    return () => {
+      if (element) {
+        removeWidget(element);
+      }
+    };
+  }, [ref, makeWidget, removeWidget, options]);
+
+  return { ref: handleRef };
+};
