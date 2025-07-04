@@ -15,33 +15,30 @@ const MediaQuery = dynamic(() => import("react-responsive"), {
   ssr: false,
 });
 
-interface VmProps extends Omit<React.ComponentProps<"div">, "id"> {
+type VmProps = {
   id: number;
   name: string;
   status: VmStatus;
   reports: DataReport[];
   offlineDependencies?: VmType[];
   sortingDisabled: boolean;
-}
+};
 
-export function SortableVm({ sortingDisabled, reports, ...vmProps }: VmProps) {
+export function Vm(props: VmProps) {
+  const { reports, sortingDisabled } = props;
   const [reportsState, setReportsState] = useState(reports);
   if (reports !== reportsState && sortingDisabled) setReportsState(reports);
 
-  return (
-    <Vm {...vmProps} reports={reportsState} sortingDisabled={sortingDisabled} />
-  );
+  return <MemoisedVm {...props} reports={reportsState} />;
 }
 
-const Vm = memo(function Vm({
+const MemoisedVm = memo(function Vm({
   id,
   name,
   status,
   reports,
   offlineDependencies,
-  className,
   sortingDisabled,
-  ...props
 }: VmProps) {
   const disabled = status === "Offline";
   const { ref } = useGridStack({ h: 3, w: 6 });
@@ -60,9 +57,7 @@ const Vm = memo(function Vm({
             "after:bg-neutral-50/30 after:pointer-events-auto":
               !sortingDisabled,
           },
-          className,
         )}
-        {...props}
       >
         <CardHeader className="text-xl flex gap-2">
           <CardTitle>{name}</CardTitle>

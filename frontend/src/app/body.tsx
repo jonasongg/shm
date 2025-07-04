@@ -1,6 +1,7 @@
 "use client";
 
 import Header from "@/components/header";
+import { Vm } from "@/components/vm";
 import { GridStackProvider } from "@/lib/gridStackReact/gridStackProvider";
 import { bytesFormatter, cn, toAbsoluteUrl } from "@/lib/utils";
 import {
@@ -14,7 +15,6 @@ import { GridStack } from "gridstack";
 import "gridstack/dist/gridstack.min.css";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { SortableVm } from "../components/vm";
 
 const gridStackOptions = { cellHeight: 118, margin: 16 };
 
@@ -145,17 +145,15 @@ export default function Body({ vms: _vms }: { vms: RawVm[] | undefined }) {
             {transformedVms.map((vm, i) => {
               const { dependantIds: _, dependencyIds: __, ...props } = vm;
               return (
-                <SortableVm
+                <Vm
                   {...props}
                   key={i}
-                  // index={i}
                   offlineDependencies={
                     vm.status === "Degraded"
                       ? getOfflineDependencies(vm)
                       : undefined
                   }
                   sortingDisabled={!isRearranging}
-                  // isDragging={isDragging}
                 />
               );
             })}
