@@ -41,16 +41,13 @@ const MemoisedVm = memo(function Vm({
   sortingDisabled,
 }: VmProps) {
   const disabled = status === "Offline";
-  const { ref } = useGridStack({ h: 3, w: 6 });
+  const { ref } = useGridStack({ id: id.toString(), h: 3, w: 6 });
 
   return (
-    <div
-      ref={ref}
-      className="w-[calc(50%-var(--spacing)*8/2)] h-[calc(50%-var(--spacing)*8/2)]"
-    >
+    <div ref={ref}>
       <Card
         className={cn(
-          "grid-stack-item-content h-[calc(100%-var(--spacing)*8)] relative !overflow-hidden before:absolute before:inset-0 before:z-20 before:transition-colors before:pointer-events-none  after:absolute after:inset-0 after:z-20 after:transition-colors after:pointer-events-none transition-all",
+          "grid-stack-item-content relative !overflow-hidden before:absolute before:inset-0 before:z-20 before:transition-colors before:pointer-events-none  after:absolute after:inset-0 after:z-20 after:transition-colors after:pointer-events-none transition-all",
           {
             "before:bg-red-900/5 dark:before:bg-red-700/20":
               status === "Offline",

@@ -4,15 +4,17 @@ import {
   GridStackOptions,
   GridStackWidget,
 } from "gridstack";
+import "gridstack/dist/gridstack.min.css";
 import {
   PropsWithChildren,
   useCallback,
+  useEffect,
   useLayoutEffect,
   useMemo,
   useRef,
   useState,
 } from "react";
-import { GridStackContext } from "./gridStackContext";
+import { GridStackContext, GridStackWidgetWithId } from "./gridStackContext";
 
 export const GridStackProvider = ({
   children,
@@ -23,12 +25,16 @@ export const GridStackProvider = ({
   disabled: boolean;
 }>) => {
   const [gridStack, setGridStack] = useState<GridStack | null>(null);
+  const [gridWidgets, setGridWidgets] = useState<
+    Record<string, GridStackWidgetWithId>
+  >({});
   const gridStackElRef = useRef<HTMLDivElement>(null);
 
   useLayoutEffect(() => {
     if (gridStackElRef.current) {
       try {
         setGridStack(GridStack.init(initialOptions, gridStackElRef.current));
+        console.log("after grid");
       } catch (e) {
         console.error("Error initializing gridstack", e);
       }
@@ -46,14 +52,48 @@ export const GridStackProvider = ({
     [gridStack],
   );
 
+  const saveWidget = useCallback(
+    (id: string) => {
+      if (!gridStack) return;
+
+      const widgets = gridStack.save() as GridStackWidget[];
+      const widget = widgets.find((w) => w.id === id);
+      if (widget) {
+        setGridWidgets((prev) => ({ ...prev, [id]: { ...widget, id } }));
+      }
+    },
+    [gridStack],
+  );
+
+  const getSavedWidget = useCallback(
+    (id: string) => {
+      const widget = gridWidgets[id];
+      if (widget) {
+        return { ...widget, id };
+      }
+    },
+    [gridWidgets],
+  );
+
+  useEffect(() => {
+    if (!gridStack) return;
+
+    if (disabled) {
+      gridStack.setStatic(true);
+    } else {
+      gridStack.setStatic(false);
+    }
+  }, [gridStack, disabled]);
+
   const contextValues = useMemo(
     () => ({
       initialOptions,
-      disabled,
       makeWidget,
       removeWidget,
+      saveWidget,
+      getSavedWidget,
     }),
-    [disabled, makeWidget, removeWidget, initialOptions],
+    [initialOptions, makeWidget, removeWidget, saveWidget, getSavedWidget],
   );
 
   return (

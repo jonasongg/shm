@@ -6,12 +6,18 @@ import {
 } from "gridstack";
 import { createContext, useContext } from "react";
 
+export type GridStackWidgetWithId = GridStackWidget & { id: string };
 export type GridStackContextType = {
   initialOptions: GridStackOptions;
-  disabled: boolean;
 
-  makeWidget: (element: GridStackElement, options?: GridStackWidget) => void;
+  makeWidget: (
+    element: GridStackElement,
+    options: GridStackWidgetWithId,
+  ) => void;
   removeWidget: (element: GridItemHTMLElement) => void;
+
+  saveWidget: (id: string) => void;
+  getSavedWidget: (id: string) => GridStackWidgetWithId | undefined;
 };
 
 export const GridStackContext = createContext<GridStackContextType | null>(

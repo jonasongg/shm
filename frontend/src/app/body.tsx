@@ -11,8 +11,6 @@ import {
   VmStatusUpdate,
   VmType,
 } from "@/types/types";
-import { GridStack } from "gridstack";
-import "gridstack/dist/gridstack.min.css";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -80,10 +78,6 @@ export default function Body({ vms: _vms }: { vms: RawVm[] | undefined }) {
     document.addEventListener("keydown", escapeListener);
     return () => document.removeEventListener("keydown", escapeListener);
   }, [isRearranging]);
-
-  useEffect(() => {
-    GridStack.init();
-  }, []);
 
   const transformedVms: VmType[] | undefined = vms?.map((vm) => ({
     ...vm,
