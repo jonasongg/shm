@@ -90,6 +90,12 @@
 
   .placeholder-content {
     border-radius: var(--radius-xl);
+    box-shadow: inset 0 0 3px 2px rgba(0, 0, 0, 0.05);
+  }
+
+  .ui-draggable-dragging {
+    transform: scale(1.05);
+    @apply drop-shadow-2xl;
   }
 }
 
