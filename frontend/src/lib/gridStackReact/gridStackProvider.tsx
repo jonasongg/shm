@@ -75,15 +75,23 @@ export const GridStackProvider = ({
     [gridWidgets],
   );
 
-  useEffect(() => {
-    if (!gridStack) return;
+  useEffect(() => void gridStack?.setStatic(disabled), [gridStack, disabled]);
 
-    if (disabled) {
-      gridStack.setStatic(true);
-    } else {
-      gridStack.setStatic(false);
-    }
-  }, [gridStack, disabled]);
+  // to prevent 'r' to rotate feature by gridstack
+  useEffect(() => {
+    gridStack?.on("dragstart", (_, el) => {
+      if (el.gridstackNode) el.gridstackNode.noResize = true;
+    });
+
+    gridStack?.on("dragstop", (_, el) => {
+      if (el.gridstackNode) el.gridstackNode.noResize = false;
+    });
+
+    return () => {
+      gridStack?.off("dragstart");
+      gridStack?.off("dragstop");
+    };
+  }, [gridStack]);
 
   const contextValues = useMemo(
     () => ({

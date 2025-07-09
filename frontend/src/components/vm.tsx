@@ -41,7 +41,14 @@ const MemoisedVm = memo(function Vm({
   sortingDisabled,
 }: VmProps) {
   const disabled = status === "Offline";
-  const { ref } = useGridStack({ id: id.toString(), h: 3, w: 6 });
+  const { ref } = useGridStack({
+    id: id.toString(),
+    minH: 3,
+    minW: 5,
+    w: 6,
+    maxH: 6,
+    maxW: 12,
+  });
 
   return (
     <div ref={ref}>

@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import { DataReport } from "@/types/types";
+import { useState } from "react";
 import {
   Label,
   LabelList,
@@ -21,6 +22,7 @@ export default function MemChart({
   const { totalMemory, usedMemory, memoryUsagePercent } = data.reduce(
     (acc, d) => (acc.timestamp > d.timestamp ? acc : d),
   );
+  const [ratio, setRatio] = useState<number>(0);
 
   return (
     <ChartContainer
@@ -38,13 +40,14 @@ export default function MemChart({
         },
       }}
       className={className}
+      onResize={(w, h) => setRatio(w / h)}
     >
       <RadialBarChart
         data={[
           { totalMemory: (+totalMemory - +usedMemory).toFixed(1), usedMemory },
         ]}
-        innerRadius="70%"
-        outerRadius="150%"
+        innerRadius={`${53 * Math.min(Math.max(ratio, 1), 1.3)}%`}
+        outerRadius={`${115 * Math.min(Math.max(ratio, 1), 1.3)}%`}
         cy="70%"
         startAngle={180}
         endAngle={0}
