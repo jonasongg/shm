@@ -12,7 +12,7 @@ using SHM_MS.DbContexts;
 namespace SHM_MS.Migrations
 {
     [DbContext(typeof(SHMContext))]
-    [Migration("20250709090427_AddVmStatusHistoryTable")]
+    [Migration("20250709122527_AddVmStatusHistoryTable")]
     partial class AddVmStatusHistoryTable
     {
         /// <inheritdoc />
