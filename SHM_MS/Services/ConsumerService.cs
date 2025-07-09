@@ -80,7 +80,7 @@ public class ConsumerService : BackgroundService
                 // VmId is automatic
                 var report = new Report
                 {
-                    Vm = vm,
+                    VmId = vm.Id,
                     Timestamp = reportDTO.Timestamp,
                     TotalMemory = reportDTO.TotalMemory,
                     FreeMemory = reportDTO.FreeMemory,
@@ -88,7 +88,7 @@ public class ConsumerService : BackgroundService
                     TotalSpace = reportDTO.TotalSpace,
                     FreeSpace = reportDTO.FreeSpace,
                 };
-                context.Reports.Add(report);
+                await context.Reports.AddAsync(report, stoppingToken);
                 await context.SaveChangesAsync(stoppingToken);
 
                 vmStatusService.NotifyReportReceived(report.VmId);

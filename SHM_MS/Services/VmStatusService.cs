@@ -161,6 +161,15 @@ public class VmStatusService(
         foreach (var change in statusChanges)
         {
             await vmStatusChannelServiceWriter.WriteAsync(change, cancellationToken);
+            await context.VmStatusHistories.AddAsync(
+                new VmStatusHistory
+                {
+                    Timestamp = clock.GetCurrentInstant(),
+                    VmId = change.Id,
+                    Status = change.Status,
+                },
+                cancellationToken
+            );
         }
 
         await context.SaveChangesAsync(cancellationToken);

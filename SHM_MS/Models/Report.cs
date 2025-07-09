@@ -12,6 +12,6 @@ public class Report
     public required double CpuUsagePercent { get; set; }
     public required double TotalSpace { get; set; }
     public required double FreeSpace { get; set; }
-    public int VmId { get; set; }
-    public required Vm Vm { get; set; } = null!;
+    public required int VmId { get; set; }
+    public Vm Vm { get; set; } = null!;
 }

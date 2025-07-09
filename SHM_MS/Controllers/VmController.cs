@@ -46,7 +46,7 @@ public class VmController(
             return BadRequest("VM name cannot be empty.");
         }
 
-        context.Vms.Add(new Vm() { Name = vmDto.Name });
+        await context.Vms.AddAsync(new Vm() { Name = vmDto.Name });
         await context.SaveChangesAsync();
 
         if (vmDto.Autocreate)
