@@ -16,6 +16,7 @@ public class VmStatusService(
 {
     private readonly Period TimerInterval = Period.FromSeconds(5);
     private readonly ConcurrentDictionary<int, CancellationTokenSource> timers = new();
+    private readonly ConcurrentDictionary<int, SemaphoreSlim> vmLocksDict = new();
 
     public void NotifyReportReceived(int vmId)
     {
@@ -55,12 +56,17 @@ public class VmStatusService(
     )
     {
         var vm = await context.Vms.FirstOrDefaultAsync(vm => vm.Id == vmId, cancellationToken);
-        if (vm is null)
+        if (vm is null || vm.Status == VmStatus.Online)
         {
             return;
         }
 
+        var vmLock = vmLocksDict.GetOrAdd(vmId, _ => new SemaphoreSlim(1, 1));
+        await vmLock.WaitAsync(cancellationToken);
+
         vm.Status = VmStatus.Online;
+
+        vmLock.Release();
 
         // we don't save changes first - we want to recalculate status first
         // in case this vm is supposed to be degraded
@@ -73,52 +79,14 @@ public class VmStatusService(
         CancellationToken cancellationToken
     )
     {
-        var vm = await context
-            .Vms.Include(vm => vm.Dependants)
-            .FirstOrDefaultAsync(vm => vm.Id == vmId, cancellationToken);
+        var vms = await context.Vms.Include(vm => vm.Dependants).ToListAsync(cancellationToken);
+
+        var vm = vms.Find(vm => vm.Id == vmId);
         if (vm is null)
         {
             return;
         }
-
-        vm.Status = VmStatus.Offline;
-
-        var dependants = new Queue<Vm>(vm.Dependants);
-        while (dependants.Count > 0)
-        {
-            var dependant = dependants.Dequeue();
-            dependant.Dependants.ToList().ForEach(dependants.Enqueue);
-            if (dependant.Status == VmStatus.Online)
-            {
-                dependant.Status = VmStatus.Degraded;
-            }
-        }
-
-        await SaveChangesAndPublishStatusAsync(context, cancellationToken);
-    }
-
-    public async Task RecalculateStatusesAsync(
-        SHMContext context,
-        CancellationToken cancellationToken = default
-    )
-    {
-        var vms = await context.Vms.Include(vm => vm.Dependants).ToListAsync(cancellationToken);
-
-        vms.Where(vm => vm.Status == VmStatus.Degraded)
-            .ToList()
-            .ForEach(vm => vm.Status = VmStatus.Online);
-        var dependants = new Queue<Vm>(
-            vms.Where(vm => vm.Status == VmStatus.Offline).SelectMany(vm => vm.Dependants)
-        );
-        while (dependants.Count > 0)
-        {
-            var dependant = dependants.Dequeue();
-            vms.Find(vm => vm.Id == dependant.Id)?.Dependants.ToList().ForEach(dependants.Enqueue);
-            if (dependant.Status == VmStatus.Online)
-            {
-                dependant.Status = VmStatus.Degraded;
-            }
-        }
+        await TraverseDependenciesAsync(vms, cancellationToken, vm);
 
         await SaveChangesAndPublishStatusAsync(context, cancellationToken);
     }
@@ -133,6 +101,9 @@ public class VmStatusService(
             .ToListAsync(cancellationToken);
         foreach (var vm in vms)
         {
+            var vmLock = vmLocksDict.GetOrAdd(vm.Id, _ => new SemaphoreSlim(1, 1));
+            await vmLock.WaitAsync(cancellationToken);
+
             var lastReport = vm.Reports.FirstOrDefault();
             if (lastReport is null || lastReport.Timestamp < clock.GetCurrentInstant())
             {
@@ -142,9 +113,75 @@ public class VmStatusService(
             {
                 vm.Status = VmStatus.Online;
             }
+
+            vmLock.Release();
         }
 
         await RecalculateStatusesAsync(context, cancellationToken);
+    }
+
+    public async Task RecalculateStatusesAsync(
+        SHMContext context,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var vms = await context.Vms.Include(vm => vm.Dependants).ToListAsync(cancellationToken);
+
+        vms.Where(vm => vm.Status == VmStatus.Degraded)
+            .ToList()
+            .ForEach(vm => vm.Status = VmStatus.Online);
+        await TraverseDependenciesAsync(
+            vms,
+            cancellationToken,
+            vms.Where(vm => vm.Status == VmStatus.Offline)
+        );
+
+        await SaveChangesAndPublishStatusAsync(context, cancellationToken);
+    }
+
+    private async Task TraverseDependenciesAsync(
+        List<Vm> vms,
+        CancellationToken cancellationToken,
+        params IEnumerable<Vm> offlineVms
+    )
+    {
+        offlineVms.ToList().ForEach(vm => vm.Status = VmStatus.Offline);
+
+        var visited = new HashSet<Vm>(offlineVms);
+        var dependants = new Queue<Vm>(offlineVms.SelectMany(vm => vm.Dependants));
+
+        while (dependants.Count > 0)
+        {
+            var dependant = dependants.Dequeue();
+            if (visited.Add(dependant))
+            {
+                vms.Find(vm => vm.Id == dependant.Id)
+                    ?.Dependants.ToList()
+                    .ForEach(dependants.Enqueue);
+            }
+        }
+
+        var vmLocks = new List<SemaphoreSlim>();
+        foreach (var id in visited.Select(vm => vm.Id).Order())
+        {
+            var vmLock = vmLocksDict.GetOrAdd(id, _ => new SemaphoreSlim(1, 1));
+            await vmLock.WaitAsync(cancellationToken);
+            vmLocks.Add(vmLock);
+        }
+
+        foreach (var vm in visited)
+        {
+            Console.WriteLine($"VM {vm.Name} is {vm.Status}.");
+            if (vm.Status == VmStatus.Online)
+            {
+                vm.Status = VmStatus.Degraded;
+            }
+        }
+
+        foreach (var l in vmLocks)
+        {
+            l.Release();
+        }
     }
 
     private async Task SaveChangesAndPublishStatusAsync(
