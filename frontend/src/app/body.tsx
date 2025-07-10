@@ -70,9 +70,11 @@ export default function Body({ vms: _vms }: { vms: RawVm[] | undefined }) {
 
   useEffect(() => {
     const escapeListener = (event: KeyboardEvent) => {
-      if (event.key === "Escape" && isRearranging) {
-        setIsRearranging(false);
-      }
+      setTimeout(() => {
+        if (event.key === "Escape" && isRearranging) {
+          setIsRearranging(false);
+        }
+      }, 10);
     };
 
     document.addEventListener("keydown", escapeListener);
