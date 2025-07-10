@@ -171,7 +171,6 @@ public class VmStatusService(
 
         foreach (var vm in visited)
         {
-            Console.WriteLine($"VM {vm.Name} is {vm.Status}.");
             if (vm.Status == VmStatus.Online)
             {
                 vm.Status = VmStatus.Degraded;
