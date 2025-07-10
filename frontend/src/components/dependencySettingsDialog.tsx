@@ -13,7 +13,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import DependencyGraph from "./dependencyGraph";
-import { Button, buttonVariants } from "./ui/button";
+import { Button } from "./ui/button";
 import {
   Dialog,
   DialogClose,
@@ -105,11 +105,10 @@ export default function DependencySettingsDialog({
     >
       <Tooltip>
         <DialogTrigger asChild>
-          <TooltipTrigger
-            className={buttonVariants({ variant: "header", size: "icon" })}
-            disabled={!vms}
-          >
-            <Settings />
+          <TooltipTrigger asChild>
+            <Button variant="header" disabled={!vms}>
+              <Settings />
+            </Button>
           </TooltipTrigger>
         </DialogTrigger>
         <TooltipContent>Configure VM dependencies</TooltipContent>

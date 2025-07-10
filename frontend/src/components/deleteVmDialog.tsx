@@ -91,7 +91,6 @@ export default function DeleteVmDialog({
         <Button
           className="mb-[-16px] ml-auto bg-destructive/10 hover:bg-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30"
           variant="secondary"
-          size="icon"
         >
           <Trash color="red" />
         </Button>

@@ -5,7 +5,7 @@ import { Dispatch, SetStateAction } from "react";
 import DependencySettingsDialog from "./dependencySettingsDialog";
 import { KafkaAlert } from "./kafkaAlert";
 import { ModeToggle } from "./modeToggle";
-import { buttonVariants } from "./ui/button";
+import { Button } from "./ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 export default function Header({
@@ -28,15 +28,18 @@ export default function Header({
           <TooltipContent>
             {isRearranging ? "Stop rearranging VMs" : "Rearrange VMs"}
           </TooltipContent>
-          <TooltipTrigger
-            className={cn(buttonVariants({ variant: "header", size: "icon" }), {
-              "bg-muted hover:bg-neutral-200 hover:border-neutral-300 relative before:absolute before:inset-0 before:rounded-md before:animate-ping before:bg-muted before:-z-10":
-                isRearranging,
-            })}
-            onClick={() => setIsRearranging(!isRearranging)}
-            disabled={!vms}
-          >
-            <Shuffle />
+          <TooltipTrigger asChild>
+            <Button
+              variant="header"
+              className={cn({
+                "bg-muted hover:bg-neutral-200 hover:border-neutral-300 relative before:absolute before:inset-0 before:rounded-md before:animate-ping before:bg-muted before:-z-10":
+                  isRearranging,
+              })}
+              onClick={() => setIsRearranging(!isRearranging)}
+              disabled={!vms}
+            >
+              <Shuffle />
+            </Button>
           </TooltipTrigger>
         </Tooltip>
         <DependencySettingsDialog vms={vms} />
