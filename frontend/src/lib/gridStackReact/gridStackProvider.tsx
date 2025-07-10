@@ -34,7 +34,6 @@ export const GridStackProvider = ({
     if (gridStackElRef.current) {
       try {
         setGridStack(GridStack.init(initialOptions, gridStackElRef.current));
-        console.log("after grid");
       } catch (e) {
         console.error("Error initializing gridstack", e);
       }

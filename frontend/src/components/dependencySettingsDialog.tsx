@@ -18,6 +18,7 @@ import {
   Dialog,
   DialogClose,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -115,7 +116,10 @@ export default function DependencySettingsDialog({
       </Tooltip>
       <DialogContent className="sm:max-w-7/10">
         <DialogHeader>
-          <DialogTitle> Configure VM Dependencies</DialogTitle>
+          <DialogTitle>Configure VM Dependencies</DialogTitle>
+          <DialogDescription>
+            You can drag and drop to configure dependencies for VMs.
+          </DialogDescription>
         </DialogHeader>
 
         <ReactFlowProvider>
@@ -135,11 +139,11 @@ export default function DependencySettingsDialog({
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <DialogFooter>
-              <p className="text-sm self-center mr-3 text-destructive">
-                {errors && "serverError" in errors
-                  ? errors.serverError.message
-                  : ""}
-              </p>
+              {errors && "serverError" in errors && (
+                <p className="text-sm self-center mr-3 text-destructive">
+                  {errors.serverError.message}
+                </p>
+              )}
               {form.formState.isSubmitting ? (
                 <Button type="submit" disabled>
                   <Loader2Icon className="animate-spin" /> Saving Changes...
