@@ -46,8 +46,16 @@ export type SystemStatusUpdate = {
 
 export type RawVmStatusHistoryResponse = {
   vmId: number;
-  vmStatusHistory: {
+  histories: {
     timestamp: string;
+    status: VmStatus;
+  }[];
+};
+
+export type VmStatusHistoryResponse = {
+  vmName: string;
+  histories: {
+    timestamp: Date;
     status: VmStatus;
   }[];
 };

@@ -25,7 +25,13 @@ export default function Header({
       Dashboard
       <div className="ml-auto flex gap-2">
         {displayAlert && <KafkaAlert />}
-        <VmStatusHistoriesDialog />
+        <VmStatusHistoriesDialog
+          vmNamesMap={
+            (vms
+              ? Object.fromEntries(vms.map((vm) => [vm.id, vm.name]))
+              : {}) as Record<number, string>
+          }
+        />
 
         <Tooltip>
           <TooltipContent>

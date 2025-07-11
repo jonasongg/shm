@@ -59,7 +59,7 @@ export default function CpuChart({
           tickLine={false}
           axisLine={false}
           tickMargin={4}
-          tickFormatter={(value) =>
+          tickFormatter={(value: Date) =>
             `${Math.floor((new Date().valueOf() - value.valueOf()) / 1000)}s`
           }
           reversed

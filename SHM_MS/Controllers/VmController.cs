@@ -185,13 +185,11 @@ public class VmController(
     [HttpGet("histories")]
     public async Task<ActionResult<IEnumerable<VmStatusHistoriesResponseDto>>> GetVmStatusHistories(
         Instant from,
-        Instant? until
+        Instant until
     )
     {
         var rangeHistories = await context
-            .VmStatusHistories.Where(h =>
-                h.Timestamp >= from && (until == null || h.Timestamp <= until)
-            )
+            .VmStatusHistories.Where(h => h.Timestamp >= from && h.Timestamp <= until)
             .ToListAsync();
 
         var priorHistories = await context

@@ -2,6 +2,7 @@ import { toAbsoluteUrl } from "@/lib/utils";
 import { RawVmStatusHistoryResponse } from "@/types/types";
 import { ChartColumn } from "lucide-react";
 import { useEffect, useState } from "react";
+import StatusChart from "./charts/statusChart";
 import { Button } from "./ui/button";
 import {
   Dialog,
@@ -13,13 +14,17 @@ import {
 } from "./ui/dialog";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
-export default function VmStatusHistoriesDialog() {
+export default function VmStatusHistoriesDialog({
+  vmNamesMap,
+}: {
+  vmNamesMap: Record<number, string>;
+}) {
   const [histories, setHistories] = useState<RawVmStatusHistoryResponse[]>();
   const [fromDate, setFromDate] = useState<Date>(() => {
     const now = new Date();
-    return new Date(now.setHours(now.getHours() - 1));
+    return new Date(now.setDate(now.getDate() - 2));
   });
-  const [untilDate, setUntilDate] = useState<Date>();
+  const [untilDate, setUntilDate] = useState<Date>(new Date());
 
   useEffect(() => {
     (async () => {
@@ -40,7 +45,13 @@ export default function VmStatusHistoriesDialog() {
     })();
   }, [fromDate, untilDate]);
 
-  console.log(histories);
+  const transformedHistories = histories?.map((history) => ({
+    vmName: vmNamesMap[history.vmId] ?? "",
+    histories: history.histories.map((h) => ({
+      ...h,
+      timestamp: new Date(h.timestamp),
+    })),
+  }));
 
   return (
     <Dialog>
@@ -55,12 +66,20 @@ export default function VmStatusHistoriesDialog() {
         <TooltipContent>View VM Status History</TooltipContent>
       </Tooltip>
 
-      <DialogContent>
+      <DialogContent className="sm:max-w-7/10 sm:h-4/5">
         <DialogHeader>
           <DialogTitle>VM Status History</DialogTitle>
           <DialogDescription>
             View the status of your VMs over time.
           </DialogDescription>
+
+          {transformedHistories && (
+            <StatusChart
+              data={transformedHistories}
+              fromDate={fromDate}
+              untilDate={untilDate}
+            />
+          )}
         </DialogHeader>
       </DialogContent>
     </Dialog>
