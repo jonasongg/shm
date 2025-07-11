@@ -1,5 +1,5 @@
 import { VmStatusHistoryResponse } from "@/types/types";
-import { Scatter, ScatterChart, XAxis, YAxis } from "recharts";
+import { CartesianGrid, Scatter, ScatterChart, XAxis, YAxis } from "recharts";
 import { ScatterPointItem } from "recharts/types/cartesian/Scatter";
 import {
   NameType,
@@ -40,7 +40,7 @@ export default function StatusChart({
 
   return (
     <ChartContainer className="w-full h-full" config={{}}>
-      <ScatterChart accessibilityLayer data={mappedData}>
+      <ScatterChart accessibilityLayer data={mappedData} margin={{ left: -12 }}>
         <XAxis
           dataKey="x1"
           type="number"
@@ -50,8 +50,10 @@ export default function StatusChart({
               sameDay ? { timeStyle: "long" } : fullTimeFormat,
             )
           }
-          tickCount={8}
+          tickCount={20}
+          interval="preserveStartEnd"
           domain={[fromDate.valueOf(), untilDate.valueOf()]}
+          tickMargin={8}
         />
 
         <YAxis
@@ -59,6 +61,7 @@ export default function StatusChart({
           name="VM Name"
           type="category"
           allowDuplicatedCategory={false}
+          tickMargin={8}
         />
 
         <ChartTooltip
@@ -94,6 +97,8 @@ export default function StatusChart({
             );
           }}
         />
+
+        <CartesianGrid />
 
         <Scatter
           shape={(props: ScatterPointItem) => {
