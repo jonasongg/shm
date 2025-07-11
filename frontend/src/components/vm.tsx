@@ -1,6 +1,6 @@
-import CpuChart from "@/components/cpuChart";
-import DiskChart from "@/components/diskChart";
-import MemChart from "@/components/memChart";
+import CpuChart from "@/components/charts/cpuChart";
+import DiskChart from "@/components/charts/diskChart";
+import MemChart from "@/components/charts/memChart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";

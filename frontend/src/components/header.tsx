@@ -7,6 +7,7 @@ import { KafkaAlert } from "./kafkaAlert";
 import { ModeToggle } from "./modeToggle";
 import { Button } from "./ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
+import VmStatusHistoriesDialog from "./vmStatusHistoriesDialog";
 
 export default function Header({
   displayAlert,
@@ -24,6 +25,8 @@ export default function Header({
       Dashboard
       <div className="ml-auto flex gap-2">
         {displayAlert && <KafkaAlert />}
+        <VmStatusHistoriesDialog />
+
         <Tooltip>
           <TooltipContent>
             {isRearranging ? "Stop rearranging VMs" : "Rearrange VMs"}
@@ -42,6 +45,7 @@ export default function Header({
             </Button>
           </TooltipTrigger>
         </Tooltip>
+
         <DependencySettingsDialog vms={vms} />
         <ModeToggle />
       </div>

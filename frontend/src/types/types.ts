@@ -43,3 +43,11 @@ export type SystemStatus = "Ok" | "KafkaBrokerDown";
 export type SystemStatusUpdate = {
   status: SystemStatus;
 };
+
+export type RawVmStatusHistoryResponse = {
+  vmId: number;
+  vmStatusHistory: {
+    timestamp: string;
+    status: VmStatus;
+  }[];
+};

@@ -8,7 +8,7 @@ import {
   RadialBar,
   RadialBarChart,
 } from "recharts";
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "./ui/chart";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "../ui/chart";
 
 export default function MemChart({
   data,

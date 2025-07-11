@@ -8,7 +8,7 @@ export default async function Page() {
   // initial fetch
   let vms: RawVm[] | undefined = undefined;
   try {
-    const response = await fetch(toAbsoluteUrl("/vm"), { cache: "no-store" });
+    const response = await fetch(toAbsoluteUrl("/vm"));
     if (!response.ok) {
       console.error("Failed to fetch VMs:", response.statusText);
     } else {
