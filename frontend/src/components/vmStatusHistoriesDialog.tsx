@@ -17,6 +17,7 @@ import {
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { Separator } from "./ui/separator";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 export default function VmStatusHistoriesDialog({
@@ -88,6 +89,10 @@ export default function VmStatusHistoriesDialog({
 
             <Label className="font-normal">Until</Label>
             <DateTimeSelector date={untilDate} setDate={setUntilDate} />
+
+            <Separator orientation="vertical" />
+
+            <Label className="font-normal">Custom</Label>
           </div>
 
           {transformedHistories && (
