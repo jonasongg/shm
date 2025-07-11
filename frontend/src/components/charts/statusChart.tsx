@@ -86,7 +86,6 @@ export default function StatusChart({
                 payload: { fill: undefined },
               },
             ].filter((x) => !!x);
-            console.log(props);
             return (
               <ChartTooltipContent
                 payload={customPayload}

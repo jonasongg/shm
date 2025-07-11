@@ -1,9 +1,11 @@
+import { useDebounce } from "@/lib/useDebounce";
 import { toAbsoluteUrl } from "@/lib/utils";
 import { RawVmStatusHistoryResponse } from "@/types/types";
-import { ChartColumn } from "lucide-react";
-import { useEffect, useState } from "react";
+import { ChartColumn, ChevronDown } from "lucide-react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import StatusChart from "./charts/statusChart";
 import { Button } from "./ui/button";
+import { Calendar } from "./ui/calendar";
 import {
   Dialog,
   DialogContent,
@@ -12,6 +14,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "./ui/dialog";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 export default function VmStatusHistoriesDialog({
@@ -26,24 +31,26 @@ export default function VmStatusHistoriesDialog({
   });
   const [untilDate, setUntilDate] = useState<Date>(new Date());
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const url = `/vm/histories?from=${fromDate.toISOString()}${untilDate ? `&until=${untilDate.toISOString()}` : ""}`;
-        const response = await fetch(toAbsoluteUrl(url));
-        if (!response.ok) {
-          console.error(
-            "Failed to fetch VM status histories:",
-            response.statusText,
-          );
-        } else {
-          setHistories(await response.json());
-        }
-      } catch (error) {
-        console.error("Fetch error:", error);
+  const debouncedFetch = useDebounce(async () => {
+    try {
+      const url = `/vm/histories?from=${fromDate.toISOString()}${untilDate ? `&until=${untilDate.toISOString()}` : ""}`;
+      const response = await fetch(toAbsoluteUrl(url));
+      if (!response.ok) {
+        console.error(
+          "Failed to fetch VM status histories:",
+          response.statusText,
+        );
+      } else {
+        setHistories(await response.json());
       }
-    })();
-  }, [fromDate, untilDate]);
+    } catch (error) {
+      console.error("Fetch error:", error);
+    }
+  }, 500);
+
+  useEffect(() => {
+    debouncedFetch();
+  }, [fromDate, untilDate, debouncedFetch]);
 
   const transformedHistories = histories?.map((history) => ({
     vmName: vmNamesMap[history.vmId] ?? "",
@@ -73,6 +80,16 @@ export default function VmStatusHistoriesDialog({
             View the status of your VMs over time.
           </DialogDescription>
 
+          <div className="flex justify-center m-4 gap-4">
+            <Label>Filter range:</Label>
+
+            <Label className="font-normal">From</Label>
+            <DateTimeSelector date={fromDate} setDate={setFromDate} />
+
+            <Label className="font-normal">Until</Label>
+            <DateTimeSelector date={untilDate} setDate={setUntilDate} />
+          </div>
+
           {transformedHistories && (
             <StatusChart
               data={transformedHistories}
@@ -83,5 +100,59 @@ export default function VmStatusHistoriesDialog({
         </DialogHeader>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function DateTimeSelector({
+  date,
+  setDate,
+}: {
+  date: Date;
+  setDate: Dispatch<SetStateAction<Date>>;
+}) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="flex">
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            id="date-picker"
+            className="bg-neutral-50 rounded-r-none font-normal"
+          >
+            {date.toLocaleDateString("en-SG", {
+              dateStyle: "medium",
+            })}
+            <ChevronDown />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent>
+          <Calendar
+            mode="single"
+            selected={date}
+            captionLayout="dropdown"
+            onSelect={(date) => {
+              if (date) setDate(date);
+              setOpen(false);
+            }}
+            disabled={{ after: new Date() }}
+          />
+        </PopoverContent>
+      </Popover>
+      <Input
+        type="time"
+        step="1"
+        value={date.toLocaleTimeString("en-SG", { hour12: false })}
+        className="bg-neutral-50 rounded-l-none border-l-0 appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
+        onChange={(e) => {
+          const time = e.target.value;
+          const [hours, minutes, seconds] = time.split(":").map(Number);
+          const newDate = new Date(date);
+          newDate.setHours(hours, minutes, seconds, 0);
+          setDate(newDate.valueOf() > Date.now() ? new Date() : newDate);
+        }}
+      />
+    </div>
   );
 }
