@@ -163,14 +163,14 @@ export default function VmStatusHistoriesDialog({
                   variant="outline"
                   role="combobox"
                   aria-expanded={presetPopoverOpen}
-                  className="bg-white font-normal"
+                  className="bg-white font-normal w-36"
                 >
                   {presetValue !== null ? presetValue : "Select range"}
                   <ChevronDown />
                 </Button>
               </PopoverTrigger>
 
-              <PopoverContent className="p-0">
+              <PopoverContent className="p-0 w-50">
                 <Command>
                   <CommandInput
                     placeholder="Type a custom range..."
