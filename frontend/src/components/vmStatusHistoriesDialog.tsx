@@ -235,10 +235,22 @@ export default function VmStatusHistoriesDialog({
             <Label>Set range:</Label>
 
             <Label className="font-normal">From</Label>
-            <DateTimeSelector date={fromDate} setDate={setFromDate} />
+            <DateTimeSelector
+              date={fromDate}
+              setDate={(date) => {
+                setPresetValue(null);
+                setUntilDate(date);
+              }}
+            />
 
             <Label className="font-normal">Until</Label>
-            <DateTimeSelector date={untilDate} setDate={setUntilDate} />
+            <DateTimeSelector
+              date={untilDate}
+              setDate={(date) => {
+                setPresetValue(null);
+                setUntilDate(date);
+              }}
+            />
           </div>
 
           {transformedHistories && (
