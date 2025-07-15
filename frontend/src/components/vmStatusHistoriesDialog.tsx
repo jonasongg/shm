@@ -45,7 +45,7 @@ export default memo(
     const [histories, setHistories] = useState<RawVmStatusHistoryResponse[]>();
     const [fromDate, setFromDate] = useState<Date>(() => {
       const now = new Date();
-      return new Date(now.setDate(now.getDate() - 2));
+      return new Date(now.setHours(now.getHours() - 1));
     });
     const [untilDate, setUntilDate] = useState<Date>(new Date());
     const [presetValue, setPresetValue] = useState<string | null>(null);
@@ -124,6 +124,7 @@ export default memo(
                   setPresetValue(null);
                   setFromDate(date);
                 }}
+                maxDate={new Date(untilDate.valueOf() - 1000)}
               />
 
               <Label className="font-normal">Until</Label>
@@ -133,6 +134,7 @@ export default memo(
                   setPresetValue(null);
                   setUntilDate(date);
                 }}
+                maxDate={new Date()}
               />
             </div>
 
@@ -155,9 +157,11 @@ export default memo(
 function DateTimeSelector({
   date,
   setDate,
+  maxDate,
 }: {
   date: Date;
   setDate: Dispatch<SetStateAction<Date>>;
+  maxDate: Date;
 }) {
   const [open, setOpen] = useState(false);
 
@@ -199,7 +203,7 @@ function DateTimeSelector({
           const [hours, minutes, seconds] = time.split(":").map(Number);
           const newDate = new Date(date);
           newDate.setHours(hours, minutes, seconds, 0);
-          setDate(newDate.valueOf() > Date.now() ? new Date() : newDate);
+          setDate(newDate.valueOf() > maxDate.valueOf() ? maxDate : newDate);
         }}
       />
     </div>
