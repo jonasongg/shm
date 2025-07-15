@@ -2,7 +2,6 @@ using Docker.DotNet;
 using Docker.DotNet.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using NodaTime;
 using NuGet.Packaging;
 using SHM_MS.DbContexts;
 using SHM_MS.Dtos;
@@ -180,35 +179,5 @@ public class VmController(
         await context.SaveChangesAsync();
         await vmStatusService.RecalculateStatusesAsync(context);
         return Ok();
-    }
-
-    [HttpGet("histories")]
-    public async Task<ActionResult<IEnumerable<VmStatusHistoriesResponseDto>>> GetVmStatusHistories(
-        Instant from,
-        Instant until
-    )
-    {
-        var rangeHistories = await context
-            .VmStatusHistories.Where(h => h.Timestamp >= from && h.Timestamp <= until)
-            .ToListAsync();
-
-        var priorHistories = await context
-            .VmStatusHistories.Where(h => h.Timestamp < from)
-            .GroupBy(h => h.VmId)
-            .Select(group => group.OrderByDescending(h => h.Timestamp).First())
-            .ToListAsync();
-
-        return rangeHistories
-            .Concat(priorHistories)
-            .GroupBy(
-                h => h.VmId,
-                (key, histories) =>
-                    new VmStatusHistoriesResponseDto()
-                    {
-                        VmId = key,
-                        Histories = histories.OrderBy(h => h.Timestamp).ToList(),
-                    }
-            )
-            .ToList();
     }
 }

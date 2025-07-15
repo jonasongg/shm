@@ -8,4 +8,5 @@ public class SHMContext(DbContextOptions<SHMContext> options) : DbContext(option
     public DbSet<Report> Reports => Set<Report>();
     public DbSet<Vm> Vms => Set<Vm>();
     public DbSet<VmStatusHistory> VmStatusHistories => Set<VmStatusHistory>();
+    public DbSet<SystemStatusHistory> SystemStatusHistories => Set<SystemStatusHistory>();
 }

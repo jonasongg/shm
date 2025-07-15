@@ -1,5 +1,6 @@
 using Confluent.Kafka;
 using Microsoft.EntityFrameworkCore;
+using NodaTime;
 using Shared.Dtos;
 using Shared.Serializers;
 using SHM_MS.DbContexts;
@@ -17,6 +18,7 @@ public class ConsumerService : BackgroundService
     private readonly ILogger<ConsumerService> logger;
     private readonly VmStatusService vmStatusService;
     private readonly IChannelService<SystemStatusDto> systemStatusChannelServiceWriter;
+    private readonly IClock clock;
 
     public ConsumerService(
         IConfiguration configuration,
@@ -24,7 +26,8 @@ public class ConsumerService : BackgroundService
         IChannelServiceWriter<ReportDto> reportChannelServiceWriter,
         ILogger<ConsumerService> logger,
         VmStatusService vmStatusService,
-        IChannelService<SystemStatusDto> systemStatusChannelServiceWriter
+        IChannelService<SystemStatusDto> systemStatusChannelServiceWriter,
+        IClock clock
     )
     {
         this.contextFactory = contextFactory;
@@ -32,6 +35,7 @@ public class ConsumerService : BackgroundService
         this.logger = logger;
         this.vmStatusService = vmStatusService;
         this.systemStatusChannelServiceWriter = systemStatusChannelServiceWriter;
+        this.clock = clock;
 
         var bootstrapServers = configuration
             .GetSection("Kafka")
@@ -63,9 +67,12 @@ public class ConsumerService : BackgroundService
         while (!stoppingToken.IsCancellationRequested)
         {
             var result = await Task.Run(() => consumer.Consume(stoppingToken), stoppingToken);
+
+            await UpdateSystemStatusIfDifferent(SystemStatus.Ok);
+
             var reportDTO = result.Message.Value;
 
-            await using var context = contextFactory.CreateDbContext();
+            await using var context = await contextFactory.CreateDbContextAsync(stoppingToken);
             var vm = await context.Vms.FirstOrDefaultAsync(
                 v => v.Name == reportDTO.Name,
                 stoppingToken
@@ -103,5 +110,27 @@ public class ConsumerService : BackgroundService
             new SystemStatusDto { Status = SystemStatus.KafkaBrokerDown },
             default
         );
+
+        await UpdateSystemStatusIfDifferent(SystemStatus.KafkaBrokerDown);
+    }
+
+    private async Task UpdateSystemStatusIfDifferent(SystemStatus newStatus)
+    {
+        await using var context = await contextFactory.CreateDbContextAsync();
+        var lastUpdate = await context
+            .SystemStatusHistories.OrderByDescending(h => h.Timestamp)
+            .FirstOrDefaultAsync();
+
+        if (lastUpdate is null || lastUpdate.Status != newStatus)
+        {
+            await context.SystemStatusHistories.AddAsync(
+                new SystemStatusHistory()
+                {
+                    Timestamp = clock.GetCurrentInstant(),
+                    Status = newStatus,
+                }
+            );
+            await context.SaveChangesAsync();
+        }
     }
 }
