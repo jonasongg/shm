@@ -14,3 +14,15 @@ export const numberFormatter = (x: number) =>
 export const bytesFormatter = (x: number) => (x / 1024 / 1024).toFixed(1);
 
 export const toAbsoluteUrl = (url: string) => "http://localhost:5043/api" + url;
+
+export const debounce = <T extends unknown[]>(
+  func: (...args: T) => void,
+  delay: number,
+) => {
+  let timeoutId: NodeJS.Timeout;
+
+  return (...args: T) => {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => func(...args), delay);
+  };
+};

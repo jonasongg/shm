@@ -6,16 +6,17 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { useDebounce } from "@/lib/useDebounce";
-import { cn, toAbsoluteUrl } from "@/lib/utils";
+import { cn, debounce, toAbsoluteUrl } from "@/lib/utils";
 import { RawVmStatusHistoryResponse } from "@/types/types";
 import { parse } from "chrono-node";
 import { ChartColumn, Check, ChevronDown } from "lucide-react";
 import {
   Dispatch,
+  memo,
   SetStateAction,
   useCallback,
   useEffect,
+  useMemo,
   useState,
 } from "react";
 import StatusChart from "./charts/statusChart";
@@ -35,236 +36,244 @@ import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Separator } from "./ui/separator";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
-export default function VmStatusHistoriesDialog({
-  vmNamesMap,
-}: {
-  vmNamesMap: Record<number, string>;
-}) {
-  const [histories, setHistories] = useState<RawVmStatusHistoryResponse[]>();
-  const [fromDate, setFromDate] = useState<Date>(() => {
-    const now = new Date();
-    return new Date(now.setDate(now.getDate() - 2));
-  });
-  const [untilDate, setUntilDate] = useState<Date>(new Date());
-  const [presetPopoverOpen, setPresetPopoverOpen] = useState(false);
-  const [presetValue, setPresetValue] = useState<string | null>(null);
-  const [rawPresetValue, setRawPresetValue] = useState<string>("");
-  const [parseResult, setParseResult] = useState<{
-    from: Date;
-    until: Date;
-  } | null>(null);
-
-  const presetDates = [
-    {
-      label: "Last hour",
-      from: new Date(Date.now() - 60 * 60 * 1000),
-    },
-    {
-      label: "Last 24 hours",
-      from: new Date(Date.now() - 24 * 60 * 60 * 1000),
-    },
-    {
-      label: "Last 7 days",
-      from: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
-    },
-    {
-      label: "Last 30 days",
-      from: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
-    },
-  ];
-
-  const debouncedFetch = useDebounce(async () => {
-    try {
-      const url = `/vm/histories?from=${fromDate.toISOString()}${untilDate ? `&until=${untilDate.toISOString()}` : ""}`;
-      const response = await fetch(toAbsoluteUrl(url));
-      if (!response.ok) {
-        console.error(
-          "Failed to fetch VM status histories:",
-          response.statusText,
-        );
-      } else {
-        setHistories(await response.json());
-      }
-    } catch (error) {
-      console.error("Fetch error:", error);
-    }
-  }, 500);
-
-  const debouncedParse = useDebounce((value: string) => {
-    const result = parse(value);
-    if (result.length <= 0 || result[0].start.date().valueOf() > Date.now()) {
-      setParseResult(null);
-      return;
-    }
-    setParseResult({
-      from: result[0].start.date(),
-      until: result[0].end?.date() ?? new Date(),
+export default memo(
+  function VmStatusHistoriesDialog({
+    vmNamesMap,
+  }: {
+    vmNamesMap: Record<number, string>;
+  }) {
+    const [histories, setHistories] = useState<RawVmStatusHistoryResponse[]>();
+    const [fromDate, setFromDate] = useState<Date>(() => {
+      const now = new Date();
+      return new Date(now.setDate(now.getDate() - 2));
     });
-  }, 50);
+    const [untilDate, setUntilDate] = useState<Date>(new Date());
+    const [presetPopoverOpen, setPresetPopoverOpen] = useState(false);
+    const [presetValue, setPresetValue] = useState<string | null>(null);
+    const [rawPresetValue, setRawPresetValue] = useState<string>("");
+    const [parseResult, setParseResult] = useState<{
+      from: Date;
+      until: Date;
+    } | null>(null);
 
-  useEffect(() => {
-    debouncedFetch();
-  }, [fromDate, untilDate, debouncedFetch]);
+    const presetDates = [
+      {
+        label: "Last hour",
+        from: new Date(Date.now() - 60 * 60 * 1000),
+      },
+      {
+        label: "Last 24 hours",
+        from: new Date(Date.now() - 24 * 60 * 60 * 1000),
+      },
+      {
+        label: "Last 7 days",
+        from: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+      },
+      {
+        label: "Last 30 days",
+        from: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+      },
+    ];
 
-  const submitCustomRange = useCallback(() => {
-    if (parseResult) {
-      setPresetValue("Custom range");
-      setFromDate(parseResult.from);
-      setUntilDate(parseResult.until);
-      setPresetPopoverOpen(false);
-    }
-  }, [parseResult]);
+    const debouncedParse = debounce((value: string) => {
+      const result = parse(value);
+      if (result.length <= 0 || result[0].start.date().valueOf() > Date.now()) {
+        setParseResult(null);
+        return;
+      }
+      setParseResult({
+        from: result[0].start.date(),
+        until: result[0].end?.date() ?? new Date(),
+      });
+    }, 50);
 
-  useEffect(() => {
-    const enterListener = (event: KeyboardEvent) => {
-      if (event.key === "Enter") submitCustomRange();
-    };
-    document.addEventListener("keydown", enterListener);
-    return () => document.removeEventListener("keydown", enterListener);
-  }, [submitCustomRange]);
+    const debouncedFetch = useMemo(
+      () =>
+        debounce(async (fromDate: Date, untilDate: Date) => {
+          try {
+            const url = `/vm/histories?from=${fromDate.toISOString()}${untilDate ? `&until=${untilDate.toISOString()}` : ""}`;
+            const response = await fetch(toAbsoluteUrl(url));
+            if (!response.ok) {
+              console.error(
+                "Failed to fetch VM status histories:",
+                response.statusText,
+              );
+            } else {
+              setHistories(await response.json());
+            }
+          } catch (error) {
+            console.error("Fetch error:", error);
+          }
+        }, 500),
+      [],
+    );
 
-  const transformedHistories = histories?.map((history) => ({
-    vmName: vmNamesMap[history.vmId] ?? "",
-    histories: history.histories.map((h) => ({
-      ...h,
-      timestamp: new Date(h.timestamp),
-    })),
-  }));
+    useEffect(() => {
+      debouncedFetch(fromDate, untilDate);
+    }, [debouncedFetch, fromDate, untilDate]);
 
-  return (
-    <Dialog>
-      <Tooltip>
-        <DialogTrigger asChild>
-          <TooltipTrigger asChild>
-            <Button variant="header">
-              <ChartColumn />
-            </Button>
-          </TooltipTrigger>
-        </DialogTrigger>
-        <TooltipContent>View VM Status History</TooltipContent>
-      </Tooltip>
+    const submitCustomRange = useCallback(() => {
+      if (parseResult) {
+        setPresetValue("Custom range");
+        setFromDate(parseResult.from);
+        setUntilDate(parseResult.until);
+        setPresetPopoverOpen(false);
+      }
+    }, [parseResult]);
 
-      <DialogContent className="sm:max-w-7/10 sm:h-4/5">
-        <DialogHeader>
-          <DialogTitle>VM Status History</DialogTitle>
-          <DialogDescription>
-            View the status of your VMs over time.
-          </DialogDescription>
+    useEffect(() => {
+      const enterListener = (event: KeyboardEvent) => {
+        if (event.key === "Enter") submitCustomRange();
+      };
+      document.addEventListener("keydown", enterListener);
+      return () => document.removeEventListener("keydown", enterListener);
+    }, [submitCustomRange]);
 
-          <div className="flex justify-center m-4 gap-4">
-            <Label>Filter range:</Label>
+    const transformedHistories = histories?.map((history) => ({
+      vmName: vmNamesMap[history.vmId] ?? "",
+      histories: history.histories.map((h) => ({
+        ...h,
+        timestamp: new Date(h.timestamp),
+      })),
+    }));
 
-            <Popover
-              open={presetPopoverOpen}
-              onOpenChange={setPresetPopoverOpen}
-            >
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  role="combobox"
-                  aria-expanded={presetPopoverOpen}
-                  className="bg-white font-normal w-36"
-                >
-                  {presetValue !== null ? presetValue : "Select range"}
-                  <ChevronDown />
-                </Button>
-              </PopoverTrigger>
+    return (
+      <Dialog>
+        <Tooltip>
+          <DialogTrigger asChild>
+            <TooltipTrigger asChild>
+              <Button variant="header">
+                <ChartColumn />
+              </Button>
+            </TooltipTrigger>
+          </DialogTrigger>
+          <TooltipContent>View VM Status History</TooltipContent>
+        </Tooltip>
 
-              <PopoverContent className="p-0 w-50">
-                <Command>
-                  <CommandInput
-                    placeholder="Type a custom range..."
-                    value={rawPresetValue}
-                    onValueChange={(value) => {
-                      setRawPresetValue(value);
-                      debouncedParse(value);
-                    }}
-                  />
-                  <CommandList>
-                    <CommandEmpty
-                      className={cn(
-                        "[&_svg:not([class*='text-'])]:text-muted-foreground relative flex cursor-default items-center gap-2 rounded-sm px-2 py-1.5 m-1 text-sm outline-hidden select-none justify-center",
-                        {
-                          "bg-accent text-accent-foreground": parseResult,
-                        },
-                      )}
-                      onClick={() => submitCustomRange()}
-                    >
-                      {parseResult
-                        ? `${parseResult.from.toLocaleDateString("en-SG", {
-                            dateStyle: "medium",
-                          })} – ${parseResult.until.toLocaleDateString(
-                            "en-SG",
-                            {
+        <DialogContent className="sm:max-w-7/10 sm:h-4/5">
+          <DialogHeader>
+            <DialogTitle>VM Status History</DialogTitle>
+            <DialogDescription>
+              View the status of your VMs over time.
+            </DialogDescription>
+
+            <div className="flex justify-center m-4 gap-4">
+              <Label>Filter range:</Label>
+
+              <Popover
+                open={presetPopoverOpen}
+                onOpenChange={setPresetPopoverOpen}
+              >
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={presetPopoverOpen}
+                    className="bg-white font-normal w-36"
+                  >
+                    {presetValue !== null ? presetValue : "Select range"}
+                    <ChevronDown />
+                  </Button>
+                </PopoverTrigger>
+
+                <PopoverContent className="p-0 w-50">
+                  <Command>
+                    <CommandInput
+                      placeholder="Type a custom range..."
+                      value={rawPresetValue}
+                      onValueChange={(value) => {
+                        setRawPresetValue(value);
+                        debouncedParse(value);
+                      }}
+                    />
+                    <CommandList>
+                      <CommandEmpty
+                        className={cn(
+                          "[&_svg:not([class*='text-'])]:text-muted-foreground relative flex cursor-default items-center gap-2 rounded-sm px-2 py-1.5 m-1 text-sm outline-hidden select-none justify-center",
+                          {
+                            "bg-accent text-accent-foreground": parseResult,
+                          },
+                        )}
+                        onClick={() => submitCustomRange()}
+                      >
+                        {parseResult
+                          ? `${parseResult.from.toLocaleDateString("en-SG", {
                               dateStyle: "medium",
-                            },
-                          )}`
-                        : "No valid date range found"}
-                    </CommandEmpty>
-                    <CommandGroup>
-                      {presetDates.map((preset, index) => (
-                        <CommandItem
-                          key={index}
-                          value={preset.label}
-                          onSelect={(value) => {
-                            setFromDate(preset.from);
-                            setUntilDate(new Date());
-                            setPresetValue(value);
-                            setPresetPopoverOpen(false);
-                          }}
-                        >
-                          {preset.label}
-                          <Check
-                            className={cn(
-                              "ml-auto",
-                              presetValue === preset.label
-                                ? "opacity-100"
-                                : "opacity-0",
-                            )}
-                          />
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
+                            })} – ${parseResult.until.toLocaleDateString(
+                              "en-SG",
+                              {
+                                dateStyle: "medium",
+                              },
+                            )}`
+                          : "No valid date range found"}
+                      </CommandEmpty>
+                      <CommandGroup>
+                        {presetDates.map((preset, index) => (
+                          <CommandItem
+                            key={index}
+                            value={preset.label}
+                            onSelect={(value) => {
+                              setFromDate(preset.from);
+                              setUntilDate(new Date());
+                              setPresetValue(value);
+                              setPresetPopoverOpen(false);
+                            }}
+                          >
+                            {preset.label}
+                            <Check
+                              className={cn(
+                                "ml-auto",
+                                presetValue === preset.label
+                                  ? "opacity-100"
+                                  : "opacity-0",
+                              )}
+                            />
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
 
-            <Separator orientation="vertical" />
+              <Separator orientation="vertical" />
 
-            <Label>Set range:</Label>
+              <Label>Set range:</Label>
 
-            <Label className="font-normal">From</Label>
-            <DateTimeSelector
-              date={fromDate}
-              setDate={(date) => {
-                setPresetValue(null);
-                setUntilDate(date);
-              }}
-            />
+              <Label className="font-normal">From</Label>
+              <DateTimeSelector
+                date={fromDate}
+                setDate={(date) => {
+                  setPresetValue(null);
+                  setFromDate(date);
+                }}
+              />
 
-            <Label className="font-normal">Until</Label>
-            <DateTimeSelector
-              date={untilDate}
-              setDate={(date) => {
-                setPresetValue(null);
-                setUntilDate(date);
-              }}
-            />
-          </div>
+              <Label className="font-normal">Until</Label>
+              <DateTimeSelector
+                date={untilDate}
+                setDate={(date) => {
+                  setPresetValue(null);
+                  setUntilDate(date);
+                }}
+              />
+            </div>
 
-          {transformedHistories && (
-            <StatusChart
-              data={transformedHistories}
-              fromDate={fromDate}
-              untilDate={untilDate}
-            />
-          )}
-        </DialogHeader>
-      </DialogContent>
-    </Dialog>
-  );
-}
+            {transformedHistories && (
+              <StatusChart
+                data={transformedHistories}
+                fromDate={fromDate}
+                untilDate={untilDate}
+              />
+            )}
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>
+    );
+  },
+  (prevProps, nextProps) =>
+    Object.keys(prevProps).length === Object.keys(nextProps).length,
+);
 
 function DateTimeSelector({
   date,
