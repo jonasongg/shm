@@ -48,44 +48,7 @@ export default memo(
       return new Date(now.setDate(now.getDate() - 2));
     });
     const [untilDate, setUntilDate] = useState<Date>(new Date());
-    const [presetPopoverOpen, setPresetPopoverOpen] = useState(false);
     const [presetValue, setPresetValue] = useState<string | null>(null);
-    const [rawPresetValue, setRawPresetValue] = useState<string>("");
-    const [parseResult, setParseResult] = useState<{
-      from: Date;
-      until: Date;
-    } | null>(null);
-
-    const presetDates = [
-      {
-        label: "Last hour",
-        from: new Date(Date.now() - 60 * 60 * 1000),
-      },
-      {
-        label: "Last 24 hours",
-        from: new Date(Date.now() - 24 * 60 * 60 * 1000),
-      },
-      {
-        label: "Last 7 days",
-        from: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
-      },
-      {
-        label: "Last 30 days",
-        from: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
-      },
-    ];
-
-    const debouncedParse = debounce((value: string) => {
-      const result = parse(value);
-      if (result.length <= 0 || result[0].start.date().valueOf() > Date.now()) {
-        setParseResult(null);
-        return;
-      }
-      setParseResult({
-        from: result[0].start.date(),
-        until: result[0].end?.date() ?? new Date(),
-      });
-    }, 50);
 
     const debouncedFetch = useMemo(
       () =>
@@ -111,23 +74,6 @@ export default memo(
     useEffect(() => {
       debouncedFetch(fromDate, untilDate);
     }, [debouncedFetch, fromDate, untilDate]);
-
-    const submitCustomRange = useCallback(() => {
-      if (parseResult) {
-        setPresetValue("Custom range");
-        setFromDate(parseResult.from);
-        setUntilDate(parseResult.until);
-        setPresetPopoverOpen(false);
-      }
-    }, [parseResult]);
-
-    useEffect(() => {
-      const enterListener = (event: KeyboardEvent) => {
-        if (event.key === "Enter") submitCustomRange();
-      };
-      document.addEventListener("keydown", enterListener);
-      return () => document.removeEventListener("keydown", enterListener);
-    }, [submitCustomRange]);
 
     const transformedHistories = histories?.map((history) => ({
       vmName: vmNamesMap[history.vmId] ?? "",
@@ -160,81 +106,12 @@ export default memo(
             <div className="flex justify-center m-4 gap-4">
               <Label>Filter range:</Label>
 
-              <Popover
-                open={presetPopoverOpen}
-                onOpenChange={setPresetPopoverOpen}
-              >
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    role="combobox"
-                    aria-expanded={presetPopoverOpen}
-                    className="bg-white font-normal w-36"
-                  >
-                    {presetValue !== null ? presetValue : "Select range"}
-                    <ChevronDown />
-                  </Button>
-                </PopoverTrigger>
-
-                <PopoverContent className="p-0 w-50">
-                  <Command>
-                    <CommandInput
-                      placeholder="Type a custom range..."
-                      value={rawPresetValue}
-                      onValueChange={(value) => {
-                        setRawPresetValue(value);
-                        debouncedParse(value);
-                      }}
-                    />
-                    <CommandList>
-                      <CommandEmpty
-                        className={cn(
-                          "[&_svg:not([class*='text-'])]:text-muted-foreground relative flex cursor-default items-center gap-2 rounded-sm px-2 py-1.5 m-1 text-sm outline-hidden select-none justify-center",
-                          {
-                            "bg-accent text-accent-foreground": parseResult,
-                          },
-                        )}
-                        onClick={() => submitCustomRange()}
-                      >
-                        {parseResult
-                          ? `${parseResult.from.toLocaleDateString("en-SG", {
-                              dateStyle: "medium",
-                            })} – ${parseResult.until.toLocaleDateString(
-                              "en-SG",
-                              {
-                                dateStyle: "medium",
-                              },
-                            )}`
-                          : "No valid date range found"}
-                      </CommandEmpty>
-                      <CommandGroup>
-                        {presetDates.map((preset, index) => (
-                          <CommandItem
-                            key={index}
-                            value={preset.label}
-                            onSelect={(value) => {
-                              setFromDate(preset.from);
-                              setUntilDate(new Date());
-                              setPresetValue(value);
-                              setPresetPopoverOpen(false);
-                            }}
-                          >
-                            {preset.label}
-                            <Check
-                              className={cn(
-                                "ml-auto",
-                                presetValue === preset.label
-                                  ? "opacity-100"
-                                  : "opacity-0",
-                              )}
-                            />
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
+              <PresetDatesSelector
+                presetValue={presetValue}
+                setPresetValue={setPresetValue}
+                setFromDate={setFromDate}
+                setUntilDate={setUntilDate}
+              />
 
               <Separator orientation="vertical" />
 
@@ -326,5 +203,144 @@ function DateTimeSelector({
         }}
       />
     </div>
+  );
+}
+
+const presetDates = [
+  {
+    label: "Last hour",
+    from: new Date(Date.now() - 60 * 60 * 1000),
+  },
+  {
+    label: "Last 24 hours",
+    from: new Date(Date.now() - 24 * 60 * 60 * 1000),
+  },
+  {
+    label: "Last 7 days",
+    from: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+  },
+  {
+    label: "Last 30 days",
+    from: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+  },
+];
+
+function PresetDatesSelector({
+  setFromDate,
+  setUntilDate,
+  presetValue,
+  setPresetValue,
+}: {
+  setFromDate: Dispatch<SetStateAction<Date>>;
+  setUntilDate: Dispatch<SetStateAction<Date>>;
+  presetValue: string | null;
+  setPresetValue: Dispatch<SetStateAction<string | null>>;
+}) {
+  const [open, setOpen] = useState(false);
+  const [rawPresetValue, setRawPresetValue] = useState<string>("");
+  const [parseResult, setParseResult] = useState<{
+    from: Date;
+    until: Date;
+  } | null>(null);
+
+  const debouncedParse = debounce((value: string) => {
+    const result = parse(value);
+    if (result.length <= 0 || result[0].start.date().valueOf() > Date.now()) {
+      setParseResult(null);
+      return;
+    }
+    setParseResult({
+      from: result[0].start.date(),
+      until: result[0].end?.date() ?? new Date(),
+    });
+  }, 50);
+
+  const submitCustomRange = useCallback(() => {
+    if (parseResult) {
+      setPresetValue("Custom range");
+      setFromDate(parseResult.from);
+      setUntilDate(parseResult.until);
+      setOpen(false);
+    }
+  }, [parseResult, setFromDate, setUntilDate, setPresetValue]);
+
+  useEffect(() => {
+    const enterListener = (event: KeyboardEvent) => {
+      if (event.key === "Enter") submitCustomRange();
+    };
+    document.addEventListener("keydown", enterListener);
+    return () => document.removeEventListener("keydown", enterListener);
+  }, [submitCustomRange]);
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className="bg-white font-normal w-36"
+        >
+          {presetValue !== null ? presetValue : "Select range"}
+          <ChevronDown />
+        </Button>
+      </PopoverTrigger>
+
+      <PopoverContent className="p-0 w-50">
+        <Command>
+          <CommandInput
+            placeholder="Type a custom range..."
+            value={rawPresetValue}
+            onValueChange={(value) => {
+              setRawPresetValue(value);
+              debouncedParse(value);
+            }}
+          />
+          <CommandList>
+            <CommandEmpty
+              className={cn(
+                "[&_svg:not([class*='text-'])]:text-muted-foreground relative flex cursor-default items-center gap-2 rounded-sm px-2 py-1.5 m-1 text-sm outline-hidden select-none justify-center",
+                {
+                  "bg-accent text-accent-foreground": parseResult,
+                },
+              )}
+              onClick={() => submitCustomRange()}
+            >
+              {parseResult
+                ? `${parseResult.from.toLocaleDateString("en-SG", {
+                    dateStyle: "medium",
+                  })} – ${parseResult.until.toLocaleDateString("en-SG", {
+                    dateStyle: "medium",
+                  })}`
+                : "No valid date range found"}
+            </CommandEmpty>
+            <CommandGroup>
+              {presetDates.map((preset, index) => (
+                <CommandItem
+                  key={index}
+                  value={preset.label}
+                  onSelect={(value) => {
+                    setFromDate(preset.from);
+                    setUntilDate(new Date());
+                    setPresetValue(value);
+                    setOpen(false);
+                  }}
+                >
+                  {preset.label}
+                  <Check
+                    className={cn(
+                      "ml-auto",
+                      presetValue === preset.label
+                        ? "opacity-100"
+                        : "opacity-0",
+                    )}
+                  />
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
   );
 }
