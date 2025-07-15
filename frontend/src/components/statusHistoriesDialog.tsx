@@ -6,7 +6,12 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { cn, debounce, toAbsoluteUrl } from "@/lib/utils";
+import {
+  cn,
+  debounce,
+  formatDateDifferentlyIfSameDay,
+  toAbsoluteUrl,
+} from "@/lib/utils";
 import {
   RawSystemStatusHistoryResponse,
   RawVmStatusHistoryResponse,
@@ -325,6 +330,17 @@ function PresetDatesSelector({
     return () => document.removeEventListener("keydown", enterListener);
   }, [submitCustomRange]);
 
+  let parseDisplayString = "No valid date range found";
+  if (parseResult) {
+    const [from, until] = formatDateDifferentlyIfSameDay(
+      parseResult.from,
+      parseResult.until,
+      { timeStyle: "medium" },
+      { dateStyle: "medium" },
+    );
+    parseDisplayString = `${from} \u2013 ${until}`;
+  }
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -359,13 +375,7 @@ function PresetDatesSelector({
               )}
               onClick={() => submitCustomRange()}
             >
-              {parseResult
-                ? `${parseResult.from.toLocaleDateString("en-SG", {
-                    dateStyle: "medium",
-                  })} \u2013 ${parseResult.until.toLocaleDateString("en-SG", {
-                    dateStyle: "medium",
-                  })}`
-                : "No valid date range found"}
+              {parseDisplayString}
             </CommandEmpty>
             <CommandGroup>
               {presetDates.map((preset, index) => (

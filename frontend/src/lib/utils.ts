@@ -26,3 +26,32 @@ export const debounce = <T extends unknown[]>(
     timeoutId = setTimeout(() => func(...args), delay);
   };
 };
+
+export function formatDateDifferentlyIfSameDay(
+  x: Date,
+  y: Date,
+  sameDay: Intl.DateTimeFormatOptions,
+  differentDay: Intl.DateTimeFormatOptions,
+  z: Date,
+): string;
+export function formatDateDifferentlyIfSameDay(
+  x: Date,
+  y: Date,
+  sameDay: Intl.DateTimeFormatOptions,
+  differentDay: Intl.DateTimeFormatOptions,
+): [string, string];
+export function formatDateDifferentlyIfSameDay(
+  x: Date,
+  y: Date,
+  sameDay: Intl.DateTimeFormatOptions,
+  differentDay: Intl.DateTimeFormatOptions,
+  z?: Date,
+) {
+  const isSameDay = x.toDateString() === y.toDateString();
+  return z
+    ? z.toLocaleString("en-SG", isSameDay ? sameDay : differentDay)
+    : [
+        x.toLocaleString("en-SG", isSameDay ? sameDay : differentDay),
+        y.toLocaleString("en-SG", isSameDay ? sameDay : differentDay),
+      ];
+}

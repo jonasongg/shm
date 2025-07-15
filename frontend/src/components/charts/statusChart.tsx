@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils";
+import { cn, formatDateDifferentlyIfSameDay } from "@/lib/utils";
 import { StatusHistoryResponse, SystemStatus, VmStatus } from "@/types/types";
 import { Loader2Icon } from "lucide-react";
 import { CartesianGrid, Scatter, ScatterChart, XAxis, YAxis } from "recharts";
@@ -51,7 +51,6 @@ export default function StatusChart({
     )
     .sort((a, b) => b.name.localeCompare(a.name));
 
-  const sameDay = fromDate.getDate() === untilDate.getDate();
   const fullTimeFormat = { dateStyle: "medium", timeStyle: "short" } as const;
 
   return (
@@ -68,9 +67,12 @@ export default function StatusChart({
             dataKey="x1"
             type="number"
             tickFormatter={(value: number) =>
-              new Date(value).toLocaleString(
-                "en-SG",
-                sameDay ? { timeStyle: "long" } : fullTimeFormat,
+              formatDateDifferentlyIfSameDay(
+                fromDate,
+                untilDate,
+                { timeStyle: "long" },
+                fullTimeFormat,
+                new Date(value),
               )
             }
             tickCount={20}
