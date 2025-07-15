@@ -52,10 +52,15 @@ export type RawVmStatusHistoryResponse = {
   }[];
 };
 
-export type VmStatusHistoryResponse = {
-  vmName: string;
+export type RawSystemStatusHistoryResponse = {
+  timestamp: string;
+  status: SystemStatus;
+}[];
+
+export type StatusHistoryResponse = {
+  name: string;
   histories: {
     timestamp: Date;
-    status: VmStatus;
+    status: VmStatus | SystemStatus;
   }[];
 };

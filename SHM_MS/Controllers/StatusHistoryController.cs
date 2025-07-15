@@ -51,11 +51,11 @@ public class StatusHistoryController(SHMContext context) : ControllerBase
             .SystemStatusHistories.Where(h => h.Timestamp >= from && h.Timestamp <= until)
             .ToListAsync();
 
-        var priorHistories = await context
+        var priorHistory = await context
             .SystemStatusHistories.Where(h => h.Timestamp < from)
             .OrderByDescending(h => h.Timestamp)
-            .FirstAsync();
+            .FirstOrDefaultAsync();
 
-        return rangeHistories.Append(priorHistories).ToList();
+        return priorHistory is null ? rangeHistories : [.. rangeHistories, priorHistory];
     }
 }

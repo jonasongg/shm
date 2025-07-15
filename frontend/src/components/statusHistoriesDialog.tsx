@@ -7,7 +7,10 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { cn, debounce, toAbsoluteUrl } from "@/lib/utils";
-import { RawVmStatusHistoryResponse } from "@/types/types";
+import {
+  RawSystemStatusHistoryResponse,
+  RawVmStatusHistoryResponse,
+} from "@/types/types";
 import { parse } from "chrono-node";
 import { ChartColumn, Check, ChevronDown } from "lucide-react";
 import {
@@ -22,6 +25,7 @@ import {
 import StatusChart from "./charts/statusChart";
 import { Button } from "./ui/button";
 import { Calendar } from "./ui/calendar";
+import { CardTitle } from "./ui/card";
 import {
   Dialog,
   DialogContent,
@@ -37,12 +41,15 @@ import { Separator } from "./ui/separator";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 export default memo(
-  function VmStatusHistoriesDialog({
+  function StatusHistoriesDialog({
     vmNamesMap,
   }: {
     vmNamesMap: Record<number, string>;
   }) {
-    const [histories, setHistories] = useState<RawVmStatusHistoryResponse[]>();
+    const [vmHistories, setVmHistories] =
+      useState<RawVmStatusHistoryResponse[]>();
+    const [systemHistories, setSystemHistories] =
+      useState<RawSystemStatusHistoryResponse>();
     const [fromDate, setFromDate] = useState<Date>(() => {
       const now = new Date();
       return new Date(now.setHours(now.getHours() - 1));
@@ -55,15 +62,20 @@ export default memo(
       () =>
         debounce(async (fromDate: Date, untilDate: Date) => {
           try {
-            const url = `/statusHistory/vm?from=${fromDate.toISOString()}${untilDate ? `&until=${untilDate.toISOString()}` : ""}`;
-            const response = await fetch(toAbsoluteUrl(url));
-            if (!response.ok) {
+            const url = (type: string) =>
+              `/statusHistory/${type}?from=${fromDate.toISOString()}${untilDate ? `&until=${untilDate.toISOString()}` : ""}`;
+            const vmResponse = await fetch(toAbsoluteUrl(url("vm")));
+            const systemResponse = await fetch(toAbsoluteUrl(url("system")));
+            if (!vmResponse.ok || !systemResponse.ok) {
               console.error(
-                "Failed to fetch VM status histories:",
-                response.statusText,
+                "Failed to fetch status histories:",
+                vmResponse.ok
+                  ? systemResponse.statusText
+                  : vmResponse.statusText,
               );
             } else {
-              setHistories(await response.json());
+              setVmHistories(await vmResponse.json());
+              setSystemHistories(await systemResponse.json());
             }
           } catch (error) {
             console.error("Fetch error:", error);
@@ -79,13 +91,25 @@ export default memo(
       debouncedFetch(fromDate, untilDate);
     }, [debouncedFetch, fromDate, untilDate]);
 
-    const transformedHistories = histories?.map((history) => ({
-      vmName: vmNamesMap[history.vmId] ?? "",
+    const transformedVmHistories = vmHistories?.map((history) => ({
+      name: vmNamesMap[history.vmId] ?? "",
       histories: history.histories.map((h) => ({
         ...h,
         timestamp: new Date(h.timestamp),
       })),
     }));
+
+    const transformedSystemHistories = systemHistories
+      ? [
+          {
+            name: "Kafka Broker",
+            histories: systemHistories?.map((h) => ({
+              ...h,
+              timestamp: new Date(h.timestamp),
+            })),
+          },
+        ]
+      : undefined;
 
     return (
       <Dialog>
@@ -97,14 +121,14 @@ export default memo(
               </Button>
             </TooltipTrigger>
           </DialogTrigger>
-          <TooltipContent>View VM Status History</TooltipContent>
+          <TooltipContent>View Status History</TooltipContent>
         </Tooltip>
 
         <DialogContent className="sm:max-w-7/10 sm:h-4/5">
           <DialogHeader>
-            <DialogTitle>VM Status History</DialogTitle>
+            <DialogTitle>Status History</DialogTitle>
             <DialogDescription>
-              View the status of your VMs over time.
+              View the status of your VMs and the Kafka broker over time.
             </DialogDescription>
 
             <div className="flex justify-center m-4 gap-4">
@@ -142,13 +166,33 @@ export default memo(
               />
             </div>
 
-            {transformedHistories && (
+            <CardTitle className="ml-2">Kafka Broker</CardTitle>
+            {transformedSystemHistories ? (
               <StatusChart
-                data={transformedHistories}
+                data={transformedSystemHistories}
+                fromDate={fromDate}
+                untilDate={untilDate}
+                loading={loading}
+                simple
+              />
+            ) : (
+              <div className="h-full flex justify-center items-center">
+                No Kafka broker history found.
+              </div>
+            )}
+
+            <CardTitle className="ml-2">VMs</CardTitle>
+            {transformedVmHistories ? (
+              <StatusChart
+                data={transformedVmHistories}
                 fromDate={fromDate}
                 untilDate={untilDate}
                 loading={loading}
               />
+            ) : (
+              <div className="h-full flex justify-center items-center">
+                No VM history found.
+              </div>
             )}
           </DialogHeader>
         </DialogContent>
@@ -295,7 +339,7 @@ function PresetDatesSelector({
         </Button>
       </PopoverTrigger>
 
-      <PopoverContent className="p-0 w-50">
+      <PopoverContent className="p-0 w-56">
         <Command>
           <CommandInput
             placeholder="Type a custom range..."
@@ -318,7 +362,7 @@ function PresetDatesSelector({
               {parseResult
                 ? `${parseResult.from.toLocaleDateString("en-SG", {
                     dateStyle: "medium",
-                  })} – ${parseResult.until.toLocaleDateString("en-SG", {
+                  })} \u2013 ${parseResult.until.toLocaleDateString("en-SG", {
                     dateStyle: "medium",
                   })}`
                 : "No valid date range found"}

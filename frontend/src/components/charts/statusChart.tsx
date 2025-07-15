@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { VmStatusHistoryResponse } from "@/types/types";
+import { StatusHistoryResponse, SystemStatus, VmStatus } from "@/types/types";
 import { Loader2Icon } from "lucide-react";
 import { CartesianGrid, Scatter, ScatterChart, XAxis, YAxis } from "recharts";
 import { ScatterPointItem } from "recharts/types/cartesian/Scatter";
@@ -10,10 +10,13 @@ import {
 } from "recharts/types/component/DefaultTooltipContent";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "../ui/chart";
 
-const COLOUR_MAP = {
+const COLOUR_MAP: Record<VmStatus | SystemStatus, string> = {
   Online: "var(--color-green-600)",
   Degraded: "var(--color-amber-600)",
   Offline: "var(--color-red-600)",
+
+  Ok: "var(--color-green-600)",
+  KafkaBrokerDown: "var(--color-red-600)",
 };
 
 export default function StatusChart({
@@ -21,34 +24,41 @@ export default function StatusChart({
   fromDate,
   untilDate,
   loading,
+  simple = false,
 }: {
-  data: VmStatusHistoryResponse[];
+  data: StatusHistoryResponse[];
   fromDate: Date;
   untilDate: Date;
   loading: boolean;
+  simple?: boolean;
 }) {
   const mappedData = data
     .flatMap((d) =>
       d.histories.map((h, i, arr) => ({
-        x1: (i === 0 ? fromDate : h.timestamp).valueOf(),
+        x1: (i === 0 && h.timestamp < fromDate
+          ? fromDate
+          : h.timestamp
+        ).valueOf(),
         x2: (i === arr.length - 1 ? untilDate : arr[i + 1].timestamp).valueOf(),
         status: h.status,
-        vmName: d.vmName,
+        name: d.name,
       })),
     )
-    .sort((a, b) => b.vmName.localeCompare(a.vmName))
+    .sort((a, b) => b.name.localeCompare(a.name))
     .sort((a, b) => a.x1 - b.x1);
 
   const sameDay = fromDate.getDate() === untilDate.getDate();
   const fullTimeFormat = { dateStyle: "medium", timeStyle: "short" } as const;
 
   return (
-    <div className="w-full h-full relative">
+    <div
+      className={cn("w-full relative", { "h-full": !simple, "h-1/5": simple })}
+    >
       <ChartContainer className="w-full h-full" config={{}}>
         <ScatterChart
           accessibilityLayer
           data={mappedData}
-          margin={{ left: -12 }}
+          margin={{ left: -16, bottom: simple ? -28 : -4 }}
         >
           <XAxis
             dataKey="x1"
@@ -63,13 +73,18 @@ export default function StatusChart({
             interval="preserveStartEnd"
             domain={[fromDate.valueOf(), untilDate.valueOf()]}
             tickMargin={8}
+            tick={!simple}
           />
           <YAxis
-            dataKey="vmName"
-            name="VM Name"
+            dataKey="name"
+            name="name"
             type="category"
             allowDuplicatedCategory={false}
             tickMargin={8}
+            {...(simple && {
+              tickFormatter: () => "",
+              tickLine: false,
+            })}
           />
           <ChartTooltip
             cursor={false}
@@ -77,20 +92,19 @@ export default function StatusChart({
               const rawPayload: (typeof mappedData)[number] | undefined =
                 payload?.[0]?.payload;
               if (!rawPayload) return;
+              const { status, x1, x2 } = rawPayload;
               const customPayload: Payload<ValueType, NameType>[] = [
                 {
                   dataKey: "status",
                   name: "Status",
-                  value: rawPayload.status,
+                  value: status === "KafkaBrokerDown" ? "Down" : status,
                   payload: {
-                    fill: rawPayload
-                      ? COLOUR_MAP[rawPayload.status]
-                      : undefined,
+                    fill: COLOUR_MAP[status],
                   },
                 },
                 {
                   dataKey: "x1",
-                  name: `${new Date(rawPayload.x1).toLocaleString("en-SG", fullTimeFormat)} – ${new Date(rawPayload.x2).toLocaleString("en-SG", fullTimeFormat)}`,
+                  name: `${new Date(x1).toLocaleString("en-SG", fullTimeFormat)} \u2013 ${new Date(x2).toLocaleString("en-SG", fullTimeFormat)}`,
                   payload: { fill: undefined },
                 },
               ].filter((x) => !!x);
@@ -98,7 +112,7 @@ export default function StatusChart({
                 <ChartTooltipContent
                   payload={customPayload}
                   {...props}
-                  label={rawPayload?.vmName}
+                  label={rawPayload?.name}
                   indicator="line"
                 />
               );
@@ -136,7 +150,7 @@ export default function StatusChart({
         </ScatterChart>
       </ChartContainer>
 
-      <div className="absolute inset-0 z-10 pointer-events-none grid place-items-center">
+      <div className="absolute inset-0 z-10 pointer-events-none flex justify-center items-center">
         {loading && <Loader2Icon className="animate-spin" />}
       </div>
     </div>

@@ -5,9 +5,9 @@ import { Dispatch, SetStateAction } from "react";
 import DependencySettingsDialog from "./dependencySettingsDialog";
 import { KafkaAlert } from "./kafkaAlert";
 import { ModeToggle } from "./modeToggle";
+import VmStatusHistoriesDialog from "./statusHistoriesDialog";
 import { Button } from "./ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
-import VmStatusHistoriesDialog from "./vmStatusHistoriesDialog";
 
 export default function Header({
   displayAlert,
