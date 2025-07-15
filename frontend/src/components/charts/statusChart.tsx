@@ -34,18 +34,22 @@ export default function StatusChart({
 }) {
   const mappedData = data
     .flatMap((d) =>
-      d.histories.map((h, i, arr) => ({
-        x1: (i === 0 && h.timestamp < fromDate
-          ? fromDate
-          : h.timestamp
-        ).valueOf(),
-        x2: (i === arr.length - 1 ? untilDate : arr[i + 1].timestamp).valueOf(),
-        status: h.status,
-        name: d.name,
-      })),
+      d.histories
+        .sort((a, b) => a.timestamp.valueOf() - b.timestamp.valueOf())
+        .map((h, i, arr) => ({
+          x1: (i === 0 && fromDate > h.timestamp
+            ? fromDate
+            : h.timestamp
+          ).valueOf(),
+          x2: (i === arr.length - 1
+            ? untilDate
+            : arr[i + 1].timestamp
+          ).valueOf(),
+          status: h.status,
+          name: d.name,
+        })),
     )
-    .sort((a, b) => b.name.localeCompare(a.name))
-    .sort((a, b) => a.x1 - b.x1);
+    .sort((a, b) => b.name.localeCompare(a.name));
 
   const sameDay = fromDate.getDate() === untilDate.getDate();
   const fullTimeFormat = { dateStyle: "medium", timeStyle: "short" } as const;
