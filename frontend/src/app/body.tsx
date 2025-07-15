@@ -123,10 +123,13 @@ export default function Body({ vms: _vms }: { vms: RawVm[] | undefined }) {
       />
       {!transformedVms ? (
         <div
-          className={cn("h-full flex items-center justify-center text-xl", {
-            "text-neutral-500": vms,
-            "text-red-600 dark:text-red-300": !vms,
-          })}
+          className={cn(
+            "h-60 flex items-center justify-center text-xl text-neutal-500",
+            {
+              "text-neutral-500": vms,
+              "text-red-600 dark:text-red-300": !vms,
+            },
+          )}
         >
           {vms
             ? "No active VMs to display"
