@@ -252,7 +252,7 @@ function DateTimeSelector({
           const [hours, minutes, seconds] = time.split(":").map(Number);
           const newDate = new Date(date);
           newDate.setHours(hours, minutes, seconds, 0);
-          setDate(newDate.valueOf() > maxDate.valueOf() ? maxDate : newDate);
+          setDate(newDate > maxDate ? maxDate : newDate);
         }}
       />
     </div>
@@ -298,7 +298,7 @@ function PresetDatesSelector({
 
   const debouncedParse = debounce((value: string) => {
     const result = parse(value);
-    if (result.length <= 0 || result[0].start.date().valueOf() > Date.now()) {
+    if (result.length <= 0 || result[0].start.date() > new Date()) {
       setParseResult(null);
       return;
     }
