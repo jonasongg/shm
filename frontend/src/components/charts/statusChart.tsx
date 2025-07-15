@@ -1,4 +1,6 @@
+import { cn } from "@/lib/utils";
 import { VmStatusHistoryResponse } from "@/types/types";
+import { Loader2Icon } from "lucide-react";
 import { CartesianGrid, Scatter, ScatterChart, XAxis, YAxis } from "recharts";
 import { ScatterPointItem } from "recharts/types/cartesian/Scatter";
 import {
@@ -18,10 +20,12 @@ export default function StatusChart({
   data,
   fromDate,
   untilDate,
+  loading,
 }: {
   data: VmStatusHistoryResponse[];
   fromDate: Date;
   untilDate: Date;
+  loading: boolean;
 }) {
   const mappedData = data
     .flatMap((d) =>
@@ -39,93 +43,102 @@ export default function StatusChart({
   const fullTimeFormat = { dateStyle: "medium", timeStyle: "short" } as const;
 
   return (
-    <ChartContainer className="w-full h-full" config={{}}>
-      <ScatterChart accessibilityLayer data={mappedData} margin={{ left: -12 }}>
-        <XAxis
-          dataKey="x1"
-          type="number"
-          tickFormatter={(value: number) =>
-            new Date(value).toLocaleString(
-              "en-SG",
-              sameDay ? { timeStyle: "long" } : fullTimeFormat,
-            )
-          }
-          tickCount={20}
-          interval="preserveStartEnd"
-          domain={[fromDate.valueOf(), untilDate.valueOf()]}
-          tickMargin={8}
-        />
-
-        <YAxis
-          dataKey="vmName"
-          name="VM Name"
-          type="category"
-          allowDuplicatedCategory={false}
-          tickMargin={8}
-        />
-
-        <ChartTooltip
-          cursor={false}
-          content={({ payload, content: _, ...props }) => {
-            const rawPayload: (typeof mappedData)[number] | undefined =
-              payload?.[0]?.payload;
-            if (!rawPayload) return;
-
-            const customPayload: Payload<ValueType, NameType>[] = [
-              {
-                dataKey: "status",
-                name: "Status",
-                value: rawPayload.status,
-                payload: {
-                  fill: rawPayload ? COLOUR_MAP[rawPayload.status] : undefined,
+    <div className="w-full h-full relative">
+      <ChartContainer className="w-full h-full" config={{}}>
+        <ScatterChart
+          accessibilityLayer
+          data={mappedData}
+          margin={{ left: -12 }}
+        >
+          <XAxis
+            dataKey="x1"
+            type="number"
+            tickFormatter={(value: number) =>
+              new Date(value).toLocaleString(
+                "en-SG",
+                sameDay ? { timeStyle: "long" } : fullTimeFormat,
+              )
+            }
+            tickCount={20}
+            interval="preserveStartEnd"
+            domain={[fromDate.valueOf(), untilDate.valueOf()]}
+            tickMargin={8}
+          />
+          <YAxis
+            dataKey="vmName"
+            name="VM Name"
+            type="category"
+            allowDuplicatedCategory={false}
+            tickMargin={8}
+          />
+          <ChartTooltip
+            cursor={false}
+            content={({ payload, content: _, ...props }) => {
+              const rawPayload: (typeof mappedData)[number] | undefined =
+                payload?.[0]?.payload;
+              if (!rawPayload) return;
+              const customPayload: Payload<ValueType, NameType>[] = [
+                {
+                  dataKey: "status",
+                  name: "Status",
+                  value: rawPayload.status,
+                  payload: {
+                    fill: rawPayload
+                      ? COLOUR_MAP[rawPayload.status]
+                      : undefined,
+                  },
                 },
-              },
-              {
-                dataKey: "x1",
-                name: `${new Date(rawPayload.x1).toLocaleString("en-SG", fullTimeFormat)} – ${new Date(rawPayload.x2).toLocaleString("en-SG", fullTimeFormat)}`,
-                payload: { fill: undefined },
-              },
-            ].filter((x) => !!x);
-            return (
-              <ChartTooltipContent
-                payload={customPayload}
-                {...props}
-                label={rawPayload?.vmName}
-                indicator="line"
-              />
-            );
-          }}
-        />
-
-        <CartesianGrid />
-
-        <Scatter
-          shape={(props: ScatterPointItem) => {
-            const payload: (typeof mappedData)[number] = props.payload;
-            const height = 20;
-            if (
-              "xAxis" in props &&
-              typeof props.xAxis === "object" &&
-              props.xAxis &&
-              "scale" in props.xAxis &&
-              typeof props.xAxis.scale === "function"
-            )
+                {
+                  dataKey: "x1",
+                  name: `${new Date(rawPayload.x1).toLocaleString("en-SG", fullTimeFormat)} – ${new Date(rawPayload.x2).toLocaleString("en-SG", fullTimeFormat)}`,
+                  payload: { fill: undefined },
+                },
+              ].filter((x) => !!x);
               return (
-                <rect
-                  fill={COLOUR_MAP[payload.status]}
-                  x={props.cx}
-                  y={(props.cy ?? 0) - height / 2}
-                  width={
-                    props.xAxis.scale(props.payload.x2) -
-                    props.xAxis.scale(props.payload.x1)
-                  }
-                  height={height}
+                <ChartTooltipContent
+                  payload={customPayload}
+                  {...props}
+                  label={rawPayload?.vmName}
+                  indicator="line"
                 />
               );
-            else return <></>;
-          }}
-        />
-      </ScatterChart>
-    </ChartContainer>
+            }}
+          />
+          <CartesianGrid />
+          <Scatter
+            shape={(props: ScatterPointItem) => {
+              const payload: (typeof mappedData)[number] = props.payload;
+              const height = 30;
+              if (
+                "xAxis" in props &&
+                typeof props.xAxis === "object" &&
+                props.xAxis &&
+                "scale" in props.xAxis &&
+                typeof props.xAxis.scale === "function"
+              )
+                return (
+                  <rect
+                    fill={COLOUR_MAP[payload.status]}
+                    x={props.cx}
+                    y={(props.cy ?? 0) - height / 2}
+                    width={
+                      props.xAxis.scale(props.payload.x2) -
+                      props.xAxis.scale(props.payload.x1)
+                    }
+                    height={height}
+                  />
+                );
+              else return <></>;
+            }}
+            isAnimationActive={false}
+            className={cn("transition-opacity", { "opacity-20": loading })}
+          />
+        </ScatterChart>
+      </ChartContainer>
+
+      <div className="absolute inset-0 z-10 pointer-events-none grid place-items-center">
+        {loading && <Loader2Icon className="animate-spin" />}
+      </div>
+    </div>
   );
 }

@@ -49,12 +49,13 @@ export default memo(
     });
     const [untilDate, setUntilDate] = useState<Date>(new Date());
     const [presetValue, setPresetValue] = useState<string | null>(null);
+    const [loading, setLoading] = useState<boolean>(false);
 
     const debouncedFetch = useMemo(
       () =>
         debounce(async (fromDate: Date, untilDate: Date) => {
           try {
-            const url = `/vm/histories?from=${fromDate.toISOString()}${untilDate ? `&until=${untilDate.toISOString()}` : ""}`;
+            const url = `/statusHistory/vm?from=${fromDate.toISOString()}${untilDate ? `&until=${untilDate.toISOString()}` : ""}`;
             const response = await fetch(toAbsoluteUrl(url));
             if (!response.ok) {
               console.error(
@@ -66,12 +67,15 @@ export default memo(
             }
           } catch (error) {
             console.error("Fetch error:", error);
+          } finally {
+            setLoading(false);
           }
-        }, 500),
+        }, 100),
       [],
     );
 
     useEffect(() => {
+      setLoading(true);
       debouncedFetch(fromDate, untilDate);
     }, [debouncedFetch, fromDate, untilDate]);
 
@@ -143,6 +147,7 @@ export default memo(
                 data={transformedHistories}
                 fromDate={fromDate}
                 untilDate={untilDate}
+                loading={loading}
               />
             )}
           </DialogHeader>
