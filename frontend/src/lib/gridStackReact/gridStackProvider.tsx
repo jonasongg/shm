@@ -14,7 +14,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { GridStackContext, GridStackWidgetWithId } from "./gridStackContext";
+import { GridStackContext } from "./gridStackContext";
 
 export const GridStackProvider = ({
   children,
@@ -25,9 +25,6 @@ export const GridStackProvider = ({
   disabled: boolean;
 }>) => {
   const [gridStack, setGridStack] = useState<GridStack | null>(null);
-  const [gridWidgets, setGridWidgets] = useState<
-    Record<string, GridStackWidgetWithId>
-  >({});
   const gridStackElRef = useRef<HTMLDivElement>(null);
 
   useLayoutEffect(() => {
@@ -49,29 +46,6 @@ export const GridStackProvider = ({
   const removeWidget = useCallback(
     (element: GridStackElement) => gridStack?.removeWidget(element, false),
     [gridStack],
-  );
-
-  const saveWidget = useCallback(
-    (id: string) => {
-      if (!gridStack) return;
-
-      const widgets = gridStack.save() as GridStackWidget[];
-      const widget = widgets.find((w) => w.id === id);
-      if (widget) {
-        setGridWidgets((prev) => ({ ...prev, [id]: { ...widget, id } }));
-      }
-    },
-    [gridStack],
-  );
-
-  const getSavedWidget = useCallback(
-    (id: string) => {
-      const widget = gridWidgets[id];
-      if (widget) {
-        return { ...widget, id };
-      }
-    },
-    [gridWidgets],
   );
 
   useEffect(() => void gridStack?.setStatic(disabled), [gridStack, disabled]);
@@ -97,10 +71,8 @@ export const GridStackProvider = ({
       initialOptions,
       makeWidget,
       removeWidget,
-      saveWidget,
-      getSavedWidget,
     }),
-    [initialOptions, makeWidget, removeWidget, saveWidget, getSavedWidget],
+    [initialOptions, makeWidget, removeWidget],
   );
 
   return (
