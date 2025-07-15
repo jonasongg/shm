@@ -133,7 +133,7 @@ export default function Body({ vms: _vms }: { vms: RawVm[] | undefined }) {
             : "There was an error fetching VMs. Please try again later."}
         </div>
       ) : (
-        <main className="font-(family-name:--font-geist-sans) p-4 h-full">
+        <main className="font-(family-name:--font-geist-sans) p-4">
           <GridStackProvider
             initialOptions={gridStackOptions}
             disabled={!isRearranging}

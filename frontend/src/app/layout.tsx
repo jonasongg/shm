@@ -20,7 +20,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-screen" suppressHydrationWarning>
       <body
-        className={`${geistSans.className} antialiased flex flex-col h-full transition-colors`}
+        className={`${geistSans.className} antialiased flex flex-col transition-colors`}
       >
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           {children}
