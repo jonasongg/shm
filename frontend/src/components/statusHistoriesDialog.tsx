@@ -45,6 +45,25 @@ import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Separator } from "./ui/separator";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
+const presetDates = [
+  {
+    label: "Last hour",
+    from: new Date(Date.now() - 60 * 60 * 1000),
+  },
+  {
+    label: "Last 24 hours",
+    from: new Date(Date.now() - 24 * 60 * 60 * 1000),
+  },
+  {
+    label: "Last 7 days",
+    from: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+  },
+  {
+    label: "Last 30 days",
+    from: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+  },
+];
+
 export default memo(
   function StatusHistoriesDialog({
     vmNamesMap,
@@ -55,12 +74,11 @@ export default memo(
       useState<RawVmStatusHistoryResponse[]>();
     const [systemHistories, setSystemHistories] =
       useState<RawSystemStatusHistoryResponse>();
-    const [fromDate, setFromDate] = useState<Date>(() => {
-      const now = new Date();
-      return new Date(now.setHours(now.getHours() - 1));
-    });
+    const [fromDate, setFromDate] = useState<Date>(presetDates[0].from);
     const [untilDate, setUntilDate] = useState<Date>(new Date());
-    const [presetValue, setPresetValue] = useState<string | null>(null);
+    const [presetValue, setPresetValue] = useState<string | null>(
+      presetDates[0].label,
+    );
     const [loading, setLoading] = useState<boolean>(false);
 
     const debouncedFetch = useMemo(
@@ -263,25 +281,6 @@ function DateTimeSelector({
     </div>
   );
 }
-
-const presetDates = [
-  {
-    label: "Last hour",
-    from: new Date(Date.now() - 60 * 60 * 1000),
-  },
-  {
-    label: "Last 24 hours",
-    from: new Date(Date.now() - 24 * 60 * 60 * 1000),
-  },
-  {
-    label: "Last 7 days",
-    from: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
-  },
-  {
-    label: "Last 30 days",
-    from: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
-  },
-];
 
 function PresetDatesSelector({
   setFromDate,
