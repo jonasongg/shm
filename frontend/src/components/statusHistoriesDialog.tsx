@@ -153,43 +153,45 @@ export default memo(
             <DialogDescription>
               View the status of your VMs and the Kafka broker over time.
             </DialogDescription>
+          </DialogHeader>
 
-            <div className="flex justify-center m-4 gap-4">
-              <Label>Filter range:</Label>
+          <div className="flex justify-center gap-4">
+            <Label>Filter range:</Label>
 
-              <PresetDatesSelector
-                presetValue={presetValue}
-                setPresetValue={setPresetValue}
-                setFromDate={setFromDate}
-                setUntilDate={setUntilDate}
-              />
+            <PresetDatesSelector
+              presetValue={presetValue}
+              setPresetValue={setPresetValue}
+              setFromDate={setFromDate}
+              setUntilDate={setUntilDate}
+            />
 
-              <Separator orientation="vertical" />
+            <Separator orientation="vertical" />
 
-              <Label>Set range:</Label>
+            <Label>Set range:</Label>
 
-              <Label className="font-normal">From</Label>
-              <DateTimeSelector
-                date={fromDate}
-                setDate={(date) => {
-                  setPresetValue(null);
-                  setFromDate(date);
-                }}
-                maxDate={new Date(untilDate.valueOf() - 1000)}
-              />
+            <Label className="font-normal">From</Label>
+            <DateTimeSelector
+              date={fromDate}
+              setDate={(date) => {
+                setPresetValue(null);
+                setFromDate(date);
+              }}
+              maxDate={new Date(untilDate.valueOf() - 1000)}
+            />
 
-              <Label className="font-normal">Until</Label>
-              <DateTimeSelector
-                date={untilDate}
-                setDate={(date) => {
-                  setPresetValue(null);
-                  setUntilDate(date);
-                }}
-                maxDate={new Date()}
-              />
-            </div>
+            <Label className="font-normal">Until</Label>
+            <DateTimeSelector
+              date={untilDate}
+              setDate={(date) => {
+                setPresetValue(null);
+                setUntilDate(date);
+              }}
+              maxDate={new Date()}
+            />
+          </div>
 
-            <CardTitle className="ml-2">Kafka Broker</CardTitle>
+          <div className="h-full flex flex-col">
+            <CardTitle className="m-2">Kafka Broker</CardTitle>
             {transformedSystemHistories ? (
               <StatusChart
                 data={transformedSystemHistories}
@@ -204,7 +206,7 @@ export default memo(
               </div>
             )}
 
-            <CardTitle className="ml-2">VMs</CardTitle>
+            <CardTitle className="m-2">VMs</CardTitle>
             {transformedVmHistories ? (
               <StatusChart
                 data={transformedVmHistories}
@@ -217,7 +219,7 @@ export default memo(
                 No VM history found.
               </div>
             )}
-          </DialogHeader>
+          </div>
         </DialogContent>
       </Dialog>
     );

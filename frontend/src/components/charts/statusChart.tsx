@@ -55,13 +55,16 @@ export default function StatusChart({
 
   return (
     <div
-      className={cn("w-full relative", { "h-full": !simple, "h-1/5": simple })}
+      className={cn("w-full relative", {
+        "flex-4/5": !simple,
+        "flex-1/5": simple,
+      })}
     >
       <ChartContainer className="w-full h-full" config={{}}>
         <ScatterChart
           accessibilityLayer
           data={mappedData}
-          margin={{ left: -16, bottom: simple ? -28 : -4 }}
+          margin={{ left: -16, bottom: simple ? -24 : -4 }}
         >
           <XAxis
             dataKey="x1"
@@ -79,7 +82,6 @@ export default function StatusChart({
             interval="preserveStartEnd"
             domain={[fromDate.valueOf(), untilDate.valueOf()]}
             tickMargin={8}
-            tick={!simple}
           />
           <YAxis
             dataKey="name"
@@ -93,7 +95,7 @@ export default function StatusChart({
             })}
           />
           <ChartTooltip
-            cursor={false}
+            // cursor={false}
             content={({ payload, content: _, ...props }) => {
               const rawPayload: (typeof mappedData)[number] | undefined =
                 payload?.[0]?.payload;
@@ -124,7 +126,7 @@ export default function StatusChart({
               );
             }}
           />
-          <CartesianGrid />
+          <CartesianGrid horizontal={false} />
           <Scatter
             shape={(props: ScatterPointItem) => {
               const payload: (typeof mappedData)[number] = props.payload;
