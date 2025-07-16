@@ -58,7 +58,7 @@ const MemoisedVm = memo(function Vm({
           {
             "before:bg-red-900/5 dark:before:bg-red-700/20":
               status === "Offline",
-            "after:bg-neutral-50/30 after:pointer-events-auto":
+            "after:bg-neutral-50/30 dark:after:bg-neutral-600/30 after:pointer-events-auto":
               !sortingDisabled,
           },
         )}

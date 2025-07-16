@@ -22,6 +22,7 @@ import {
   useReactFlow,
 } from "@xyflow/react";
 import { X } from "lucide-react";
+import { useTheme } from "next-themes";
 import { Dispatch, SetStateAction, useEffect } from "react";
 import { baseEdge } from "./dependencySettingsDialog";
 
@@ -34,10 +35,12 @@ const CircleNode = ({ data: { label, status } }: NodeProps<CircleNodeType>) => {
   return (
     <div
       className={cn(
-        "w-20 h-20 rounded-full bg-white border-2 flex justify-center items-center hover:border-neutral-500 transition-all",
+        "w-20 h-20 rounded-full bg-white dark:bg-accent border-2 flex justify-center items-center hover:border-neutral-500 dark:hover:border-neutral-300 transition-all",
         {
-          "bg-red-100 border-neutral-300": status === "Offline",
-          "bg-orange-100 border-neutral-300": status === "Degraded",
+          "bg-red-100 border-neutral-300 dark:bg-red-900 dark:border-neutral-500":
+            status === "Offline",
+          "bg-orange-100 border-neutral-300 dark:bg-amber-800 dark:border-neutral-500":
+            status === "Degraded",
         },
       )}
     >
@@ -78,7 +81,7 @@ const DeletableEdge = ({
             transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
             pointerEvents: "all",
           }}
-          className="absolute p-0.5 rounded-full bg-red-100 hover:bg-red-300 border-background border-6 transition-colors cursor-pointer text-neutral-500 hover:text-black"
+          className="absolute p-0.5 rounded-full bg-red-100 hover:bg-red-300 dark:bg-red-900 dark:hover:bg-red-700 border-background dark:border-(--xy-background-color-default) border-6 transition-colors cursor-pointer text-neutral-500 dark:text-neutral-300 hover:text-black dark:hover:text-white"
           onClick={() => setEdges((edges) => edges.filter((e) => e.id !== id))}
         >
           <X className="p-1" />
@@ -150,6 +153,8 @@ export default function DependencyGraph({
     setEdges((edges) => addEdge({ ...params, ...baseEdge }, edges));
   };
 
+  const { theme } = useTheme();
+
   return (
     <div
       className={cn("h-100 border-2 rounded-xl transition-all", {
@@ -167,6 +172,7 @@ export default function DependencyGraph({
           onEdgesChange(changes);
         }}
         onConnect={onConnect}
+        colorMode={theme === "dark" ? "dark" : "light"}
       >
         <Background />
         <Controls
