@@ -51,7 +51,7 @@ export default function StatusChart({
     )
     .sort((a, b) => b.name.localeCompare(a.name));
 
-  const fullTimeFormat = { dateStyle: "medium", timeStyle: "short" } as const;
+  const fullTimeFormat = { dateStyle: "short", timeStyle: "medium" } as const;
 
   return (
     <div
@@ -73,7 +73,7 @@ export default function StatusChart({
               formatDateDifferentlyIfSameDay(
                 fromDate,
                 untilDate,
-                { timeStyle: "long" },
+                { timeStyle: "medium" },
                 fullTimeFormat,
                 new Date(value),
               )
