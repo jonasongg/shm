@@ -1,0 +1,16 @@
+{
+  "Kafka": {
+    "BootstrapServers": "Kafka ports for the backend consumer. This should match the PLAINTEXT_HOST advertised listener in docker-compose.yaml.",
+    "Topic": "The name of the Kafka topic. This should match the name in the init-broker service in docker-compose.yaml."
+  },
+  "ConnectionStrings": {
+    "Postgres": "Edit as needed: Server=server;User Id=user id;Password=password;Database=database;"
+  },
+  "Docker": {
+    "MonitoringServiceImage": "jonasong2/monitoring-service",
+    "BrokerNetworkName": "The name of the docker network the Kafka broker service is part of. This should match the network name in docker-compose.yaml",
+    "Kafka": {
+      "BootstrapServers": "Kafka ports for the monitoring service producer. This should match the PLAINTEXT advertised listener in docker-compose.yaml."
+    }
+  }
+}
