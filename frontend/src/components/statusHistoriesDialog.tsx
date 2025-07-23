@@ -135,7 +135,15 @@ export default memo(
       : undefined;
 
     return (
-      <Dialog>
+      <Dialog
+        onOpenChange={(open) => {
+          if (open) {
+            setFromDate(presetDates[0].from);
+            setUntilDate(new Date());
+            setPresetValue(presetDates[0].label);
+          }
+        }}
+      >
         <Tooltip>
           <DialogTrigger asChild>
             <TooltipTrigger asChild>
@@ -147,7 +155,7 @@ export default memo(
           <TooltipContent>View Status History</TooltipContent>
         </Tooltip>
 
-        <DialogContent className="sm:max-w-7/10 sm:h-4/5">
+        <DialogContent className="sm:max-w-7/10">
           <DialogHeader>
             <DialogTitle>Status History</DialogTitle>
             <DialogDescription>
@@ -155,42 +163,42 @@ export default memo(
             </DialogDescription>
           </DialogHeader>
 
-          <div className="flex justify-center gap-4">
-            <Label>Filter range:</Label>
+          <div className="h-120 flex flex-col gap-2">
+            <div className="flex justify-center gap-4">
+              <Label>Filter range:</Label>
 
-            <PresetDatesSelector
-              presetValue={presetValue}
-              setPresetValue={setPresetValue}
-              setFromDate={setFromDate}
-              setUntilDate={setUntilDate}
-            />
+              <PresetDatesSelector
+                presetValue={presetValue}
+                setPresetValue={setPresetValue}
+                setFromDate={setFromDate}
+                setUntilDate={setUntilDate}
+              />
 
-            <Separator orientation="vertical" />
+              <Separator orientation="vertical" />
 
-            <Label>Set range:</Label>
+              <Label>Set range:</Label>
 
-            <Label className="font-normal">From</Label>
-            <DateTimeSelector
-              date={fromDate}
-              setDate={(date) => {
-                setPresetValue(null);
-                setFromDate(date);
-              }}
-              maxDate={new Date(untilDate.valueOf() - 1000)}
-            />
+              <Label className="font-normal">From</Label>
+              <DateTimeSelector
+                date={fromDate}
+                setDate={(date) => {
+                  setPresetValue(null);
+                  setFromDate(date);
+                }}
+                maxDate={new Date(untilDate.valueOf() - 1000)}
+              />
 
-            <Label className="font-normal">Until</Label>
-            <DateTimeSelector
-              date={untilDate}
-              setDate={(date) => {
-                setPresetValue(null);
-                setUntilDate(date);
-              }}
-              maxDate={new Date()}
-            />
-          </div>
+              <Label className="font-normal">Until</Label>
+              <DateTimeSelector
+                date={untilDate}
+                setDate={(date) => {
+                  setPresetValue(null);
+                  setUntilDate(date);
+                }}
+                maxDate={new Date()}
+              />
+            </div>
 
-          <div className="h-full flex flex-col">
             <CardTitle className="m-2">Kafka Broker</CardTitle>
             {transformedSystemHistories ? (
               <StatusChart
