@@ -62,6 +62,7 @@ public class VmController(
                         Env =
                         [
                             $"Kafka:BootstrapServers={dockerConfig.GetSection("Kafka:BootstrapServers").Value}",
+                            $"Kafka:Topic={configuration.GetSection("Kafka").GetSection("Topic").Value}",
                             $"VM_Name={vmDto.Name}",
                         ],
                     }
