@@ -1,5 +1,6 @@
 x-base-environment: &base-environment
   Kafka:BootstrapServers: broker:29092
+  Kafka:Topic: reports
 
 networks:
   default:
