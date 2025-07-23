@@ -1,10 +1,10 @@
 import {
   Command,
-  CommandEmpty,
   CommandGroup,
   CommandInput,
   CommandItem,
   CommandList,
+  CommandSeparator,
 } from "@/components/ui/command";
 import {
   cn,
@@ -22,7 +22,6 @@ import {
   Dispatch,
   memo,
   SetStateAction,
-  useCallback,
   useEffect,
   useMemo,
   useState,
@@ -312,7 +311,11 @@ function PresetDatesSelector({
 
   const debouncedParse = debounce((value: string) => {
     const result = parse(value);
-    if (result.length <= 0 || result[0].start.date() > new Date()) {
+    if (
+      result.length <= 0 ||
+      result[0].start.date() > new Date() ||
+      (result[0].end && result[0].end.date() > new Date())
+    ) {
       setParseResult(null);
       return;
     }
@@ -322,24 +325,7 @@ function PresetDatesSelector({
     });
   }, 50);
 
-  const submitCustomRange = useCallback(() => {
-    if (parseResult) {
-      setPresetValue("Custom range");
-      setFromDate(parseResult.from);
-      setUntilDate(parseResult.until);
-      setOpen(false);
-    }
-  }, [parseResult, setFromDate, setUntilDate, setPresetValue]);
-
-  useEffect(() => {
-    const enterListener = (event: KeyboardEvent) => {
-      if (event.key === "Enter") submitCustomRange();
-    };
-    document.addEventListener("keydown", enterListener);
-    return () => document.removeEventListener("keydown", enterListener);
-  }, [submitCustomRange]);
-
-  let parseDisplayString = "No valid date range found";
+  let parseDisplayString: string | undefined;
   if (parseResult) {
     const [from, until] = formatDateDifferentlyIfSameDay(
       parseResult.from,
@@ -375,22 +361,10 @@ function PresetDatesSelector({
             }}
           />
           <CommandList>
-            <CommandEmpty
-              className={cn(
-                "[&_svg:not([class*='text-'])]:text-muted-foreground relative flex cursor-default items-center gap-2 rounded-sm px-2 py-1.5 m-1 text-sm outline-hidden select-none justify-center",
-                {
-                  "bg-accent text-accent-foreground": parseResult,
-                },
-              )}
-              onClick={() => submitCustomRange()}
-            >
-              {parseDisplayString}
-            </CommandEmpty>
-            <CommandGroup>
+            <CommandGroup className="peer">
               {presetDates.map((preset, index) => (
                 <CommandItem
                   key={index}
-                  value={preset.label}
                   onSelect={(value) => {
                     setFromDate(preset.from);
                     setUntilDate(new Date());
@@ -409,6 +383,27 @@ function PresetDatesSelector({
                   />
                 </CommandItem>
               ))}
+            </CommandGroup>
+            <CommandSeparator className="peer-[[hidden]]:hidden" alwaysRender />
+            <CommandGroup
+              forceMount
+              className={cn({
+                "peer-[:not([hidden])]:hidden": !parseResult, // if (cannot parse and no other options) or can parse
+              })}
+            >
+              <CommandItem
+                onSelect={() => {
+                  if (parseResult) {
+                    setPresetValue("Custom range");
+                    setFromDate(parseResult.from);
+                    setUntilDate(parseResult.until);
+                    setOpen(false);
+                  }
+                }}
+                className="justify-center"
+              >
+                {parseDisplayString ?? "No valid date range found."}
+              </CommandItem>
             </CommandGroup>
           </CommandList>
         </Command>
