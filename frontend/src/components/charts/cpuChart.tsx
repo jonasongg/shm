@@ -63,6 +63,7 @@ export default function CpuChart({
             `${Math.floor((new Date().valueOf() - value.valueOf()) / 1000)}s`
           }
           reversed
+          hide={disabled}
         >
           <Label className="font-bold" offset={0} position="bottom">
             Seconds Ago

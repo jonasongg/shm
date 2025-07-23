@@ -8,7 +8,7 @@ import { useGridStack } from "@/lib/gridStackReact/useGridStack";
 import { cn } from "@/lib/utils";
 import { DataReport, VmStatus, VmType } from "@/types/types";
 import dynamic from "next/dynamic";
-import { memo, useState } from "react";
+import { memo } from "react";
 import DeleteVmDialog from "./deleteVmDialog";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 const MediaQuery = dynamic(() => import("react-responsive"), {
@@ -24,15 +24,31 @@ type VmProps = {
   sortingDisabled: boolean;
 };
 
-export function Vm(props: VmProps) {
-  const { reports, sortingDisabled } = props;
-  const [reportsState, setReportsState] = useState(reports);
-  if (reports !== reportsState && sortingDisabled) setReportsState(reports);
+const arePropsEqual = (prevProps: VmProps, nextProps: VmProps) => {
+  return (
+    prevProps.id === nextProps.id &&
+    prevProps.name === nextProps.name &&
+    prevProps.status === nextProps.status &&
+    ((!prevProps.offlineDependencies && !nextProps.offlineDependencies) ||
+      (!!prevProps.offlineDependencies &&
+        !!nextProps.offlineDependencies &&
+        prevProps.offlineDependencies.length ===
+          nextProps.offlineDependencies.length &&
+        prevProps.offlineDependencies.every(({ id }) =>
+          nextProps.offlineDependencies!.find((d) => d.id === id),
+        ))) &&
+    prevProps.sortingDisabled === nextProps.sortingDisabled &&
+    (!nextProps.sortingDisabled ||
+      (prevProps.reports.length === nextProps.reports.length &&
+        prevProps.reports.every(({ timestamp }) =>
+          nextProps.reports.find(
+            (r) => r.timestamp.valueOf() === timestamp.valueOf(),
+          ),
+        )))
+  );
+};
 
-  return <MemoisedVm {...props} reports={reportsState} />;
-}
-
-const MemoisedVm = memo(function Vm({
+export default memo(function Vm({
   id,
   name,
   status,
@@ -139,4 +155,4 @@ const MemoisedVm = memo(function Vm({
       </Card>
     </div>
   );
-});
+}, arePropsEqual);

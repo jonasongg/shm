@@ -1,7 +1,7 @@
 "use client";
 
 import Header from "@/components/header";
-import { Vm } from "@/components/vm";
+import Vm from "@/components/vm";
 import { GridStackProvider } from "@/lib/gridStackReact/gridStackProvider";
 import { bytesFormatter, cn, toAbsoluteUrl } from "@/lib/utils";
 import {
