@@ -154,16 +154,16 @@ export default memo(
           <TooltipContent>View Status History</TooltipContent>
         </Tooltip>
 
-        <DialogContent className="sm:max-w-7/10">
-          <DialogHeader>
+        <DialogContent className="sm:max-w-4/5">
+          <DialogHeader className="min-w-0">
             <DialogTitle>Status History</DialogTitle>
             <DialogDescription>
               View the status of your VMs and the Kafka broker over time.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="h-120 flex flex-col gap-2">
-            <div className="flex justify-center gap-4">
+          <div className="h-120 min-w-0 flex flex-col gap-2">
+            <div className="flex justify-center gap-x-4 gap-y-2 flex-wrap items-center">
               <Label>Filter range:</Label>
 
               <PresetDatesSelector
@@ -173,7 +173,7 @@ export default memo(
                 setUntilDate={setUntilDate}
               />
 
-              <Separator orientation="vertical" />
+              <Separator orientation="vertical" className="!h-10" />
 
               <Label>Set range:</Label>
 
