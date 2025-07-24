@@ -46,7 +46,8 @@ public class VmController(
             return BadRequest("VM name cannot be empty.");
         }
 
-        await context.Vms.AddAsync(new Vm() { Name = vmDto.Name });
+        var vm = new Vm() { Name = vmDto.Name };
+        await context.Vms.AddAsync(vm);
         await context.SaveChangesAsync();
 
         if (vmDto.Autocreate)
@@ -81,7 +82,7 @@ public class VmController(
                 return BadRequest("There was an error in creating the Docker container.");
             }
         }
-        return Created();
+        return Created("", vm);
     }
 
     // DELETE: api/vm/5
