@@ -108,6 +108,7 @@ export default function DependencySettingsDialog({
           <TooltipTrigger asChild>
             <Button variant="header" disabled={!vms}>
               <Settings />
+              <span className="sr-only">Configure VM dependencies</span>
             </Button>
           </TooltipTrigger>
         </DialogTrigger>
