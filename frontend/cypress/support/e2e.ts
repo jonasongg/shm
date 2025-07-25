@@ -17,5 +17,11 @@
 import "./commands";
 
 beforeEach(() => {
+  cy.clearTestVms();
+  cy.createTestVm();
   cy.visit("");
+
+  cy.get("main>div").should("have.class", "grid-stack-static");
 });
+
+after(cy.clearTestVms);

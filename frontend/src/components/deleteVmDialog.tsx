@@ -29,6 +29,12 @@ import {
 } from "./ui/form";
 import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
 
+const formSchema = z.object({
+  deleteType: z.enum(["Vm", "VmDocker", "Reports"]),
+});
+
+export type DeleteVmRequestType = z.infer<typeof formSchema>;
+
 export default function DeleteVmDialog({
   name,
   id,
@@ -39,16 +45,12 @@ export default function DeleteVmDialog({
   const [open, setOpen] = useState(false);
   const router = useRouter();
 
-  const formSchema = z.object({
-    deleteType: z.enum(["Vm", "VmDocker", "Reports"]),
-  });
-
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<DeleteVmRequestType>({
     resolver: zodResolver(formSchema),
     defaultValues: { deleteType: "VmDocker" },
   });
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+  const onSubmit = async (values: DeleteVmRequestType) => {
     const isReportOnly = values.deleteType === "Reports";
     try {
       const response = await fetch(toAbsoluteUrl(`/vm/${id}`), {
