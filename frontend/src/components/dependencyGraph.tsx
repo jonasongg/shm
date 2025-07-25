@@ -82,6 +82,7 @@ const DeletableEdge = ({
             pointerEvents: "all",
           }}
           className="absolute p-0.5 rounded-full bg-red-100 hover:bg-red-300 dark:bg-red-900 dark:hover:bg-red-700 border-background dark:border-(--xy-background-color-default) border-6 transition-colors cursor-pointer text-neutral-500 dark:text-neutral-300 hover:text-black dark:hover:text-white"
+          data-id={id}
           onClick={() => setEdges((edges) => edges.filter((e) => e.id !== id))}
         >
           <X className="p-1" />

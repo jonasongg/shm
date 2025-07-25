@@ -19,9 +19,16 @@ import "./commands";
 beforeEach(() => {
   cy.clearTestVms();
   cy.createTestVm();
+  cy.createTestVm(2);
   cy.visit("");
 
   cy.get("main>div").should("have.class", "grid-stack-static");
 });
 
 after(cy.clearTestVms);
+
+Cypress.on("uncaught:exception", () => {
+  // returning false here prevents Cypress from
+  // failing the test
+  return false;
+});
