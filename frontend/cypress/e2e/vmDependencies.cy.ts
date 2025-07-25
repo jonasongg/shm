@@ -1,4 +1,4 @@
-describe("configuring vm dependencies", () => {
+describe("configuring vm dependencies header button", () => {
   const openDialog = () => {
     cy.contains("Configure VM dependencies").click();
     cy.get("div[role=dialog]").should("exist");
@@ -27,6 +27,7 @@ describe("configuring vm dependencies", () => {
     const [test1, test2] = Cypress.env("testVms");
     openDialog();
 
+    // drag right handle of VM1 to left handle of VM2
     cy.get("div.react-flow__nodes")
       .find(`div[data-id=${test1.id}]`)
       .should("exist")
@@ -40,15 +41,18 @@ describe("configuring vm dependencies", () => {
       .trigger("mousemove")
       .trigger("mouseup");
 
+    // edge should then exist
     cy.get("div.react-flow__edges")
       .find(`g[data-id=xy-edge__${test1.id}-${test2.id}]`)
       .should("exist");
 
+    // save changes and dialog should disappear
     cy.get("div[data-slot=dialog-footer]")
       .find("button[data-slot=button]")
       .click();
     cy.get("div[role=dialog]").should("not.exist");
 
+    // wait for refresh of VMs
     cy.intercept("GET", "").as("getVms");
     cy.wait("@getVms")
       .wait(500)
@@ -69,20 +73,24 @@ describe("configuring vm dependencies", () => {
   it("can delete dependency", () => {
     const [test1, test2] = createDep();
 
+    // click the delete button
     cy.get("div.react-flow__edgelabel-renderer")
       .find(`button[data-id=${test1.id}-${test2.id}]`)
       .should("exist")
       .click();
 
+    // edge should no longer exist
     cy.get("div.react-flow__edges")
       .find(`g[data-id=${test1.id}-${test2.id}]`)
       .should("not.exist");
 
+    // save changes and dialog should disappear
     cy.get("div[data-slot=dialog-footer]")
       .find("button[data-slot=button]")
       .click();
     cy.get("div[role=dialog]").should("not.exist");
 
+    // wait for refresh of VMs
     cy.intercept("GET", "").as("getVms");
     cy.wait("@getVms")
       .wait(500)
@@ -98,6 +106,7 @@ describe("configuring vm dependencies", () => {
     const [test1, test2] = Cypress.env("testVms");
     openDialog();
 
+    // VM1 -> VM2 -> VM1 should not be allowed
     cy.get("div.react-flow__nodes")
       .find(`div[data-id=${test1.id}]`)
       .should("exist")

@@ -9,6 +9,7 @@ describe("add vm", () => {
   };
 
   it("dialog works as expected", () => {
+    // escape and close button should close dialog
     openDialog();
     cy.get("body").type("{esc}");
     cy.get("div[role=dialog]").should("not.exist");
