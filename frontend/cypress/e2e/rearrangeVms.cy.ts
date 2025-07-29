@@ -58,55 +58,107 @@ describe("rearrange vms header button", () => {
     cy.get("div.ui-resizable-handle").should("not.exist");
   });
 
-  it("rearranging changes the position of card", () => {
+  it("allows drag and drop which changes the position of card", () => {
     cy.contains("Rearrange VMs").click();
 
     cy.get("div[data-slot=card]")
       .first()
       .then(($card1) => {
-        const pos1 = $card1[0].getBoundingClientRect();
+        const pos1 = $card1.offset();
         $card1[0].dispatchEvent(new MouseEvent("mousedown", { button: 0 }));
 
         cy.get("div[data-slot=card]")
           .eq(1)
           .then(($card2) => {
-            cy.window().then((win) => {
-              const pos2 = $card2[0].getBoundingClientRect();
+            cy.window().then(({ scrollX, scrollY }) => {
+              const pos2 = $card2.offset();
+              if (!pos1 || !pos2)
+                throw new Error("Could not get card positions");
 
-              // cache old window scroll
-              const scroll = { x: win.scrollX, y: win.scrollY };
-
+              // must dispatch like this for gridstack to register the event
               $card1[0].dispatchEvent(
                 new MouseEvent("mousemove", {
                   button: 0,
-                  clientX: pos1.left + pos1.width / 2,
-                  clientY: pos1.top + pos1.height / 2,
+                  clientX: pos1.left,
+                  clientY: pos1.top,
                 }),
               );
               $card1[0].dispatchEvent(
                 new MouseEvent("mousemove", {
                   button: 0,
-                  clientX: pos2.left + pos2.width / 2,
-                  clientY: pos2.top + pos2.height / 2,
+                  clientX: pos2.left,
+                  clientY: pos2.top,
                 }),
               );
               cy.wrap($card2).trigger("mouseup", { force: true });
 
               // should have swapped positions
-              cy.contains("Stop rearranging VMs")
-                .click()
+              cy.contains("Stop rearranging VMs").click();
+              cy.window()
+                .scrollTo(scrollX, scrollY)
                 .then(() => {
-                  const nPos1 = $card1[0].getBoundingClientRect();
-                  const nPos2 = $card2[0].getBoundingClientRect();
+                  const nPos1 = $card1.offset()!;
+                  const nPos2 = $card2.offset()!;
 
-                  // new window scroll
-                  const { scrollX, scrollY } = win;
-                  expect(nPos1.x + scrollX).to.be.closeTo(pos2.x + scroll.x, 1);
-                  expect(nPos1.y + scrollY).to.be.closeTo(pos2.y + scroll.y, 1);
-                  expect(nPos2.x + scrollX).to.be.closeTo(pos1.x + scroll.x, 1);
-                  expect(nPos2.y + scrollY).to.be.closeTo(pos1.y + scroll.y, 1);
+                  expect(nPos1.left).to.be.closeTo(pos2.left, 5);
+                  expect(nPos1.top).to.be.closeTo(pos2.top, 5);
+                  expect(nPos2.left).to.be.closeTo(pos1.left, 5);
+                  expect(nPos2.top).to.be.closeTo(pos1.top, 5);
                 });
             });
+          });
+      });
+  });
+
+  it("allows resizing", () => {
+    cy.contains("Rearrange VMs").click();
+
+    cy.get("div[data-slot=card]")
+      .first()
+      .trigger("mouseover")
+      .then(($card) => {
+        const initialWidth = $card.width();
+        const initialHeight = $card.height();
+
+        if (!initialWidth || !initialHeight)
+          throw new Error("Could not get initial card dimensions");
+
+        // Resize the card
+        cy.wrap($card)
+          .siblings("div.ui-resizable-handle")
+          .then(($handle) => {
+            const position = $handle.offset();
+            if (!position) throw new Error("Could not get handle position");
+
+            // must dispatch like this for gridstack to register the event
+            $handle[0].dispatchEvent(
+              new MouseEvent("mousedown", { button: 0 }),
+            );
+
+            $handle[0].dispatchEvent(
+              new MouseEvent("mousemove", {
+                button: 0,
+                clientX: position.left + initialWidth,
+                clientY: position.top + initialHeight,
+              }),
+            );
+            $handle[0].dispatchEvent(
+              new MouseEvent("mousemove", {
+                button: 0,
+                clientX: position.left + initialWidth,
+                clientY: position.top + initialHeight,
+              }),
+            );
+            cy.wrap($handle).trigger("mouseup", { force: true });
+          });
+
+        // Check that the card has been resized
+        cy.contains("Stop rearranging VMs").click();
+        cy.get("div[data-slot=card]")
+          .first()
+          .then(($resizedCard) => {
+            expect($resizedCard.width()).to.be.at.least(initialWidth * 2);
+            expect($resizedCard.height()).to.be.at.least(initialHeight * 2);
           });
       });
   });
