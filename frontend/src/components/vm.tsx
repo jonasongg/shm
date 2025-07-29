@@ -70,7 +70,7 @@ export default memo(function Vm({
     <div ref={ref}>
       <Card
         className={cn(
-          "grid-stack-item-content relative !overflow-hidden before:absolute before:inset-0 before:z-20 before:transition-colors before:pointer-events-none  after:absolute after:inset-0 after:z-20 after:transition-colors after:pointer-events-none transition-all",
+          "grid-stack-item-content relative !overflow-hidden before:absolute before:inset-0 before:z-20 before:transition-colors before:pointer-events-none after:absolute after:inset-0 after:z-20 after:transition-colors after:pointer-events-none transition-all",
           {
             "before:bg-red-900/5 dark:before:bg-red-700/20":
               status === "Offline",

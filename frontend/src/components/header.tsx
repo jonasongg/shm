@@ -48,6 +48,9 @@ export default function Header({
               disabled={!vms}
             >
               <Shuffle />
+              <span className="sr-only">
+                {isRearranging ? "Stop rearranging VMs" : "Rearrange VMs"}
+              </span>
             </Button>
           </TooltipTrigger>
         </Tooltip>
