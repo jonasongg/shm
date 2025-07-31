@@ -8,14 +8,22 @@ This project consists of 3 directories/components:
 2. SHM_MS (ASP.NET backend)
 3. frontend (Next.js frontend)
 
-The MonitoringService component is Dockerised, so you will need to install Docker on your system. Make sure that you also have PostgreSQL server running.
+## Project Dependencies
+
+- Docker
+- PostgreSQL
+- TimescaleDB (refer to [their documentation](https://docs.tigerdata.com/self-hosted/latest/install/) for installation details)
+- .NET 9.0
+- Node.js
 
 ## Getting Started
 
 1. `git clone` this repository.
 1. Run `docker compose up --pull missing` to automatically pull the necessary images and run four containers running MonitoringService as well as the Kafka broker.
-1. Make sure your PostgreSQL server is up and running.
-1. Navigate to the SHM_MS directory (`cd SHM_MS`) and run `dotnet run` to run the backend.
+1. Make sure your PostgreSQL + TimescaleDB database server is up and running.
+1. Navigate to the SHM_MS directory (`cd SHM_MS`)
+1. Run the necessary database migrations with `dotnet ef database update`.
+1. Run `dotnet run` to start the backend.
 1. Configure the necessary variables for SHM_MS as specified in `appsettings.json.example`, then rename the file by removing `.example`.
 1. Lastly, navigate to the frontend directory and run `npm install`, followed by `npm run dev` to run the frontend.
 1. The frontend contains some E2E tests written with Cypress. To run these tests:
