@@ -14,7 +14,7 @@ This project consists of 3 directories/components:
 - PostgreSQL (see [below](#installing-postgresql-on-windows) for more instructions on installing PostgreSQL on Windows)
 - TimescaleDB (refer to [their documentation](https://docs.tigerdata.com/self-hosted/latest/install/) for installation details)
   - See [below](#exclude-timescaledb) if you want to exclude TimescaleDB from the installation
-- .NET 9.0 (see below for information on using .NET 8.0)
+- .NET 9.0 (see [below](#using-net-80) for information on using .NET 8.0)
 - Node.js (note that you cannot copy the `node_modules` folder across OSes)
 - Minimum Chrome version 111
 
@@ -23,7 +23,8 @@ This project consists of 3 directories/components:
 1. `git clone` this repository.
 1. Run `docker compose up --pull missing` to automatically pull the necessary images and run four containers running MonitoringService as well as the Kafka broker.
 1. Make sure your PostgreSQL + TimescaleDB database server is up and running.
-1. Navigate to the SHM_MS directory (`cd SHM_MS`)
+1. Run `dotnet tool restore` in the root directory.
+1. Navigate to the SHM_MS directory (`cd SHM_MS`).
 1. Run the necessary database migrations with `dotnet ef database update`.
 1. Run `dotnet run` to start the backend.
 1. Configure the necessary variables for SHM_MS as specified in `appsettings.json.example`, then rename the file by removing `.example`.
