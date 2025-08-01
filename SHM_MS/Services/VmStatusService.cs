@@ -133,7 +133,7 @@ public class VmStatusService(
         await TraverseDependenciesAsync(
             vms,
             cancellationToken,
-            vms.Where(vm => vm.Status == VmStatus.Offline)
+            vms.Where(vm => vm.Status == VmStatus.Offline).ToArray()
         );
 
         await SaveChangesAndPublishStatusAsync(context, cancellationToken);
@@ -142,7 +142,7 @@ public class VmStatusService(
     private async Task TraverseDependenciesAsync(
         List<Vm> vms,
         CancellationToken cancellationToken,
-        params IEnumerable<Vm> offlineVms
+        params Vm[] offlineVms
     )
     {
         offlineVms.ToList().ForEach(vm => vm.Status = VmStatus.Offline);

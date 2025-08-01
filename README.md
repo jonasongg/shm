@@ -11,10 +11,12 @@ This project consists of 3 directories/components:
 ## Project Dependencies
 
 - Docker
-- PostgreSQL
+- PostgreSQL (see [below](#installing-postgresql-on-windows) for more instructions on installing PostgreSQL on Windows)
 - TimescaleDB (refer to [their documentation](https://docs.tigerdata.com/self-hosted/latest/install/) for installation details)
-- .NET 9.0
-- Node.js
+  - See [below](#exclude-timescaledb) if you want to exclude TimescaleDB from the installation
+- .NET 9.0 (see below for information on using .NET 8.0)
+- Node.js (note that you cannot copy the `node_modules` folder across OSes)
+- Minimum Chrome version 111
 
 ## Getting Started
 
@@ -30,7 +32,7 @@ This project consists of 3 directories/components:
 
    - If on Linux, install the necessary Cypress dependencies:
 
-   ```
+   ```bash
    $ sudo apt-get install libgtk2.0-0t64 libgtk-3-0t64 libgbm-dev libnotify-dev libnss3 libxss1 libasound2t64 libxtst6 xauth xvfb
    ```
 
@@ -40,9 +42,55 @@ This project consists of 3 directories/components:
 
 If you would like to make changes to the MonitoringService code, you will need to update the Docker image. You can do that by running in the MonitoringService folder:
 
-```
+```bash
 $ dotnet publish --os linux --arch x64 /t:PublishContainer
 ```
+
+Note that if you are not planning to make changes to its code, you can safely remove the MonitoringService project from the solution in Visual Studio.
+
+## Other Notes
+
+### Installing PostgreSQL on Windows
+
+1. Install PostgreSQL from [this link](https://www.postgresql.org/download/windows/).
+
+2. Open a terminal in the `/bin` folder of the PostgreSQL installation location.
+
+3. Run and replace `<DBDIR>` with the directory you want to store the database in:
+
+```powershell
+initdb -D <DBDIR>
+```
+
+4. Start the server with (note that if LOGFILEDIR is the `/bin` folder, you will need adminstrator rights):
+
+```powershell
+pg_ctl -D <DBDIR> -l <LOGFILEDIR>/logfile
+```
+
+5. The default user and database name will be `postgres`.
+
+### Exclude TimescaleDB
+
+It's possible to not install TimescaleDB. To do so, **before running any migrations**, comment out these lines from the following files:
+
+- In `SHM_MS/Migrations/20250604031535_Initial.cs`, comment out line 64:
+
+```cs
+migrationBuilder.Sql("SELECT create_hypertable('reports', by_range('timestamp'));");
+```
+
+- In `SHM_MS/Migrations/20250610024800_AddDataRetentionPolicy.cs`, comment out the entirety of the `Up` and `Down` function bodies.
+
+### Using .NET 8.0
+
+It's possible to use .NET 8.0 instead of 9.0. Simply replace `net9.0` with `net8.0` in the following line in all `.csproj` files:
+
+```xml
+<TargetFramework>net9.0</TargetFramework>
+```
+
+You will need to downgrade the NuGet package `Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore` to version 8.
 
 ## Frontend Features
 
